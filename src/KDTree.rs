@@ -8,19 +8,17 @@ pub struct Particle {
 }
 
 pub struct Node<'a> {
-    splitDim: i32,
+    splitDim: i32, // 0 is x, 1 is y, 2 is z
     splitVal: f64,
     left: Option<Box<&'a Node<'a>>>,
     right: Option<Box<&'a Node<'a>>>,
     points: Option<Vec<Particle>>,
 }
 
-///In the KDTree struct, the root is the root node, the number of particles is the total amount of
-///particles, and maxPoints is the amount of points in one space before splitting. I think.
 pub struct KDTree<'a> {
-    root: Node<'a>,
-    numOfParticles: i32,
-    maxPoints: i32,
+    root: Node<'a>,         // The root node.
+    numOfParticles: i32,    // The number of particles in the tree.
+    maxPoints: i32,         // The maximum number of particles in one node.
 }
 fn maxMinX(particles: &Vec<Particle>) -> (f64, f64) {
     let mut to_return_max = 0.0;
@@ -62,39 +60,49 @@ fn maxMinZ(particles: &Vec<Particle>) -> (f64, f64) {
     }
     return (to_return_max, to_return_min);
 }
-    pub fn newTree<'a>(pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
-        let length_of_points = pts.len() as i32;
-        let (xmax, xmin) = maxMinX(&pts);
-        let (ymax, ymin) = maxMinY(&pts);
-        let (zmax, zmin) = maxMinZ(&pts);
-        if length_of_points <= maxPts {
-            let rootNode = Node {
-                splitDim: 0,
-                splitVal: 0.0,
-                left: None,
-                right: None,
-                points: Some(pts),
-            };
-            return KDTree {
-                root: rootNode,
-                numOfParticles: length_of_points,
-                maxPoints: maxPts,
-            };
+pub fn newTree<'a>(pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
+    let length_of_points = pts.len() as i32;
+    let (xmax, xmin) = maxMinX(&pts);
+    let (ymax, ymin) = maxMinY(&pts);
+    let (zmax, zmin) = maxMinZ(&pts);
+    let xdistance = (xmax - xmin).abs();
+    let ydistance = (ymax - ymin).abs();
+    let zdistance = (zmax - zmin).abs();
+    if length_of_points <= maxPts {
+        let rootNode = Node {
+            splitDim: 0,
+            splitVal: 0.0,
+            left: None,
+            right: None,
+            points: Some(pts),
+        };
+        return KDTree {
+            root: rootNode,
+            numOfParticles: length_of_points,
+            maxPoints: maxPts,
+        };
+    } else {
+        if zdistance > ydistance && zdistance > xdistance {
+            // split on Z
+        } else if xdistance > ydistance && xdistance > zdistance {
+            // split on X
         } else {
-            let rootNode = Node {
-                splitDim: 0,
-                splitVal: 0.0,
-                left: None,
-                right: None,
-                points: Some(pts),
-            };
-            // check x dimension's distance
-            
-            
-            return KDTree {
-                root: rootNode,
-                numOfParticles: length_of_points,
-                maxPoints: maxPts,
-            };
+            // split on Y
         }
+        let rootNode = Node {
+            splitDim: 0,
+            splitVal: 0.0,
+            left: None,
+            right: None,
+            points: Some(pts),
+        };
+        // check x dimension's distance
+
+
+        return KDTree {
+            root: rootNode,
+            numOfParticles: length_of_points,
+            maxPoints: maxPts,
+        };
     }
+}
