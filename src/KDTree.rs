@@ -16,7 +16,7 @@ pub struct Node<'a> {
     splitVal: f64,
     left: Option<Box<&'a Node<'a>>>,
     right: Option<Box<&'a Node<'a>>>,
-    points: Option<Vec<Particle>>,
+    points:  Option<Vec<Particle>>,
 }
 
 pub struct KDTree<'a> {
@@ -64,7 +64,7 @@ fn maxMinZ(particles: &Vec<Particle>) -> (f64, f64) {
     }
     return (to_return_max, to_return_min);
 }
-pub fn newTree<'a>(pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
+pub fn newTree<'a>(mut pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
     let length_of_points = pts.len() as i32;
     let (xmax, xmin) = maxMinX(&pts);
     let (ymax, ymin) = maxMinY(&pts);
@@ -93,37 +93,22 @@ pub fn newTree<'a>(pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
         // three f64's given to it.
 
         if zdistance > ydistance && zdistance > xdistance { // "If the z distance is the greatest"
-            let mut pivot = 0.0;
+/*
+           let mut pivot = 0.0;
             if length_of_points < 3 {
                 pivot = pts[0].z;
             }
             else {
                 pivot = findMiddle(pts[0].z, pts[1].z, pts[2].z);
             }
-            //DEBUG print
-            println!("the pivot value is {} on the z axis", pivot);
+*/
+            let splitValue = findMedianZ(&mut pts, 0, length_of_points as usize);
             // split on Z
         } else if xdistance > ydistance && xdistance > zdistance { // "If the x distance is the greatest"
-            let mut pivot = 0.0;
-            if length_of_points < 3 {
-                pivot = pts[0].x;
-            }
-            else {
-                pivot = findMiddle(pts[0].x, pts[1].x, pts[2].x);
-            }
-            //DEBUG print
-            println!("the pivot value is {} on the x axis", pivot);
-            // split on X
+           // split on X
+            let splitValue = findMedianX(&mut pts, 0, length_of_points as usize);
         } else { // "If the y distance is the greatest"
-            let mut pivot = 0.0;
-            if length_of_points < 3 {
-                pivot = pts[0].y;
-            }
-            else {
-                pivot = findMiddle(pts[0].y, pts[1].y, pts[2].y);
-            }
-            //DEBUG print
-            println!("the pivot value is {} on the y axis", pivot);
+            let splitValue = findMedianY(&mut pts, 0, length_of_points as usize);
             // split on Y
         }
         let rootNode = Node {
