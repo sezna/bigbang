@@ -11,19 +11,78 @@ impl Particle {
         return Particle{vx: self.vx, vy: self.vy, vz: self.vz, x: self.x, y: self.y, z: self.z};
     }
 }
-pub struct Node<'a> {
+pub struct Node {
     splitDim: i32, // 0 is x, 1 is y, 2 is z
     splitVal: f64,
-    left: Option<Box<&'a Node<'a>>>,
-    right: Option<Box<&'a Node<'a>>>,
+    left: Option<Box<Node>>,
+    right: Option<Box<Node>>,
     points:  Option<Vec<Particle>>,
 }
 
-pub struct KDTree<'a> {
-    root: Node<'a>,         // The root node.
+pub struct KDTree {
+    root: Node,         // The root node.
     numOfParticles: i32,    // The number of particles in the tree.
     maxPoints: i32,         // The maximum number of particles in one node.
 }
+pub fn newRootNode(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -> Node { // Start and end are probably 0 and pts.len(), respectively.
+    let length_of_points = pts.len() as i32;
+    let (xmax, xmin) = maxMinX(&pts);
+    let (ymax, ymin) = maxMinY(&pts);
+    let (zmax, zmin) = maxMinZ(&pts);
+    let xdistance = (xmax - xmin).abs();
+    let ydistance = (ymax - ymin).abs();
+    let zdistance = (zmax - zmin).abs();
+    if length_of_points <= max_pts {
+        let root_node = Node {
+            splitDim: 0,
+            splitVal: 0.0,
+            left: None,
+            right: None,
+            points: Some(pts),
+        };
+        return root_node;
+    } else {
+        // So the objective here is to find the median value for whatever axis has the greatest
+        // disparity in distance. It is more efficient to pick three random values and pick the
+        // median of those as the pivot point, so that is done if the vector has enough points.
+        // Otherwise, it picks the first element. FindMiddle just returns the middle value of the
+        // three f64's given to it.
+
+        let mut root_node = Node {
+            splitDim: 0,
+            splitVal: 0.0,
+            left: None,
+            right: None,
+            points: None
+        };
+
+        let mid = (start + end) / 2 as usize;
+        if zdistance > ydistance && zdistance > xdistance { // "If the z distance is the greatest"
+            // split on Z
+            let split_value = findMedianZ(&mut pts, start, end, mid);
+            root_node.splitDim = 2;
+            root_node.splitVal = split_value;
+        } else if ydistance > xdistance && ydistance > zdistance { // "If the x distance is the greatest"
+            // split on Y
+            let split_value = findMedianY(&mut pts, start, end, mid);
+            root_node.splitDim = 1;
+            root_node.splitVal - split_value;
+        } else { // "If the y distance is the greatest"
+            // split on X
+            let split_value = findMedianX(&mut pts, start, end, mid);
+            root_node.splitDim = 0;
+            root_node.splitVal = split_value;
+        }
+//        i should split the vec here, and pass that in instead.
+        root_node.left = Some(Box::new(newRootNode(pts, max_pts, start, mid)));
+        root_node.right = Some(Box::new(newRootNode(pts, max_pts, mid, end)));
+        return root_node;
+    }
+}
+
+
+//The following three functions just return a tuple of the maximum and minimum values in the
+//dimensions. Perhaps it could use a refactor, as there is a lot of copied code.
 fn maxMinX(particles: &Vec<Particle>) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].x;
@@ -64,70 +123,7 @@ fn maxMinZ(particles: &Vec<Particle>) -> (f64, f64) {
     }
     return (to_return_max, to_return_min);
 }
-pub fn newTree<'a>(mut pts: Vec<Particle>, maxPts: i32) -> KDTree<'a> {
-    let length_of_points = pts.len() as i32;
-    let (xmax, xmin) = maxMinX(&pts);
-    let (ymax, ymin) = maxMinY(&pts);
-    let (zmax, zmin) = maxMinZ(&pts);
-    let xdistance = (xmax - xmin).abs();
-    let ydistance = (ymax - ymin).abs();
-    let zdistance = (zmax - zmin).abs();
-    if length_of_points <= maxPts {
-        let rootNode = Node {
-            splitDim: 0,
-            splitVal: 0.0,
-            left: None,
-            right: None,
-            points: Some(pts),
-        };
-        return KDTree {
-            root: rootNode,
-            numOfParticles: length_of_points,
-            maxPoints: maxPts,
-        };
-    } else {
-        // So the objective here is to find the median value for whatever axis has the greatest
-        // disparity in distance. It is more efficient to pick three random values and pick the
-        // median of those as the pivot point, so that is done if the vector has enough points.
-        // Otherwise, it picks the first element. FindMiddle just returns the middle value of the
-        // three f64's given to it.
 
-        if zdistance > ydistance && zdistance > xdistance { // "If the z distance is the greatest"
-/*
-           let mut pivot = 0.0;
-            if length_of_points < 3 {
-                pivot = pts[0].z;
-            }
-            else {
-                pivot = findMiddle(pts[0].z, pts[1].z, pts[2].z);
-            }
-*/
-            let splitValue = findMedianZ(&mut pts, 0, length_of_points as usize);
-            // split on Z
-        } else if xdistance > ydistance && xdistance > zdistance { // "If the x distance is the greatest"
-           // split on X
-            let splitValue = findMedianX(&mut pts, 0, length_of_points as usize);
-        } else { // "If the y distance is the greatest"
-            let splitValue = findMedianY(&mut pts, 0, length_of_points as usize);
-            // split on Y
-        }
-        let rootNode = Node {
-            splitDim: 0,
-            splitVal: 0.0,
-            left: None,
-            right: None,
-            points: Some(pts),
-        };
-        // check x dimension's distance
-
-
-        return KDTree {
-            root: rootNode,
-            numOfParticles: length_of_points,
-            maxPoints: maxPts,
-        };
-    }
-}
 fn findMiddle(first: f64, second: f64, third: f64) -> f64 {
     if second < first && second > third {
         return second;
@@ -140,11 +136,14 @@ fn findMiddle(first: f64, second: f64, third: f64) -> f64 {
     }
 }
 
-fn findMedianZ(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
+
+
+//The following three functions just find median points  for the x, y, or z dimension. Perhaps it could use a refactor, because there is a lot of copied code.
+fn findMedianZ(pts: &mut Vec<Particle>, start: usize, end: usize, mid:usize) -> f64 {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
-        if pts[low].z <= pts[start].z {
+        if pts[low].z < pts[start].z {
             low = low + 1;
         }
         else {
@@ -157,21 +156,21 @@ fn findMedianZ(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
     let tmp = pts[high].clone();
     pts[high] = pts[start].clone();
     pts[start] = tmp;
-    if start == pts.len() / 2 {
+    if start == mid {
         return pts[start].z;
     }
-    else if high < pts.len() / 2 {
-        return findMedianZ(pts, high + 1, end);
+    else if high < mid {
+        return findMedianZ(pts, high + 1, end, mid);
     }
     else {
-        return findMedianZ(pts, start, high);
+        return findMedianZ(pts, start, high, mid);
     }
 }
-fn findMedianY(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
+fn findMedianY(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) -> f64 {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
-        if pts[low].y <= pts[start].y {
+        if pts[low].y < pts[start].y {
             low = low + 1;
         }
         else {
@@ -184,21 +183,21 @@ fn findMedianY(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
     let tmp = pts[high].clone();
     pts[high] = pts[start].clone();
     pts[start] = tmp;
-    if start == pts.len() / 2 {
+    if start == mid {
         return pts[start].y;
     }
-    else if high < pts.len() / 2 {
-        return findMedianY(pts, high + 1, end);
+    else if high < mid {
+        return findMedianY(pts, high + 1, end, mid);
     }
     else {
-        return findMedianY(pts, start, high);
+        return findMedianY(pts, start, high, mid);
     }
 }
-fn findMedianX(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
+fn findMedianX(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) -> f64 {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
-        if pts[low].x <= pts[start].x {
+        if pts[low].x < pts[start].x {
             low = low + 1;
         }
         else {
@@ -211,13 +210,13 @@ fn findMedianX(pts: &mut Vec<Particle>, start: usize, end: usize) -> f64 {
     let tmp = pts[high].clone();
     pts[high] = pts[start].clone();
     pts[start] = tmp;
-    if start == pts.len() / 2 {
+    if start == mid {
         return pts[start].x;
     }
-    else if high < pts.len() / 2 {
-        return findMedianX(pts, high + 1, end);
+    else if high < mid {
+        return findMedianX(pts, high + 1, end, mid);
     }
     else {
-        return findMedianX(pts, start, high);
+        return findMedianX(pts, start, high, mid);
     }
 }
