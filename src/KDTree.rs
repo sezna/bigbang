@@ -1,3 +1,4 @@
+extern crate rand;
 enum Dimension {
     X,
     Y,
@@ -23,6 +24,18 @@ impl Particle {
             z: self.z,
         };
     }
+    pub fn random_particle() -> Particle {
+        let mut rng = rand::thread_rng();
+        return Particle {
+            vx: rand::random::<f64>(),
+            vy: rand::random::<f64>(),
+            vz: rand::random::<f64>(),
+            x:  rand::random::<f64>(),
+            y:  rand::random::<f64>(),
+            z:  rand::random::<f64>(),
+        }
+
+    }
 }
 pub struct Node {
     split_dimension: Dimension,
@@ -40,13 +53,15 @@ pub struct KDTree {
 pub fn new_kdtree(pts: Vec<Particle>, max_pts: i32) -> KDTree {
     let size_of_vec = pts.len();
     return KDTree {
-        root: new_root_node(pts, max_pts, 0, size_of_vec),
+        root: new_root_node(pts, max_pts),
         number_of_particles: size_of_vec,
         max_points: max_pts,
     };
 }
-fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start: usize, end: usize) -> Node {
+fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
+    let start = 0 as usize;
+    let end = pts.len();
     let length_of_points = pts.len() as i32;
     let (xmax, xmin) = max_min_x(&pts);
     let (ymax, ymin) = max_min_y(&pts);
@@ -102,9 +117,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start: usize, end: usize)
             root_node.split_value = split_value;
         }
         // i should split the vec here, and pass that in instead.
-        println!("split_index: {}\n", split_index);
         let upper_vec = pts.split_off(split_index);
         pts.shrink_to_fit();
+/*
         println!("points going to right-hand side(length: {}): \n",
                  upper_vec.len());
         for i in 0..upper_vec.len() {
@@ -117,8 +132,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start: usize, end: usize)
         for i in 0..pts.len() {
             println!("x: {}, y: {}, z: {}\n", pts[i].x, pts[i].y, pts[i].z);
         }
-        root_node.left = Some(Box::new(new_root_node(pts, max_pts, start, mid)));
-        root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts, mid, end)));
+*/
+        root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
+        root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
         return root_node;
     }
 }
@@ -189,7 +205,6 @@ fn find_median_z(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
     pts[high] = pts[start].clone();
     pts[start] = tmp;
     if start == mid {
-        println!("split value: {}, split index: {}", pts[start].z, start);
         return (pts[start].z, start);
     } else if high < mid {
         return find_median_z(pts, high + 1, end, mid);
