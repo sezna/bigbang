@@ -1,3 +1,9 @@
+enum Dimension {
+    X,
+    Y,
+    Z,
+    Null
+}
 pub struct Particle {
     pub vx: f64,
     pub vy: f64,
@@ -12,7 +18,7 @@ impl Particle {
     }
 }
 pub struct Node {
-    split_dimension: char, // either x, y, z, or n for "not assigned"
+    split_dimension: Dimension, 
     split_value: f64,
     left: Option<Box<Node>>,
     right: Option<Box<Node>>,
@@ -42,7 +48,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
         let root_node = Node {
-            split_dimension: 'n',
+            split_dimension: Dimension::Null,
             split_value: 0.0,
             left: None,
             right: None,
@@ -57,7 +63,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
         // three f64's given to it.
 
         let mut root_node = Node {
-            split_dimension: 'n',
+            split_dimension: Dimension::Null,
             split_value: 0.0,
             left: None,
             right: None,
@@ -69,19 +75,19 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
             // split on Z
             let (split_value, tmp) = find_median_z(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 'z';
+            root_node.split_dimension = Dimension::Z;
             root_node.split_value = split_value;
         } else if ydistance > xdistance && ydistance > zdistance { // "If the x distance is the greatest"
             // split on Y
             let (split_value, tmp) = find_median_y(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 'y';
+            root_node.split_dimension = Dimension::Y;
             root_node.split_value - split_value;
         } else { // "If the y distance is the greatest"
             // split on X
             let (split_value, tmp) = find_median_x(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 'x';
+            root_node.split_dimension = Dimension::X;
             root_node.split_value = split_value;
         }
 //        i should split the vec here, and pass that in instead.
