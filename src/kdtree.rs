@@ -1,10 +1,12 @@
 extern crate rand;
+#[derive(Clone)]
 enum Dimension {
     X,
     Y,
     Z,
     Null,
 }
+#[derive(Clone)]
 pub struct Particle {
     pub vx: f64,
     pub vy: f64,
@@ -37,6 +39,7 @@ impl Particle {
 
     }
 }
+#[derive(Clone)]
 pub struct Node {
     split_dimension: Dimension,
     split_value: f64,
@@ -295,17 +298,25 @@ fn test_tree() {
    let kdtree_test = new_kdtree(vec_that_wants_to_be_a_kdtree, 3);
    assert!(kdtree_test.number_of_particles == 100000);
    assert!(kdtree_test.max_points == 3);
-   go_to_left(kdtree_test);
+   go_to_edges(kdtree_test);
 }
 
-fn go_to_left(kdtree: KDTree) {
+fn go_to_edges(kdtree: KDTree) {
     let mut count_of_nodes = 0;
-    let mut node = kdtree.root.left.expect("null root node at 301\n");
+    let mut node = kdtree.root.left.expect("null root node\n");
+    let mut node2 = node.clone();
     while node.left.is_some() {
         count_of_nodes = count_of_nodes + 1;
-        node = node.left.expect("null node at 30\n");
+        node = node.left.expect("unexpected null node\n");
     }
     println!("number of nodes on left: {}\n", count_of_nodes);
     assert!(count_of_nodes == 14);
+    count_of_nodes = 0;
+    while node2.right.is_some() {
+        count_of_nodes = count_of_nodes + 1;
+        node2 = node2.right.expect("unexpected null node\n");
+    }
+    println!("number of nodes on right: {}\n", count_of_nodes);
+    assert!(count_of_nodes == 15);
 }
 
