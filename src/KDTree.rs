@@ -12,7 +12,7 @@ impl Particle {
     }
 }
 pub struct Node {
-    split_dimension: i32, // 0 is x, 1 is y, 2 is z
+    split_dimension: char, // either x, y, z, or n for "not assigned"
     split_value: f64,
     left: Option<Box<Node>>,
     right: Option<Box<Node>>,
@@ -42,7 +42,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
         let root_node = Node {
-            split_dimension: 0,
+            split_dimension: 'n',
             split_value: 0.0,
             left: None,
             right: None,
@@ -57,7 +57,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
         // three f64's given to it.
 
         let mut root_node = Node {
-            split_dimension: 0,
+            split_dimension: 'n',
             split_value: 0.0,
             left: None,
             right: None,
@@ -69,19 +69,19 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32, start:usize, end:usize) -
             // split on Z
             let (split_value, tmp) = find_median_z(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 2;
+            root_node.split_dimension = 'z';
             root_node.split_value = split_value;
         } else if ydistance > xdistance && ydistance > zdistance { // "If the x distance is the greatest"
             // split on Y
             let (split_value, tmp) = find_median_y(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 1;
+            root_node.split_dimension = 'y';
             root_node.split_value - split_value;
         } else { // "If the y distance is the greatest"
             // split on X
             let (split_value, tmp) = find_median_x(&mut pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = 0;
+            root_node.split_dimension = 'x';
             root_node.split_value = split_value;
         }
 //        i should split the vec here, and pass that in instead.
@@ -147,7 +147,6 @@ fn max_min_z(particles: &Vec<Particle>) -> (f64, f64) {
 }
 //The following three functions just find median points  for the x, y, or z dimension. Perhaps it could use a refactor, because there is a lot of copied code. They return a tuple of the value being split at and the index being split at.
 fn find_median_z(pts: &mut Vec<Particle>, start: usize, end: usize, mid:usize) -> (f64, usize) {
-    println!("low should be: {} + 1, high should be: {} - 1", start, end);
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
