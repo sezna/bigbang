@@ -44,7 +44,17 @@ pub struct Node {
     right: Option<Box<Node>>,
     points: Option<Vec<Particle>>,
 }
-
+impl Node {
+    fn new() -> Node {
+        return Node {
+        split_dimension: Dimension::Null,
+        split_value: 0.0,
+        left: None,
+        right: None,
+        points: None
+        }
+    }
+}
 pub struct KDTree {
     root: Node, // The root Node.
     number_of_particles: usize, // The number of particles in the tree.
@@ -260,3 +270,42 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
         return find_median_x(pts, start, high, mid);
     }
 }
+
+
+
+#[test]
+fn test_tree() {
+   let mut rng = rand::thread_rng();
+   let mut vec_that_wants_to_be_a_kdtree:Vec<Particle> = Vec::new();
+   for x in 0..100 {
+        for y in 0..100 {
+            for z in 0..10 {
+                let particle = Particle{
+                vx: rand::random::<f64>(),
+                vy: rand::random::<f64>(),
+                vz: rand::random::<f64>(),
+                x: x as f64,
+                y: y as f64,
+                z: z as f64
+                };
+                vec_that_wants_to_be_a_kdtree.push(particle);
+            }
+        }
+   }
+   let kdtree_test = new_kdtree(vec_that_wants_to_be_a_kdtree, 3);
+   assert!(kdtree_test.number_of_particles == 100000);
+   assert!(kdtree_test.max_points == 3);
+   go_to_left(kdtree_test);
+}
+
+fn go_to_left(kdtree: KDTree) {
+    let mut count_of_nodes = 0;
+    let mut node = kdtree.root.left.expect("null root node at 301\n");
+    while node.left.is_some() {
+        count_of_nodes = count_of_nodes + 1;
+        node = node.left.expect("null node at 30\n");
+    }
+    println!("number of nodes on left: {}\n", count_of_nodes);
+    assert!(count_of_nodes == 14);
+}
+
