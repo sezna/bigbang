@@ -1,10 +1,20 @@
 extern crate rand;
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 enum Dimension {
     X,
     Y,
     Z,
     Null,
+}
+impl Dimension {
+    pub fn as_string(&self) -> &str {
+        match self {
+            &Dimension::X => return "X",
+            &Dimension::Y => return "Y",
+            &Dimension::Z => return "Z",
+            &Dimension::Null => return "Null",
+        };
+    }
 }
 #[derive(Clone)]
 pub struct Particle {
@@ -57,11 +67,57 @@ impl Node {
         points: None
         }
     }
+    
+    
+    pub fn display_tree(&self) {
+        let mut to_display = Node::display_tree_helper(self, 0);
+        to_display.sort_by(|a, b| (a.2).cmp(&b.2));
+        let mut to_display_string:String = "".to_string();
+        let mut prev:i32 = -1;
+        for element in to_display {
+            let info = format!("split on: {}{}    ", element.0.as_string(), element.1);
+            println!("info: {}\n", info);
+            to_display_string = format!("{} {}", to_display_string, info);
+            if element.2 > prev {
+                to_display_string = format!("{}\n", to_display_string);
+            }
+            prev = element.2;
+        }
+        println!("{}", to_display_string);
+    }
+    // Thank you Steve Klabnik for your help with this function.
+        fn display_tree_helper(node: &Node, level: i32) -> Vec<(Dimension, f64, i32)> {
+        let mut dim = node.split_dimension.clone();
+        let mut split_val = node.split_value;
+        let mut to_return:Vec<(Dimension, f64, i32)> = vec![(dim, split_val, level)];
+        match node.left {
+            Some(ref node) => {
+                let mut tmp_vec =  Node::display_tree_helper(node, level + 1);
+                to_return.append(&mut tmp_vec);
+            },
+            None => (),
+        }
+        
+        match node.right {
+            Some(ref node) => {
+                let mut tmp_vec =  Node::display_tree_helper(node, level + 1);
+                to_return.append(&mut tmp_vec);
+            },
+            None => (),
+        }
+        to_return
+    }
+
 }
 pub struct KDTree {
     root: Node, // The root Node.
     number_of_particles: usize, // The number of particles in the tree.
     max_points: i32, // The maximum number of particles in one Node.
+}
+impl KDTree {
+    pub fn display_tree(&self) {
+        self.root.display_tree();
+    }
 }
 pub fn new_kdtree(pts: Vec<Particle>, max_pts: i32) -> KDTree {
     let size_of_vec = pts.len();
@@ -298,7 +354,24 @@ fn test_tree() {
    let kdtree_test = new_kdtree(vec_that_wants_to_be_a_kdtree, 3);
    assert!(kdtree_test.number_of_particles == 100000);
    assert!(kdtree_test.max_points == 3);
+   //kdtree_test.display_tree();
+   println!("testing integrity of the big tree\n");
    go_to_edges(kdtree_test);
+   let mut smaller_vec:Vec<Particle> = Vec::new();
+   println!("displaying a smaller tree\n");
+            for z in 0..50 {
+                let particle = Particle{
+                vx: rand::random::<f64>(),
+                vy: rand::random::<f64>(),
+                vz: rand::random::<f64>(),
+                x: rand::random::<f64>(),
+                y: rand::random::<f64>(),
+                z: rand::random::<f64>(),
+                };
+                smaller_vec.push(particle);
+   }
+    let smaller_kdtree = new_kdtree(smaller_vec, 10);
+    smaller_kdtree.display_tree();
 }
 
 fn go_to_edges(kdtree: KDTree) {
