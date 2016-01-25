@@ -12,7 +12,7 @@ impl Dimension {
             &Dimension::X => return "X",
             &Dimension::Y => return "Y",
             &Dimension::Z => return "Z",
-            &Dimension::Null => return "Null",
+            _             => return "Null",
         };
     }
 }
