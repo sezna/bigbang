@@ -51,11 +51,14 @@ impl Particle {
 }
 #[derive(Clone)]
 pub struct Node {
-    split_dimension: Dimension,
-    split_value: f64,
-    left: Option<Box<Node>>,
-    right: Option<Box<Node>>,
-    points: Option<Vec<Particle>>,
+    split_dimension: Dimension,             // Dimension that this node splits at.
+    split_value:     f64,                   // Value that this node splits at.
+    left:            Option<Box<Node>>,     // Left subtree.
+    right:           Option<Box<Node>>,     // Right subtree.
+    points:          Option<Vec<Particle>>, // Vector of the points if this node is a Leaf.
+    center_of_mass:  (f64, f64, f64),       // The center of mass for this node and it's children all together. (x, y, z).
+    total_mass:      f64,                   // Total mass of all particles under this node.
+    r_max:           f64,                   // Maximum radius that is a child of this node.
 }
 impl Node {
     fn new() -> Node {
@@ -64,7 +67,10 @@ impl Node {
         split_value: 0.0,
         left: None,
         right: None,
-        points: None
+        points: None,
+        center_of_mass: (0.0, 0.0, 0.0),
+        total_mass: 0.0,
+        r_max: 0.0
         }
     }
     
@@ -139,13 +145,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     let ydistance = (ymax - ymin).abs();
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
-        let root_node = Node {
-            split_dimension: Dimension::Null,
-            split_value: 0.0,
-            left: None,
-            right: None,
-            points: Some(pts),
-        };
+        let mut root_node = Node::new();
+        root_node.points = Some(pts); //TODO assign com, tm, r_max
+
         return root_node;
         // So the objective here is to find the median value for whatever axis has the greatest
         // disparity in distance. It is more efficient to pick three random values and pick the
@@ -154,15 +156,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         // three f64's given to it.
     } else {
 
-        let mut root_node = Node {
-            split_dimension: Dimension::Null,
-            split_value: 0.0,
-            left: None,
-            right: None,
-            points: None,
-        };
+        let mut root_node = Node::new();
         let split_index;
-        let mid = (start + end) / 2 as usize;
+        let mid = (start + end) / 2 as usize; //TODO assign com, tm, r_max
         if zdistance > ydistance && zdistance > xdistance {
             // "If the z distance is the greatest"
             // split on Z
