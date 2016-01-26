@@ -147,6 +147,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     if length_of_points <= max_pts {
         let mut root_node = Node::new();
         root_node.points = Some(pts); //TODO assign com, tm, r_max
+        root_node.center_of_mass = (0.0, 0.0, 0.0); //TODO find center of mass of all of the particles in the pts vector
 
         return root_node;
         // So the objective here is to find the median value for whatever axis has the greatest
@@ -200,6 +201,10 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
 */
         root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
         root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
+        let center_of_mass_x = (root_node.left.as_ref().expect("unexpected null node #1 ").center_of_mass.0 + root_node.right.as_ref().expect("unexpected null node #4").center_of_mass.0) / 2.0;
+        let center_of_mass_y = (root_node.left.as_ref().expect("unexpected null node #2").center_of_mass.1 + root_node.right.as_ref().expect("unexpected null node #5").center_of_mass.1) / 2.0;
+        let center_of_mass_z = (root_node.left.as_ref().expect("unexpected null node #3").center_of_mass.2 + root_node.right.as_ref().expect("unexpected null node #6").center_of_mass.2) / 2.0;
+        root_node.center_of_mass = (center_of_mass_x, center_of_mass_y, center_of_mass_z);
         return root_node;
     }
 }
@@ -376,14 +381,14 @@ fn go_to_edges(kdtree: KDTree) {
     let mut node2 = node.clone();
     while node.left.is_some() {
         count_of_nodes = count_of_nodes + 1;
-        node = node.left.expect("unexpected null node\n");
+        node = node.left.expect("unexpected null node #1\n");
     }
     println!("number of nodes on left: {}\n", count_of_nodes);
     assert!(count_of_nodes == 14);
     count_of_nodes = 0;
     while node2.right.is_some() {
         count_of_nodes = count_of_nodes + 1;
-        node2 = node2.right.expect("unexpected null node\n");
+        node2 = node2.right.expect("unexpected null node #2\n");
     }
     println!("number of nodes on right: {}\n", count_of_nodes);
     assert!(count_of_nodes == 15);
