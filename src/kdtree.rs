@@ -12,7 +12,7 @@ impl Dimension {
             &Dimension::X => return "X",
             &Dimension::Y => return "Y",
             &Dimension::Z => return "Z",
-            _ => return "Null",
+            _             => return "Null",
         };
     }
 }
@@ -28,18 +28,7 @@ pub struct Particle {
     pub mass: f64,
 }
 impl Particle {
-    //    pub fn clone(&self) -> Particle {
-    // return Particle {
-    // vx: self.vx,
-    // vy: self.vy,
-    // vz: self.vz,
-    // x: self.x,
-    // y: self.y,
-    // z: self.z,
-    // };
-    // }
     pub fn random_particle() -> Particle {
-        let rng = rand::thread_rng();
         return Particle {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
@@ -55,15 +44,16 @@ impl Particle {
 }
 #[derive(Clone)]
 pub struct Node {
-    split_dimension: Dimension, // Dimension that this node splits at.
-    split_value: f64, // Value that this node splits at.
-    left: Option<Box<Node>>, // Left subtree.
-    right: Option<Box<Node>>, // Right subtree.
-    points: Option<Vec<Particle>>, // Vector of the points if this node is a Leaf.
-    center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all together. (x, y, z). */
-    total_mass: f64, // Total mass of all particles under this node.
-    r_max: f64, // Maximum radius that is a child of this node.
+    split_dimension: Dimension,      // Dimension that this node splits at.
+    split_value: f64,                // Value that this node splits at.
+    left: Option<Box<Node>>,         // Left subtree.
+    right: Option<Box<Node>>,        // Right subtree.
+    points: Option<Vec<Particle>>,   // Vector of the points if this node is a Leaf.
+    center_of_mass: (f64, f64, f64), // The center of mass for this node and it's children all together. (x, y, z). 
+    total_mass: f64,                 // Total mass of all particles under this node.
+    r_max: f64,                      // Maximum radius that is a child of this node.
 }
+
 impl Node {
     fn new() -> Node {
         return Node {
@@ -248,12 +238,10 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
                                         .expect("unexpected null node #8")
                                         .total_mass;
         // TODO refactor the next two lines, as they are a bit ugly
-        root_node.r_max = if root_node.left.as_ref().expect("unexpected null node #9").r_max >
-                             root_node.right.as_ref().expect("unexpected null node #10").r_max {
-            root_node.left.as_ref().expect("unexpected null node #9").r_max
-        } else {
-            root_node.right.as_ref().expect("unexpected null node #10").r_max
-        };
+        let left_r_max = root_node.left.as_ref().expect("unexpected null node #9").r_max;
+        let right_r_max =  root_node.right.as_ref().expect("unexpected null node #10").r_max; 
+        let max_r_max = f64::max(left_r_max, right_r_max);
+        root_node.r_max = max_r_max;
         return root_node;
     }
 }
@@ -385,7 +373,6 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
-    let rng = rand::thread_rng();
     let mut vec_that_wants_to_be_a_kdtree: Vec<Particle> = Vec::new();
     for x in 0..100 {
         for y in 0..100 {
