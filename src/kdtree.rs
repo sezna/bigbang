@@ -146,9 +146,17 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
         let mut root_node = Node::new();
+        let mut count = 0;
+        let (mut x_total, mut y_total, mut z_total) = (0.0, 0.0, 0.0);
+        for point in &pts {
+            x_total = x_total + point.x;
+            y_total = y_total + point.y;
+            z_total = z_total + point.z;
+            count = count + 1;
+        }
+        root_node.center_of_mass = (x_total / count as f64, y_total / count as f64, z_total / count
+                                    as f64);
         root_node.points = Some(pts); //TODO assign com, tm, r_max
-        root_node.center_of_mass = (0.0, 0.0, 0.0); //TODO find center of mass of all of the particles in the pts vector
-
         return root_node;
         // So the objective here is to find the median value for whatever axis has the greatest
         // disparity in distance. It is more efficient to pick three random values and pick the
@@ -373,6 +381,10 @@ fn test_tree() {
    }
     let smaller_kdtree = new_kdtree(smaller_vec, 10);
     smaller_kdtree.display_tree();
+    // Testing center of mass assignment
+    let vector = vec![Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 1.0, y: 2.0, z: 3.0}, Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 2.0, y: 1.0, z: 3.0}];
+    let center_of_mass_test = new_kdtree(vector, 2);
+    assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
 
 fn go_to_edges(kdtree: KDTree) {
