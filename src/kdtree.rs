@@ -24,9 +24,11 @@ pub struct Particle {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+    pub radius: f64,
+    pub mass: f64,
 }
 impl Particle {
-    pub fn clone(&self) -> Particle {
+/*    pub fn clone(&self) -> Particle {
         return Particle {
             vx: self.vx,
             vy: self.vy,
@@ -35,7 +37,7 @@ impl Particle {
             y: self.y,
             z: self.z,
         };
-    }
+    }*/
     pub fn random_particle() -> Particle {
         let mut rng = rand::thread_rng();
         return Particle {
@@ -45,6 +47,8 @@ impl Particle {
             x:  rand::random::<f64>(),
             y:  rand::random::<f64>(),
             z:  rand::random::<f64>(),
+            radius: rand::random::<f64>(),
+            mass: rand::random::<f64>(),
         }
 
     }
@@ -146,17 +150,26 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
         let mut root_node = Node::new();
+        // Here we calculate the center of mass and total mass for each axis and store it as a three-tuple.
         let mut count = 0;
+        let mut total_mass = 0.0;
+        let mut max_radius = 0.0;
         let (mut x_total, mut y_total, mut z_total) = (0.0, 0.0, 0.0);
         for point in &pts {
             x_total = x_total + point.x;
             y_total = y_total + point.y;
             z_total = z_total + point.z;
+            total_mass = total_mass + point.mass;
+            if point.radius > max_radius {
+                max_radius = point.radius;
+            }
             count = count + 1;
         }
         root_node.center_of_mass = (x_total / count as f64, y_total / count as f64, z_total / count
                                     as f64);
-        root_node.points = Some(pts); //TODO assign com, tm, r_max
+        root_node.total_mass = total_mass;
+        root_node.r_max = max_radius;
+        root_node.points = Some(pts); //TODO assign r_max
         return root_node;
         // So the objective here is to find the median value for whatever axis has the greatest
         // disparity in distance. It is more efficient to pick three random values and pick the
@@ -164,7 +177,6 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         // Otherwise, it picks the first element. FindMiddle just returns the middle value of the
         // three f64's given to it.
     } else {
-
         let mut root_node = Node::new();
         let split_index;
         let mid = (start + end) / 2 as usize; //TODO assign com, tm, r_max
@@ -190,29 +202,19 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
             root_node.split_dimension = Dimension::X;
             root_node.split_value = split_value;
         }
-        // i should split the vec here, and pass that in instead.
         let upper_vec = pts.split_off(split_index);
-        pts.shrink_to_fit();
-/*
-        println!("points going to right-hand side(length: {}): \n",
-                 upper_vec.len());
-        for i in 0..upper_vec.len() {
-            println!("x: {}, y: {}, z: {}\n",
-                     upper_vec[i].x,
-                     upper_vec[i].y,
-                     upper_vec[i].z);
-        }
-        println!("points going to left-hand side(length: {}): \n", pts.len());
-        for i in 0..pts.len() {
-            println!("x: {}, y: {}, z: {}\n", pts[i].x, pts[i].y, pts[i].z);
-        }
-*/
+        pts.shrink_to_fit(); // Memory efficiency!
         root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
         root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
+        // The center of mass is a recursive definition. This finds the average COM for each node.
         let center_of_mass_x = (root_node.left.as_ref().expect("unexpected null node #1 ").center_of_mass.0 + root_node.right.as_ref().expect("unexpected null node #4").center_of_mass.0) / 2.0;
         let center_of_mass_y = (root_node.left.as_ref().expect("unexpected null node #2").center_of_mass.1 + root_node.right.as_ref().expect("unexpected null node #5").center_of_mass.1) / 2.0;
         let center_of_mass_z = (root_node.left.as_ref().expect("unexpected null node #3").center_of_mass.2 + root_node.right.as_ref().expect("unexpected null node #6").center_of_mass.2) / 2.0;
         root_node.center_of_mass = (center_of_mass_x, center_of_mass_y, center_of_mass_z);
+        root_node.total_mass = root_node.left.as_ref().expect("unexpected null node #7").total_mass + root_node.right.as_ref().expect("unexpected null node #8").total_mass;
+        // TODO refactor the next two lines
+        root_node.r_max = if root_node.left.as_ref().expect("unexpected null node #9").r_max >
+            root_node.right.as_ref().expect("unexpected null node #10").r_max { root_node.left.as_ref().expect("unexpected null node #9").r_max} else  {root_node.right.as_ref().expect("unexpected null node #10").r_max};
         return root_node;
     }
 }
@@ -342,6 +344,7 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
 
 
 #[test]
+#[allow(dead_code)]
 fn test_tree() {
    let mut rng = rand::thread_rng();
    let mut vec_that_wants_to_be_a_kdtree:Vec<Particle> = Vec::new();
@@ -354,7 +357,9 @@ fn test_tree() {
                 vz: rand::random::<f64>(),
                 x: x as f64,
                 y: y as f64,
-                z: z as f64
+                z: z as f64,
+//                radius: rand::random::<f64>(),
+//                mass: rand::random::<f64>(),
                 };
                 vec_that_wants_to_be_a_kdtree.push(particle);
             }
@@ -386,7 +391,7 @@ fn test_tree() {
     let center_of_mass_test = new_kdtree(vector, 2);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
-
+#[allow(dead_code)]
 fn go_to_edges(kdtree: KDTree) {
     let mut count_of_nodes = 0;
     let mut node = kdtree.root.left.expect("null root node\n");
