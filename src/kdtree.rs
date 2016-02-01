@@ -165,11 +165,12 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
             }
             count = count + 1;
         }
+        // TODO weight center of mass by actual mass
         root_node.center_of_mass = (x_total / count as f64, y_total / count as f64, z_total / count
                                     as f64);
         root_node.total_mass = total_mass;
         root_node.r_max = max_radius;
-        root_node.points = Some(pts); //TODO assign r_max
+        root_node.points = Some(pts);
         return root_node;
         // So the objective here is to find the median value for whatever axis has the greatest
         // disparity in distance. It is more efficient to pick three random values and pick the
@@ -179,7 +180,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     } else {
         let mut root_node = Node::new();
         let split_index;
-        let mid = (start + end) / 2 as usize; //TODO assign com, tm, r_max
+        let mid = (start + end) / 2 as usize; 
         if zdistance > ydistance && zdistance > xdistance {
             // "If the z distance is the greatest"
             // split on Z
@@ -212,7 +213,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         let center_of_mass_z = (root_node.left.as_ref().expect("unexpected null node #3").center_of_mass.2 + root_node.right.as_ref().expect("unexpected null node #6").center_of_mass.2) / 2.0;
         root_node.center_of_mass = (center_of_mass_x, center_of_mass_y, center_of_mass_z);
         root_node.total_mass = root_node.left.as_ref().expect("unexpected null node #7").total_mass + root_node.right.as_ref().expect("unexpected null node #8").total_mass;
-        // TODO refactor the next two lines
+        // TODO refactor the next two lines, as they are a bit ugly
         root_node.r_max = if root_node.left.as_ref().expect("unexpected null node #9").r_max >
             root_node.right.as_ref().expect("unexpected null node #10").r_max { root_node.left.as_ref().expect("unexpected null node #9").r_max} else  {root_node.right.as_ref().expect("unexpected null node #10").r_max};
         return root_node;
@@ -358,8 +359,8 @@ fn test_tree() {
                 x: x as f64,
                 y: y as f64,
                 z: z as f64,
-//                radius: rand::random::<f64>(),
-//                mass: rand::random::<f64>(),
+                radius: rand::random::<f64>(),
+                mass: rand::random::<f64>(),
                 };
                 vec_that_wants_to_be_a_kdtree.push(particle);
             }
@@ -381,13 +382,15 @@ fn test_tree() {
                 x: rand::random::<f64>(),
                 y: rand::random::<f64>(),
                 z: rand::random::<f64>(),
+                mass: rand::random::<f64>(),
+                radius: rand::random::<f64>(),
                 };
                 smaller_vec.push(particle);
    }
     let smaller_kdtree = new_kdtree(smaller_vec, 10);
     smaller_kdtree.display_tree();
     // Testing center of mass assignment
-    let vector = vec![Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 1.0, y: 2.0, z: 3.0}, Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 2.0, y: 1.0, z: 3.0}];
+    let vector = vec![Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 1.0, y: 2.0, z: 3.0, mass: 2.0, radius: 1.0}, Particle{vx: 0.0, vy: 0.0, vz: 0.0, x: 2.0, y: 1.0, z: 3.0, mass: 2.0, radius: 1.0}];
     let center_of_mass_test = new_kdtree(vector, 2);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
