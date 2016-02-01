@@ -39,7 +39,7 @@ impl Particle {
         };
     }*/
     pub fn random_particle() -> Particle {
-        let mut rng = rand::thread_rng();
+        let rng = rand::thread_rng();
         return Particle {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
@@ -97,8 +97,8 @@ impl Node {
     }
     // Thank you Steve Klabnik for your help with this function.
         fn display_tree_helper(node: &Node, level: i32) -> Vec<(Dimension, f64, i32)> {
-        let mut dim = node.split_dimension.clone();
-        let mut split_val = node.split_value;
+        let dim = node.split_dimension.clone();
+        let split_val = node.split_value;
         let mut to_return:Vec<(Dimension, f64, i32)> = vec![(dim, split_val, level)];
         match node.left {
             Some(ref node) => {
@@ -347,21 +347,12 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
-   let mut rng = rand::thread_rng();
+   let rng = rand::thread_rng();
    let mut vec_that_wants_to_be_a_kdtree:Vec<Particle> = Vec::new();
    for x in 0..100 {
         for y in 0..100 {
             for z in 0..10 {
-                let particle = Particle{
-                vx: rand::random::<f64>(),
-                vy: rand::random::<f64>(),
-                vz: rand::random::<f64>(),
-                x: x as f64,
-                y: y as f64,
-                z: z as f64,
-                radius: rand::random::<f64>(),
-                mass: rand::random::<f64>(),
-                };
+                let particle = Particle::random_particle();
                 vec_that_wants_to_be_a_kdtree.push(particle);
             }
         }
@@ -375,16 +366,7 @@ fn test_tree() {
    let mut smaller_vec:Vec<Particle> = Vec::new();
    println!("displaying a smaller tree\n");
             for z in 0..50 {
-                let particle = Particle{
-                vx: rand::random::<f64>(),
-                vy: rand::random::<f64>(),
-                vz: rand::random::<f64>(),
-                x: rand::random::<f64>(),
-                y: rand::random::<f64>(),
-                z: rand::random::<f64>(),
-                mass: rand::random::<f64>(),
-                radius: rand::random::<f64>(),
-                };
+                let particle = Particle::random_particle();
                 smaller_vec.push(particle);
    }
     let smaller_kdtree = new_kdtree(smaller_vec, 10);
