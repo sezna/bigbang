@@ -121,6 +121,9 @@ impl Node {
 //        else if not leaf, then distance check
 //
 // speed check compare the mutated accel value vs the recursive addition
+//
+
+
 pub struct KDTree {
     root: Node, // The root Node.
     number_of_particles: usize, // The number of particles in the tree.
@@ -141,6 +144,8 @@ pub fn new_kdtree(pts: Vec<Particle>, max_pts: i32) -> KDTree {
 }
 fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
+    // Should this function recurse by splitting the vectors, or by
+    // passing pointers to areas in the vector without mutating it?
     let start = 0 as usize;
     let end = pts.len();
     let length_of_points = pts.len() as i32;
@@ -167,7 +172,6 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
             }
             count = count + 1;
         }
-        // TODO weight center of mass by actual mass
         root_node.center_of_mass = (x_total / total_mass as f64,
                                     y_total / total_mass as f64,
                                     z_total / total_mass as f64);
@@ -179,7 +183,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         // disparity in distance. It is more efficient to pick three random values and pick the
         // median of those as the pivot point, so that is done if the vector has enough points.
         // Otherwise, it picks the first element. FindMiddle just returns the middle value of the
-        // three f64's given to it.
+        // three f64's given to it. Hopefully there is a more idomatic way to do this.
     } else {
         let mut root_node = Node::new();
         let split_index;
@@ -242,10 +246,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
 }
 
 
-// The following three functions just return a tuple of the maximum and minimum
-// values in the
-// dimensions. Perhaps it could use a refactor, as there is a lot of copied
-// code.
+// The following three functions just return a tuple of the maximum
+// and minimum values in the dimensions. Perhaps it could use a
+// refactor, as there is a lot of copied code.
 fn max_min_x(particles: &Vec<Particle>) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].x;
