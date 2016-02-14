@@ -1,4 +1,5 @@
 extern crate rand;
+const theta: f64 = 0.2;
 #[derive(Clone, PartialEq)]
 enum Dimension {
     X,
@@ -62,12 +63,11 @@ impl Node {
             left: None,
             right: None,
             points: None,
-            center_of_mass: (0.0, 0.0, 0.0),
+            center_of_mass: (0.0, 0.0, 0.0), // (pos * mass) + (pos * mass) / sum of masses
             total_mass: 0.0,
             r_max: 0.0,
         };
     }
-
 
     pub fn display_tree(&self) {
         let mut to_display = Node::display_tree_helper(self, 0);
@@ -97,7 +97,6 @@ impl Node {
             }
             None => (),
         }
-
         match node.right {
             Some(ref node) => {
                 let mut tmp_vec = Node::display_tree_helper(node, level + 1);
@@ -108,6 +107,20 @@ impl Node {
         to_return
     }
 }
+// pub fn that takes in a particle and then returns an acceleration
+// delta p vector is equal to position of particle minus center of mass
+// 1) distance from particle to COM of that node
+// 2) if 1) * theta > size (max diff) then
+//      return delta p vector times (m_i * m_cm) / *delta p) ^ 3
+//    else if leaf node then
+//      loop through particles, summing acceleration
+//      else if not leaf node
+//          recurse to left and right
+//
+// 2 new) if leaf, loop through contents
+//        else if not leaf, then distance check
+//
+// speed check compare the mutated accel value vs the recursive addition
 pub struct KDTree {
     root: Node, // The root Node.
     number_of_particles: usize, // The number of particles in the tree.
@@ -145,9 +158,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         let mut max_radius = 0.0;
         let (mut x_total, mut y_total, mut z_total) = (0.0, 0.0, 0.0);
         for point in &pts {
-            x_total = x_total + point.x;
-            y_total = y_total + point.y;
-            z_total = z_total + point.z;
+            x_total = x_total + (point.x * point.mass); // add up the vector and weight it by mass
+            y_total = y_total + (point.y * point.mass);
+            z_total = z_total + (point.z * point.mass);
             total_mass = total_mass + point.mass;
             if point.radius > max_radius {
                 max_radius = point.radius;
@@ -155,9 +168,9 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
             count = count + 1;
         }
         // TODO weight center of mass by actual mass
-        root_node.center_of_mass = (x_total / count as f64,
-                                    y_total / count as f64,
-                                    z_total / count as f64);
+        root_node.center_of_mass = (x_total / total_mass as f64,
+                                    y_total / total_mass as f64,
+                                    z_total / total_mass as f64);
         root_node.total_mass = total_mass;
         root_node.r_max = max_radius;
         root_node.points = Some(pts);
@@ -198,45 +211,27 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
         root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
         // The center of mass is a recursive definition. This finds the average COM for each node.
-        let center_of_mass_x = (root_node.left
-                                         .as_ref()
-                                         .expect("unexpected null node #1 ")
-                                         .center_of_mass
-                                         .0 +
-                                root_node.right
-                                         .as_ref()
-                                         .expect("unexpected null node #4")
-                                         .center_of_mass
-                                         .0) / 2.0;
-        let center_of_mass_y = (root_node.left
-                                         .as_ref()
-                                         .expect("unexpected null node #2")
-                                         .center_of_mass
-                                         .1 +
-                                root_node.right
-                                         .as_ref()
-                                         .expect("unexpected null node #5")
-                                         .center_of_mass
-                                         .1) / 2.0;
-        let center_of_mass_z = (root_node.left
-                                         .as_ref()
-                                         .expect("unexpected null node #3")
-                                         .center_of_mass
-                                         .2 +
-                                root_node.right
-                                         .as_ref()
-                                         .expect("unexpected null node #6")
-                                         .center_of_mass
-                                         .2) / 2.0;
-        root_node.center_of_mass = (center_of_mass_x, center_of_mass_y, center_of_mass_z);
-        root_node.total_mass = root_node.left
-                                        .as_ref()
-                                        .expect("unexpected null node #7")
-                                        .total_mass +
-                               root_node.right
-                                        .as_ref()
-                                        .expect("unexpected null node #8")
-                                        .total_mass;
+        let left_mass = root_node.left
+                                 .as_ref()
+                                 .expect("unexpected null node #1")
+                                 .total_mass;
+        let right_mass = root_node.right
+                                  .as_ref()
+                                  .expect("unexpected null node #2")
+                                  .total_mass; //TODO finish this refactor
+        let (left_x, left_y, left_z) = root_node.left
+                                                .as_ref()
+                                                .expect("unexpected null node #3")
+                                                .center_of_mass;
+        let (right_x, right_y, right_z) = root_node.right
+                                                   .as_ref()
+                                                   .expect("unexpected null node #4")
+                                                   .center_of_mass;
+        let total_mass = left_mass + right_mass;
+        let (center_x, center_y, center_z) = (((left_mass * left_x) + (right_mass * right_x)) / total_mass,
+                                              ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
+                                              ((left_mass * left_z) + (right_mass * right_z)) / total_mass);
+        root_node.center_of_mass = (center_x, center_y, center_z);
         // TODO refactor the next two lines, as they are a bit ugly
         let left_r_max = root_node.left.as_ref().expect("unexpected null node #9").r_max;
         let right_r_max =  root_node.right.as_ref().expect("unexpected null node #10").r_max; 
