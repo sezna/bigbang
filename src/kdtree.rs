@@ -13,8 +13,8 @@ impl Dimension {
             &Dimension::X => return "X",
             &Dimension::Y => return "Y",
             &Dimension::Z => return "Z",
-            _             => return "Null",
-        };
+            _ => return "Null",
+        }
     }
 }
 #[derive(Clone)]
@@ -50,7 +50,8 @@ pub struct Node {
     left: Option<Box<Node>>,         // Left subtree.
     right: Option<Box<Node>>,        // Right subtree.
     points: Option<Vec<Particle>>,   // Vector of the points if this node is a Leaf.
-    center_of_mass: (f64, f64, f64), // The center of mass for this node and it's children all together. (x, y, z). 
+    center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
+                                      * together. (x, y, z). */
     total_mass: f64,                 // Total mass of all particles under this node.
     r_max: f64,                      // Maximum radius that is a child of this node.
 }
@@ -111,7 +112,7 @@ impl Node {
 // delta p vector is equal to position of particle minus center of mass
 // 1) distance from particle to COM of that node
 // 2) if 1) * theta > size (max diff) then
-//      return delta p vector times (m_i * m_cm) / *delta p) ^ 3
+//      return delta p vector times (m_i * m_com) / (delta p) ^ 3
 //    else if leaf node then
 //      loop through particles, summing acceleration
 //      else if not leaf node
@@ -142,6 +143,15 @@ pub fn new_kdtree(pts: Vec<Particle>, max_pts: i32) -> KDTree {
         max_points: max_pts,
     };
 }
+pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO
+    let mut father_node = Some(Box::new(tree.root));
+    while father_node.is_some() { // Iterate through the tree until a leaf is reached.
+        
+    }
+    return new_kdtree(vec![Particle::random_particle()], 2);
+}
+
+
 fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
     // Should this function recurse by splitting the vectors, or by
@@ -157,7 +167,8 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
         let mut root_node = Node::new();
-        // Here we calculate the center of mass and total mass for each axis and store it as a three-tuple.
+        // Here we calculate the center of mass and total mass for each axis and store
+        // it as a three-tuple.
         let mut count = 0;
         let mut total_mass = 0.0;
         let mut max_radius = 0.0;
@@ -179,10 +190,14 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         root_node.r_max = max_radius;
         root_node.points = Some(pts);
         return root_node;
-        // So the objective here is to find the median value for whatever axis has the greatest
-        // disparity in distance. It is more efficient to pick three random values and pick the
-        // median of those as the pivot point, so that is done if the vector has enough points.
-        // Otherwise, it picks the first element. FindMiddle just returns the middle value of the
+        // So the objective here is to find the median value for whatever axis has the
+        // greatest
+        // disparity in distance. It is more efficient to pick three random values and
+        // pick the
+        // median of those as the pivot point, so that is done if the vector has enough
+        // points.
+        // Otherwise, it picks the first element. FindMiddle just returns the middle
+        // value of the
         // three f64's given to it. Hopefully there is a more idomatic way to do this.
     } else {
         let mut root_node = Node::new();
@@ -214,7 +229,8 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         pts.shrink_to_fit(); // Memory efficiency!
         root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
         root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
-        // The center of mass is a recursive definition. This finds the average COM for each node.
+        // The center of mass is a recursive definition. This finds the average COM for
+        // each node.
         let left_mass = root_node.left
                                  .as_ref()
                                  .expect("unexpected null node #1")
@@ -222,7 +238,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         let right_mass = root_node.right
                                   .as_ref()
                                   .expect("unexpected null node #2")
-                                  .total_mass; //TODO finish this refactor
+                                  .total_mass;
         let (left_x, left_y, left_z) = root_node.left
                                                 .as_ref()
                                                 .expect("unexpected null node #3")
@@ -232,13 +248,16 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
                                                    .expect("unexpected null node #4")
                                                    .center_of_mass;
         let total_mass = left_mass + right_mass;
-        let (center_x, center_y, center_z) = (((left_mass * left_x) + (right_mass * right_x)) / total_mass,
-                                              ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
-                                              ((left_mass * left_z) + (right_mass * right_z)) / total_mass);
+        let (center_x, center_y, center_z) = (((left_mass * left_x) + (right_mass * right_x)) /
+                                              total_mass,
+                                              ((left_mass * left_y) + (right_mass * right_y)) /
+                                              total_mass,
+                                              ((left_mass * left_z) + (right_mass * right_z)) /
+                                              total_mass);
         root_node.center_of_mass = (center_x, center_y, center_z);
         // TODO refactor the next two lines, as they are a bit ugly
         let left_r_max = root_node.left.as_ref().expect("unexpected null node #9").r_max;
-        let right_r_max =  root_node.right.as_ref().expect("unexpected null node #10").r_max; 
+        let right_r_max = root_node.right.as_ref().expect("unexpected null node #10").r_max;
         let max_r_max = f64::max(left_r_max, right_r_max);
         root_node.r_max = max_r_max;
         return root_node;
@@ -262,6 +281,7 @@ fn max_min_x(particles: &Vec<Particle>) -> (f64, f64) {
     }
     return (to_return_max, to_return_min);
 }
+
 fn max_min_y(particles: &Vec<Particle>) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].y;
