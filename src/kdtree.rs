@@ -69,7 +69,6 @@ impl Node {
             r_max: 0.0,
         };
     }
-
     pub fn display_tree(&self) {
         let mut to_display = Node::display_tree_helper(self, 0);
         to_display.sort_by(|a, b| (a.2).cmp(&b.2));
@@ -387,6 +386,26 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
 }
 
 
+pub fn traverse_tree(tree:KDTree) {
+		
+
+}
+// Traverses tree and returns first child found with points. 
+pub fn traverse_tree_helper(node: &Node) -> &Vec<Particle> {
+	match node.left {
+		Some(ref node) => {
+			return traverse_tree_helper(node);
+		}
+		None => (),
+	}
+	match node.right {
+		Some(ref node) => {
+			return traverse_tree_helper(node);
+		}
+		None => (),
+}
+	return node.points.as_ref().expect("unexpected null vector of points");
+}
 
 #[test]
 #[allow(dead_code)]
