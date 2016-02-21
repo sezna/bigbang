@@ -17,7 +17,7 @@ impl Dimension {
         }
     }
 }
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Particle {
     pub vx: f64,
     pub vy: f64,
@@ -386,27 +386,63 @@ fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> 
 }
 
 
-pub fn traverse_tree(tree:KDTree) {
-		
-
-}
-// Traverses tree and returns first child found with points. 
-pub fn traverse_tree_helper(node: &Node) -> &Vec<Particle> {
+pub fn traverse_tree(tree:KDTree) -> Vec<Particle>{
+	let node = tree.root;
+	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {
 		Some(ref node) => {
-			return traverse_tree_helper(node);
+		     to_return.append(&mut traverse_tree_helper(node));
 		}
 		None => (),
 	}
 	match node.right {
 		Some(ref node) => {
-			return traverse_tree_helper(node);
+		    to_return.append(&mut traverse_tree_helper(node));
 		}
 		None => (),
-}
-	return node.points.as_ref().expect("unexpected null vector of points");
-}
+    }
+    return to_return;
+//	return node.points.as_ref().expect("unexpected null vector of points");
 
+}
+// Traverses tree and returns first child found with points. 
+pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
+    let mut to_return:Vec<Particle> = Vec::new();
+	match node.left {
+		Some(ref node) => {
+		     to_return.append(&mut traverse_tree_helper(node));
+		}
+		None => (),
+	}
+	match node.right {
+		Some(ref node) => {
+		    to_return.append(&mut traverse_tree_helper(node));
+		}
+		None => (),
+    }
+    return to_return;
+} /*
+#[test]
+fn test_traversal() {
+    let mut vec:Vec<Particle> = Vec::new();
+    for x in 0..100 {
+                let particle = Particle::random_particle();
+                vec.push(particle);
+    }
+    let vec_clone = vec.clone();
+    let tree = new_kdtree(&mut vec, 2);
+    let traversed_vec = traverse_tree(tree);
+    let mut all_found = true; 
+    for i in vec_clone {
+        if !traversed_vec.contains(&i) {
+            all_found = false;
+        }
+    }
+    
+    assert!(all_found);
+
+}
+*/
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
