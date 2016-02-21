@@ -419,7 +419,7 @@ fn test_tree() {
             }
         }
     }
-    let kdtree_test = new_kdtree(vec_that_wants_to_be_a_kdtree, 3);
+    let kdtree_test = new_kdtree(&mut vec_that_wants_to_be_a_kdtree, 3);
     assert!(kdtree_test.number_of_particles == 100000);
     assert!(kdtree_test.max_points == 3);
     // kdtree_test.display_tree();
@@ -431,10 +431,10 @@ fn test_tree() {
         let particle = Particle::random_particle();
         smaller_vec.push(particle);
     }
-    let smaller_kdtree = new_kdtree(smaller_vec, 10);
+    let smaller_kdtree = new_kdtree(&mut smaller_vec, 10);
     smaller_kdtree.display_tree();
     // Testing center of mass assignment
-    let vector = vec![Particle {
+    let mut vector = vec![Particle {
                           vx: 0.0,
                           vy: 0.0,
                           vz: 0.0,
@@ -454,7 +454,7 @@ fn test_tree() {
                           mass: 2.0,
                           radius: 1.0,
                       }];
-    let center_of_mass_test = new_kdtree(vector, 2);
+    let center_of_mass_test = new_kdtree(&mut vector, 2);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
 #[allow(dead_code)]
