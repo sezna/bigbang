@@ -17,7 +17,7 @@ impl Dimension {
         }
     }
 }
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Particle {
     pub vx: f64,
     pub vy: f64,
@@ -134,7 +134,7 @@ impl KDTree {
         self.root.display_tree();
     }
 }
-pub fn new_kdtree(pts: Vec<Particle>, max_pts: i32) -> KDTree {
+pub fn new_kdtree(pts: &mut Vec<Particle>, max_pts: i32) -> KDTree {
     let size_of_vec = pts.len();
     return KDTree {
         root: new_root_node(pts, max_pts),
@@ -147,20 +147,20 @@ pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO
     while father_node.is_some() { // Iterate through the tree until a leaf is reached.
         
     }
-    return new_kdtree(vec![Particle::random_particle()], 2);
+    return new_kdtree(&mut vec![Particle::random_particle()], 2);
 }
 
 
-fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
+fn new_root_node(pts: &mut [Particle], max_pts: i32) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
     // Should this function recurse by splitting the vectors, or by
     // passing pointers to areas in the vector without mutating it?
     let start = 0 as usize;
     let end = pts.len();
     let length_of_points = pts.len() as i32;
-    let (xmax, xmin) = max_min_x(&pts);
-    let (ymax, ymin) = max_min_y(&pts);
-    let (zmax, zmin) = max_min_z(&pts);
+    let (xmax, xmin) = max_min_x(pts);
+    let (ymax, ymin) = max_min_y(pts);
+    let (zmax, zmin) = max_min_z(pts);
     let xdistance = (xmax - xmin).abs();
     let ydistance = (ymax - ymin).abs();
     let zdistance = (zmax - zmin).abs();
@@ -172,7 +172,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         let mut total_mass = 0.0;
         let mut max_radius = 0.0;
         let (mut x_total, mut y_total, mut z_total) = (0.0, 0.0, 0.0);
-        for point in &pts {
+        for point in pts.iter() {
             x_total = x_total + (point.x * point.mass); // add up the vector and weight it by mass
             y_total = y_total + (point.y * point.mass);
             z_total = z_total + (point.z * point.mass);
@@ -187,7 +187,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
                                     z_total / total_mass as f64);
         root_node.total_mass = total_mass;
         root_node.r_max = max_radius;
-        root_node.points = Some(pts);
+        root_node.points = Some(pts.to_vec());
         return root_node;
         // So the objective here is to find the median value for whatever axis has the
         // greatest
@@ -205,29 +205,29 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
         if zdistance > ydistance && zdistance > xdistance {
             // "If the z distance is the greatest"
             // split on Z
-            let (split_value, tmp) = find_median_z(&mut pts, start, end, mid);
+            let (split_value, tmp) = find_median_z(pts, start, end, mid);
             split_index = tmp;
             root_node.split_dimension = Dimension::Z;
             root_node.split_value = split_value;
         } else if ydistance > xdistance && ydistance > zdistance {
             // "If the x distance is the greatest"
             // split on Y
-            let (split_value, tmp) = find_median_y(&mut pts, start, end, mid);
+            let (split_value, tmp) = find_median_y(pts, start, end, mid);
             split_index = tmp;
             root_node.split_dimension = Dimension::Y;
             root_node.split_value - split_value;
         } else {
             // "If the y distance is the greatest"
             // split on X
-            let (split_value, tmp) = find_median_x(&mut pts, start, end, mid);
+            let (split_value, tmp) = find_median_x(pts, start, end, mid);
             split_index = tmp;
             root_node.split_dimension = Dimension::X;
             root_node.split_value = split_value;
         }
-        let upper_vec = pts.split_off(split_index);
-        pts.shrink_to_fit(); // Memory efficiency!
-        root_node.left = Some(Box::new(new_root_node(pts, max_pts)));
-        root_node.right = Some(Box::new(new_root_node(upper_vec, max_pts)));
+        let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
+//        pts.shrink_to_fit(); // Memory efficiency!
+        root_node.left = Some(Box::new(new_root_node(&mut lower_vec, max_pts)));
+        root_node.right = Some(Box::new(new_root_node(&mut upper_vec, max_pts)));
         // The center of mass is a recursive definition. This finds the average COM for
         // each node.
         let left_mass = root_node.left
@@ -267,7 +267,7 @@ fn new_root_node(mut pts: Vec<Particle>, max_pts: i32) -> Node {
 // The following three functions just return a tuple of the maximum
 // and minimum values in the dimensions. Perhaps it could use a
 // refactor, as there is a lot of copied code.
-fn max_min_x(particles: &Vec<Particle>) -> (f64, f64) {
+fn max_min_x(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].x;
     for i in particles {
@@ -281,7 +281,7 @@ fn max_min_x(particles: &Vec<Particle>) -> (f64, f64) {
     return (to_return_max, to_return_min);
 }
 
-fn max_min_y(particles: &Vec<Particle>) -> (f64, f64) {
+fn max_min_y(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].y;
     for i in particles {
@@ -295,7 +295,7 @@ fn max_min_y(particles: &Vec<Particle>) -> (f64, f64) {
     return (to_return_max, to_return_min);
 }
 
-fn max_min_z(particles: &Vec<Particle>) -> (f64, f64) {
+fn max_min_z(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].z;
     for i in particles {
@@ -312,7 +312,7 @@ fn max_min_z(particles: &Vec<Particle>) -> (f64, f64) {
 // dimension. Perhaps it could use a refactor, because there is a lot of copied
 // code. They return a tuple of the value being split at and the index being
 // split at.
-fn find_median_z(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) -> (f64, usize) {
+fn find_median_z(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
@@ -336,7 +336,7 @@ fn find_median_z(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
         return find_median_z(pts, start, high, mid);
     }
 }
-fn find_median_y(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) -> (f64, usize) {
+fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
@@ -360,7 +360,7 @@ fn find_median_y(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
         return find_median_y(pts, start, high, mid);
     }
 }
-fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) -> (f64, usize) {
+fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
@@ -386,27 +386,63 @@ fn find_median_x(pts: &mut Vec<Particle>, start: usize, end: usize, mid: usize) 
 }
 
 
-pub fn traverse_tree(tree:KDTree) {
-		
-
-}
-// Traverses tree and returns first child found with points. 
-pub fn traverse_tree_helper(node: &Node) -> &Vec<Particle> {
+pub fn traverse_tree(tree:KDTree) -> Vec<Particle>{
+	let node = tree.root;
+	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {
 		Some(ref node) => {
-			return traverse_tree_helper(node);
+		     to_return.append(&mut traverse_tree_helper(node));
 		}
 		None => (),
 	}
 	match node.right {
 		Some(ref node) => {
-			return traverse_tree_helper(node);
+		    to_return.append(&mut traverse_tree_helper(node));
 		}
 		None => (),
-}
-	return node.points.as_ref().expect("unexpected null vector of points");
-}
+    }
+    return to_return;
+//	return node.points.as_ref().expect("unexpected null vector of points");
 
+}
+// Traverses tree and returns first child found with points. 
+pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
+    let mut to_return:Vec<Particle> = Vec::new();
+	match node.left {
+		Some(ref node) => {
+		     to_return.append(&mut traverse_tree_helper(node));
+		}
+		None => (),
+	}
+	match node.right {
+		Some(ref node) => {
+		    to_return.append(&mut traverse_tree_helper(node));
+		}
+		None => (),
+    }
+    return to_return;
+} /*
+#[test]
+fn test_traversal() {
+    let mut vec:Vec<Particle> = Vec::new();
+    for x in 0..100 {
+                let particle = Particle::random_particle();
+                vec.push(particle);
+    }
+    let vec_clone = vec.clone();
+    let tree = new_kdtree(&mut vec, 2);
+    let traversed_vec = traverse_tree(tree);
+    let mut all_found = true; 
+    for i in vec_clone {
+        if !traversed_vec.contains(&i) {
+            all_found = false;
+        }
+    }
+    
+    assert!(all_found);
+
+}
+*/
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
@@ -419,7 +455,7 @@ fn test_tree() {
             }
         }
     }
-    let kdtree_test = new_kdtree(vec_that_wants_to_be_a_kdtree, 3);
+    let kdtree_test = new_kdtree(&mut vec_that_wants_to_be_a_kdtree, 3);
     assert!(kdtree_test.number_of_particles == 100000);
     assert!(kdtree_test.max_points == 3);
     // kdtree_test.display_tree();
@@ -431,10 +467,10 @@ fn test_tree() {
         let particle = Particle::random_particle();
         smaller_vec.push(particle);
     }
-    let smaller_kdtree = new_kdtree(smaller_vec, 10);
+    let smaller_kdtree = new_kdtree(&mut smaller_vec, 10);
     smaller_kdtree.display_tree();
     // Testing center of mass assignment
-    let vector = vec![Particle {
+    let mut vector = vec![Particle {
                           vx: 0.0,
                           vy: 0.0,
                           vz: 0.0,
@@ -454,7 +490,7 @@ fn test_tree() {
                           mass: 2.0,
                           radius: 1.0,
                       }];
-    let center_of_mass_test = new_kdtree(vector, 2);
+    let center_of_mass_test = new_kdtree(&mut vector, 2);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
 #[allow(dead_code)]
