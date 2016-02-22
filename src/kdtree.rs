@@ -391,15 +391,19 @@ pub fn traverse_tree(tree:KDTree) -> Vec<Particle>{
 	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {
 		Some(ref node) => {
+             println!("appended a particle left");
 		     to_return.append(&mut traverse_tree_helper(node));
 		}
 		None => (),
 	}
 	match node.right {
 		Some(ref node) => {
+            println!("appended a particlei right");
 		    to_return.append(&mut traverse_tree_helper(node));
 		}
-		None => (),
+		None => {
+            to_return.append(&mut (node.points.as_ref().expect("unexpected null node #something").clone()));
+        }
     }
     return to_return;
 //	return node.points.as_ref().expect("unexpected null vector of points");
@@ -418,10 +422,12 @@ pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
 		Some(ref node) => {
 		    to_return.append(&mut traverse_tree_helper(node));
 		}
-		None => (),
+		None => {
+            to_return.append(&mut (node.points.as_ref().expect("unexpected null node #something").clone()));
+        }
     }
     return to_return;
-} /*
+}
 #[test]
 fn test_traversal() {
     let mut vec:Vec<Particle> = Vec::new();
@@ -435,6 +441,7 @@ fn test_traversal() {
     let mut all_found = true; 
     for i in vec_clone {
         if !traversed_vec.contains(&i) {
+            println!("particle not found");
             all_found = false;
         }
     }
@@ -442,7 +449,6 @@ fn test_traversal() {
     assert!(all_found);
 
 }
-*/
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
