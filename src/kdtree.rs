@@ -1,5 +1,5 @@
 //TODO list
-//a) a function that takes in two particles and gives the force the first applies on the second
+//a) a function that takes in two particles and returns the force the first applies on the second
 //b) a function that takes in a node and a particle and returns a boolean of if the theta value is
 //   exceeded
 //c) a function that iterates over all values and returns a vector of particles after the gravity
@@ -59,6 +59,12 @@ impl Particle {
         let distance = f64::sqrt(x_dist + y_dist + z_dist);
         return distance;
     }
+    pub fn distance_vector(&self, other: &Particle) -> (f64, f64, f64) {
+        let x_dist = (other.x - self.x).powf(2.0);
+        let y_dist = (other.y - self.y).powf(2.0);
+        let z_dist = (other.z - self.z).powf(2.0);
+        return (x_dist, y_dist, z_dist);
+    }
 }
 #[derive(Clone)]
 pub struct Node {
@@ -85,6 +91,27 @@ impl Node {
             total_mass: 0.0,
             r_max: 0.0,
         };
+    }
+    pub fn iterate_over_nodes(&self) -> Vec<Node> {
+        let node = self.clone();
+        let mut to_return:Vec<Node> = vec![node.clone()];
+        match node.left {
+            Some(ref node) => {
+                let node_left = node.left.clone().expect("");
+                let unboxed_node:Node = *node_left;
+                to_return.append(&mut unboxed_node.iterate_over_nodes());
+            }
+            None => (),
+        }
+        match node.right {
+            Some(ref node) => {
+                let node_right = node.right.clone().expect("");
+                let unboxed_node:Node = *node_right;
+                to_return.append(&mut unboxed_node.iterate_over_nodes());
+            }
+            None => (),
+        }
+        return to_return;
     }
     pub fn display_tree(&self) {
         let mut to_display = Node::display_tree_helper(self, 0);
@@ -150,6 +177,10 @@ impl KDTree {
     pub fn display_tree(&self) {
         self.root.display_tree();
     }
+    pub fn iterate_over_nodes(&self) -> Vec<Node> {
+        let node = self.root.clone();
+        return node.iterate_over_nodes();
+    }
 }
 pub fn new_kdtree(pts: &mut Vec<Particle>, max_pts: i32) -> KDTree {
     let size_of_vec = pts.len();
@@ -162,20 +193,75 @@ pub fn new_kdtree(pts: &mut Vec<Particle>, max_pts: i32) -> KDTree {
 
 /// Returns a tuple of vx, vy, vz hat particle exerts on other
 /// right now just returns f in newtons
-fn gravity_force(particle: Particle, other:Particle) -> f64 {
+
+/*fn gravity_force(particle: &Particle, other:&Particle) -> f64 {
     let m_1 = particle.mass;
     let m_2 = other.mass;
     let distance = particle.distance(&other);
-    let g = 6.674e-11;
+    let g = 1;
     let force = g * (m_1 * m_2) /
                     distance.powf(2.0);
     return force;
 }
+*/
+fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
+// 1) distance from particle to COM of that node
+// 2) if 1) * theta > size (max diff) then
+    let node_as_particle = Particle {x: node.center_of_mass.0, y: node.center_of_mass.1, z:
+        node.center_of_mass.2, mass: node.total_mass, vx: 0.0, vy: 0.0, vz: 0.0, radius: 0.0}; 
+    //TODO implement node to particle function
+    let dist = particle.distance(&node_as_particle);
+    let x_max_min = max_min_x(&node.points.as_ref().expect(""));
+    let y_max_min = max_min_y(&node.points.as_ref().expect(""));
+    let z_max_min = max_min_z(&node.points.as_ref().expect(""));
+    let x_distance = (x_max_min.0 - x_max_min.1).abs();
+    let y_distance = (x_max_min.0 - x_max_min.1).abs();
+    let z_distance = (x_max_min.0 - x_max_min.1).abs();
+    let max_dist = f64::max(x_distance, f64::max(y_distance, z_distance));
+    return dist * theta  > max_dist;
+}
+
+/// Applies force to a node.
+fn get_gravitational_velocity_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { //TODO turn these forces into velocities
+    let node_as_particle = Particle {x: other.center_of_mass.0, y: other.center_of_mass.1, z:
+        other.center_of_mass.2, mass: other.total_mass, vx: 0.0, vy: 0.0, vz: 0.0, radius: 0.0}; 
+    let d_magnitude = particle.distance(&node_as_particle);
+    let d_vector = particle.distance_vector(&node_as_particle);
+    let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
+                          d_vector.1 / d_magnitude.powf(2.0),
+                          d_vector.2 / d_magnitude.powf(2.0));
+    let acceleration = (d_over_d_cubed.0 * node_as_particle.mass,
+                        d_over_d_cubed.1 * node_as_particle.mass,
+                        d_over_d_cubed.2 * node_as_particle.mass);
+    return acceleration;
+}
+fn get_gravitational_velocity_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { //TODO turn these forces into velocities
+    let d_magnitude = particle.distance(other);
+    let d_vector = particle.distance_vector(other);
+    let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
+                          d_vector.1 / d_magnitude.powf(2.0),
+                          d_vector.2 / d_magnitude.powf(2.0));
+    let acceleration = (d_over_d_cubed.0 * other.mass,
+                        d_over_d_cubed.1 * other.mass,
+                        d_over_d_cubed.2 * other.mass);
+    return acceleration;
+
+}
 
 pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO
-    let mut father_node = Some(Box::new(tree.root));
-    while father_node.is_some() { // Iterate through the tree until a leaf is reached.
-        
+    let vec = traverse_tree(&tree);
+    for particle in vec {
+        for node in tree.iterate_over_nodes() {
+            if theta_exceeded(&particle, &node) {
+                for i in traverse_tree_helper(&node){
+                    //get force on node
+                }
+            }
+                else {
+                    //recurse on children
+                }
+            }
+        //add up all the accelerations
     }
     return new_kdtree(&mut vec![Particle::random_particle()], 2);
 }
@@ -416,8 +502,8 @@ fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> 
 }
 
 
-pub fn traverse_tree(tree:KDTree) -> Vec<Particle>{
-	let node = tree.root;
+pub fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
+	let node = tree.root.clone();
 	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {
 		Some(ref node) => {
@@ -467,7 +553,7 @@ fn test_traversal() {
     }
     let vec_clone = vec.clone();
     let tree = new_kdtree(&mut vec, 2);
-    let traversed_vec = traverse_tree(tree);
+    let traversed_vec = traverse_tree(&tree);
     let mut all_found = true; 
     for i in vec_clone {
         if !traversed_vec.contains(&i) {
