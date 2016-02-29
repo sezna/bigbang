@@ -1,3 +1,10 @@
+//TODO list
+//a) a function that takes in two particles and gives the force the first applies on the second
+//b) a function that takes in a node and a particle and returns a boolean of if the theta value is
+//   exceeded
+//c) a function that iterates over all values and returns a vector of particles after the gravity
+//   has been applied
+
 extern crate rand;
 const theta: f64 = 0.2;
 #[derive(Clone, PartialEq)]
@@ -41,6 +48,16 @@ impl Particle {
             mass: rand::random::<f64>(),
         };
 
+    }
+    /// Returns the distance between the two particles
+    pub fn distance(&self, other: &Particle) -> f64 {
+        // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
+        // all dist variables  are squared
+        let x_dist = (other.x - self.x).powf(2.0);
+        let y_dist = (other.y - self.y).powf(2.0);
+        let z_dist = (other.z - self.z).powf(2.0);
+        let distance = f64::sqrt(x_dist + y_dist + z_dist);
+        return distance;
     }
 }
 #[derive(Clone)]
@@ -142,6 +159,19 @@ pub fn new_kdtree(pts: &mut Vec<Particle>, max_pts: i32) -> KDTree {
         max_points: max_pts,
     };
 }
+
+/// Returns a tuple of vx, vy, vz hat particle exerts on other
+/// right now just returns f in newtons
+fn gravity_force(particle: Particle, other:Particle) -> f64 {
+    let m_1 = particle.mass;
+    let m_2 = other.mass;
+    let distance = particle.distance(&other);
+    let g = 6.674e-11;
+    let force = g * (m_1 * m_2) /
+                    distance.powf(2.0);
+    return force;
+}
+
 pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO
     let mut father_node = Some(Box::new(tree.root));
     while father_node.is_some() { // Iterate through the tree until a leaf is reached.
