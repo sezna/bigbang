@@ -41,8 +41,7 @@ pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
 fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
 // 1) distance from particle to COM of that node
 // 2) if 1) * theta > size (max diff) then
-    let node_as_particle = Particle {x: node.center_of_mass.0, y: node.center_of_mass.1, z:
-        node.center_of_mass.2, mass: node.total_mass, vx: 0.0, vy: 0.0, vz: 0.0, radius: 0.0}; 
+    let node_as_particle = node.to_particle();
     //TODO implement node to particle function
     let dist = particle.distance(&node_as_particle);
     let x_max_min = max_min_x(&node.points.as_ref().expect(""));
@@ -56,9 +55,8 @@ fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
 }
 
 /// Applies force to a node.
-fn get_gravitational_velocity_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { //TODO turn these forces into velocities
-    let node_as_particle = Particle {x: other.center_of_mass.0, y: other.center_of_mass.1, z:
-        other.center_of_mass.2, mass: other.total_mass, vx: 0.0, vy: 0.0, vz: 0.0, radius: 0.0}; 
+fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { //TODO turn these forces into velocities
+    let node_as_particle = other.to_particle();
     let d_magnitude = particle.distance(&node_as_particle);
     let d_vector = particle.distance_vector(&node_as_particle);
     let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
@@ -69,7 +67,7 @@ fn get_gravitational_velocity_node(particle: &Particle, other: &Node) -> (f64, f
                         d_over_d_cubed.2 * node_as_particle.mass);
     return acceleration;
 }
-fn get_gravitational_velocity_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { //TODO turn these forces into velocities
+fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { //TODO turn these forces into velocities
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
     let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
@@ -92,14 +90,14 @@ pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO - avoid having three copie
             if theta_exceeded(&particle, &node) { // If the theta value has been exceeded, take the
                                                   // acceleration from the node. Else, if there are
                                                   // particles, go through those particles.
-                    tmp_accel = get_gravitational_velocity_node(&particle, &node);
+                    tmp_accel = get_gravitational_acceleration_node(&particle, &node);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;
                 }
             else if node.points.is_some(){
                 for i in node.points.expect("") {
-                    tmp_accel = get_gravitational_velocity_particle(&particle, &i);
+                    tmp_accel = get_gravitational_acceleration_particle(&particle, &i);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;

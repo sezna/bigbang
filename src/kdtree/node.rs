@@ -26,6 +26,18 @@ impl Node {
             r_max: 0.0,
         };
     }
+    pub fn to_particle(&self) -> Particle {
+        return Particle {
+            x: self.center_of_mass.0,
+            y: self.center_of_mass.1,
+            z: self.center_of_mass.2,
+            vx: 0.0,
+            vy: 0.0,
+            vz: 0.0,
+            mass: self.total_mass,
+            radius: 0.0,
+        };
+    }
     pub fn iterate_over_nodes(&self) -> Vec<Node> {
         let node = self.clone();
         let mut to_return:Vec<Node> = vec![node.clone()];
