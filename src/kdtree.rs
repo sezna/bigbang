@@ -254,11 +254,13 @@ pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO
         for node in tree.iterate_over_nodes() {
             if theta_exceeded(&particle, &node) {
                 for i in traverse_tree_helper(&node){
+                    let acceleration = get_gravitational_velocity_node(&particle, node);
                     //get force on node
                 }
             }
                 else {
                     //recurse on children
+                    
                 }
             }
         //add up all the accelerations
