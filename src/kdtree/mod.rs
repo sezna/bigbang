@@ -110,8 +110,19 @@ pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO - avoid having three copie
     return new_kdtree(&mut return_vec);
 }
 
-/// Returns the particle after it has had gravity from the tree applied to it.
-fn particle_gravity(node: &Node, particle: &Particle) -> Particle {
+// TODO
+/*
+fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
+    let acceleration = particle_gravity(node, particle, 0.0);
+    let movement = (acceleration.0 * time_step,
+                    acceleration.1 * time_step,
+                    acceleration.2 * time_step);
+    return Particle { vx: particle.x + movement.0, y: 
+}
+*/
+/// Returns the acceleration of a particle  after it has had gravity from the tree applied to it.
+fn particle_gravity(node: &Node, particle: &Particle, acceleration_total: (f64, f64, f64)) -> (f64, f64, f64) {
+    let mut acceleration = acceleration_total.clone();
 	match node.left {
 		Some(ref node) => {
 		    if theta_exceeded(&particle, &node) {  //TODO
@@ -121,27 +132,53 @@ fn particle_gravity(node: &Node, particle: &Particle) -> Particle {
                     acceleration.2 = acceleration.2 + tmp_accel.2;
             }
             else if node.points.is_some() {
-                for i in node.points.expect("") {
-                    tmp_accel - get_gravitational_acceleration_particle(&particle, &node);
+                let mut tmp_accel = (0.0, 0.0, 0.0);
+                for i in node.points.as_ref().expect("") {
+                    tmp_accel =  get_gravitational_acceleration_particle(particle, i);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;
                 }
             }
-		}
+            else {
+                    let tmp_accel =  particle_gravity(&node, &particle, acceleration);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
+        }
 
 		None => (),
 	}
 	match node.right {
 		Some(ref node) => {
-            println!("appended a particlei right");
-		    to_return.append(&mut traverse_tree_helper(node));
-		}
-		None => {
-            to_return.append(&mut (node.points.as_ref().expect("unexpected null node #something").clone()));
+		    if theta_exceeded(&particle, &node) {  //TODO
+                    let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+		    }
+            else if node.points.is_some() {
+                let mut tmp_accel = (0.0,0.0,0.0);
+                for i in node.points.as_ref().expect("") {
+                    tmp_accel =  get_gravitational_acceleration_particle(&particle, i);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+                }
+            }
+            else {
+                    let tmp_accel =  particle_gravity(&node, &particle, acceleration);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
         }
+		None => (),
     }
-    return to_return;
+    return (acceleration_total.0 + acceleration.0,
+            acceleration_total.1 + acceleration.1,
+            acceleration_total.2 + acceleration.2)
 }
 
 fn new_root_node(pts: &mut [Particle]) -> Node {
