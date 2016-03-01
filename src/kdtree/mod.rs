@@ -1,9 +1,4 @@
 //TODO list
-//a) a function that takes in two particles and returns the force the first applies on the second
-//b) a function that takes in a node and a particle and returns a boolean of if the theta value is
-//   exceeded
-//c) a function that iterates over all values and returns a vector of particles after the gravity
-//   has been applied
 // speed check compare the mutated accel value vs the recursive addition
 mod particle;
 mod test;
@@ -38,11 +33,12 @@ pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
         number_of_particles: size_of_vec,
     };
 }
+/// Returns a boolean representing whether or node the node is within the theta range
+/// of the particle. 
 fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
 // 1) distance from particle to COM of that node
 // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
-    //TODO implement node to particle function
     let dist = particle.distance(&node_as_particle);
     let x_max_min = max_min_x(&node.points.as_ref().expect(""));
     let y_max_min = max_min_y(&node.points.as_ref().expect(""));
@@ -55,7 +51,7 @@ fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
 }
 
 /// Applies force to a node.
-fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { //TODO turn these forces into velocities
+fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { 
     let node_as_particle = other.to_particle();
     let d_magnitude = particle.distance(&node_as_particle);
     let d_vector = particle.distance_vector(&node_as_particle);
@@ -67,7 +63,7 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
                         d_over_d_cubed.2 * node_as_particle.mass);
     return acceleration;
 }
-fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { //TODO turn these forces into velocities
+fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { 
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
     let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
@@ -114,6 +110,39 @@ pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO - avoid having three copie
     return new_kdtree(&mut return_vec);
 }
 
+/// Returns the particle after it has had gravity from the tree applied to it.
+fn particle_gravity(node: &Node, particle: &Particle) -> Particle {
+	match node.left {
+		Some(ref node) => {
+		    if theta_exceeded(&particle, &node) {  //TODO
+                    let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
+            else if node.points.is_some() {
+                for i in node.points.expect("") {
+                    tmp_accel - get_gravitational_acceleration_particle(&particle, &node);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+                }
+            }
+		}
+
+		None => (),
+	}
+	match node.right {
+		Some(ref node) => {
+            println!("appended a particlei right");
+		    to_return.append(&mut traverse_tree_helper(node));
+		}
+		None => {
+            to_return.append(&mut (node.points.as_ref().expect("unexpected null node #something").clone()));
+        }
+    }
+    return to_return;
+}
 
 fn new_root_node(pts: &mut [Particle]) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
