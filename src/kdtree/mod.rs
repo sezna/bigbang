@@ -88,6 +88,11 @@ fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
 }
 */
 /// Returns the acceleration of a particle  after it has had gravity from the tree applied to it.
+// In this function, we approximate some particles if they exceed a certain critera specified in
+// "exceeds_theta()". If we reach a node and it is a leaf, then we automatically get the
+// acceleration from every particle in that node, but if we reach a node that is not a leaf and
+// exceeds_theta() returns true, then we treat the node as one giant particle and get the
+// acceleration from it.
 fn particle_gravity(node: &Node, particle: &Particle, acceleration_total: (f64, f64, f64)) -> (f64, f64, f64) {
     let mut acceleration = acceleration_total.clone();
 	match node.left {
@@ -150,8 +155,6 @@ fn particle_gravity(node: &Node, particle: &Particle, acceleration_total: (f64, 
 /// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
 fn new_root_node(pts: &mut [Particle]) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
-    // Should this function recurse by splitting the vectors, or by
-    // passing pointers to areas in the vector without mutating it?
     let start = 0 as usize;
     let end = pts.len();
     let length_of_points = pts.len() as i32;
