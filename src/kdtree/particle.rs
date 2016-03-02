@@ -26,6 +26,18 @@ impl Particle {
         };
 
     }
+    /// Adds an acceleration to the velocity of the particle.
+    pub fn add_acceleration(&mut self, acc:(f64, f64, f64)) {
+        self.vx = self.vx + acc.0;
+        self.vy = self.vy + acc.0;
+        self.vz = self.vz + acc.0;
+    }
+    /// Adds the current velocity to the position. Takes in a duration of time.
+    pub fn time_advance(&mut self, time_step:f64) {
+        self.x = self.x + (self.vx * time_step);
+        self.y = self.y + (self.vy * time_step);
+        self.z = self.z + (self.vz * time_step);
+    }
     /// Returns the distance between the two particles
     pub fn distance(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))

@@ -13,7 +13,8 @@ use kdtree::dimension::Dimension;
 use kdtree::node::Node;
 extern crate rand;
 const max_pts:i32 = 3;
-const theta: f64 = 0.2;
+const theta:f64 = 0.2;
+const time_step:f64 = 0.2;
 
 pub struct KDTree {
     root: Node, // The root Node.
@@ -77,16 +78,55 @@ fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle
 
 }
 
-// TODO
+fn tree_after_gravity(node: &Node) -> KDTree {
+    let mut post_gravity_particle_vec:Vec<Particle> = traverse_tree_helper(node);
+    for i in 0..post_gravity_particle_vec.len() {
+        post_gravity_particle_vec[i] = particle_after_gravity(node, &post_gravity_particle_vec[i])
+    }
+    return new_kdtree(&mut post_gravity_particle_vec);
+}
 /*
+// TODO how to do this without so many vectors?
+fn tree_after_gravity_helper(node: &mut Node) -> Vec<Particle> {
+    let mut to_return:Vec<Particle> = Vec::new();
+    match node.left {
+        Some(ref mut node) => {
+            if node.points.is_some() {
+                to_return.append(&mut node.points.expect(""));
+            }
+            else {
+                to_return.append(&mut tree_after_gravity_helper(&mut *node));
+            }
+        },
+        None => (),
+
+    }
+    match node.right {
+        Some(ref mut node) => {
+            if node.points.is_some() {
+                to_return.append(&node.points.expect("").clone().as_mut());
+            }
+            else {
+                to_return.append(&mut tree_after_gravity_helper(&mut *node));
+            }
+        }
+        None => (),
+    }
+    return to_return;
+}
+*/
+/// Takes in a particle and a node and returns the particle with the gravity from the node and all
+/// subnodes applied to it.
 fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
-    let acceleration = particle_gravity(node, particle, 0.0);
+    let acceleration = particle_gravity(node, particle, (0.0,0.0,0.0));
     let movement = (acceleration.0 * time_step,
                     acceleration.1 * time_step,
                     acceleration.2 * time_step);
-    return Particle { vx: particle.x + movement.0, y: 
+    let mut to_return = particle.clone();
+    to_return.add_acceleration(movement);
+    to_return.time_advance(time_step);
+    return to_return;
 }
-*/
 /// Returns the acceleration of a particle  after it has had gravity from the tree applied to it.
 // In this function, we approximate some particles if they exceed a certain critera specified in
 // "exceeds_theta()". If we reach a node and it is a leaf, then we automatically get the
