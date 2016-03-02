@@ -78,40 +78,6 @@ fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle
 
 }
 
-pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO - avoid having three copies of the particles at once.
-    let mut vec = traverse_tree(&tree);
-    let mut return_vec:Vec<Particle> = Vec::new();
-    let mut tmp_accel = (0.0,0.0,0.0);
-    let mut acceleration = (0.0,0.0,0.0);
-    for particle in vec {
-        for node in tree.iterate_over_nodes() {
-            if theta_exceeded(&particle, &node) { // If the theta value has been exceeded, take the
-                                                  // acceleration from the node. Else, if there are
-                                                  // particles, go through those particles.
-                    tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-                    acceleration.0 = acceleration.0 + tmp_accel.0;
-                    acceleration.1 = acceleration.1 + tmp_accel.1;
-                    acceleration.2 = acceleration.2 + tmp_accel.2;
-                }
-            else if node.points.is_some(){
-                for i in node.points.expect("") {
-                    tmp_accel = get_gravitational_acceleration_particle(&particle, &i);
-                    acceleration.0 = acceleration.0 + tmp_accel.0;
-                    acceleration.1 = acceleration.1 + tmp_accel.1;
-                    acceleration.2 = acceleration.2 + tmp_accel.2;
-                }
-            }
-        }
-        let mut new_particle = particle.clone();
-        new_particle.x = particle.x + acceleration.0;
-        new_particle.y = particle.y + acceleration.1;
-        new_particle.z = particle.z + acceleration.2;
-        return_vec.push(new_particle);
-    }
-    
-    return new_kdtree(&mut return_vec);
-}
-
 // TODO
 /*
 fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
