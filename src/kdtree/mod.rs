@@ -23,10 +23,6 @@ impl KDTree {
     pub fn display_tree(&self) {
         self.root.display_tree();
     }
-    pub fn iterate_over_nodes(&self) -> Vec<Node> {
-        let node = self.root.clone();
-        return node.iterate_over_nodes();
-    }
 }
 pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
     let size_of_vec = pts.len();
@@ -52,7 +48,8 @@ fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
     return dist * theta  > max_dist;
 }
 
-/// Applies force to a node.
+/// Given a particle and a node, particle and other, returns the acceleration that other is
+/// exerting on particle.
 fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { 
     let node_as_particle = other.to_particle();
     let d_magnitude = particle.distance(&node_as_particle);
@@ -65,6 +62,8 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
                         d_over_d_cubed.2 * node_as_particle.mass);
     return acceleration;
 }
+/// Given two particles, particle and other, returns the acceleration that other is exerting on
+/// particle.
 fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { 
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
@@ -148,7 +147,7 @@ fn particle_gravity(node: &Node, particle: &Particle, acceleration_total: (f64, 
             acceleration_total.1 + acceleration.1,
             acceleration_total.2 + acceleration.2)
 }
-
+/// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
 fn new_root_node(pts: &mut [Particle]) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
     // Should this function recurse by splitting the vectors, or by
@@ -223,7 +222,6 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             root_node.split_value = split_value;
         }
         let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
-//        pts.shrink_to_fit(); // Memory efficiency!
         root_node.left = Some(Box::new(new_root_node(&mut lower_vec)));
         root_node.right = Some(Box::new(new_root_node(&mut upper_vec)));
         // The center of mass is a recursive definition. This finds the average COM for
@@ -261,8 +259,8 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
     }
 }
 
-
-pub fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
+/// Traverses the tree and returns a vector of all particles in the tree.
+fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
 	let node = tree.root.clone();
 	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {

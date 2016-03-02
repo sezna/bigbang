@@ -11,7 +11,9 @@ pub struct Particle {
     pub mass: f64,
 }
 impl Particle {
-    pub fn random_particle() -> Particle {
+    // Convenience function for testing.
+    /// Generates a particle with random properties.
+    pub fn random_particle() -> Particle { 
         return Particle {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
@@ -34,12 +36,14 @@ impl Particle {
         let distance = f64::sqrt(x_dist + y_dist + z_dist);
         return distance;
     }
+    /// Returns the distance between two particles as an (x:f64,y:f64,z:f64) tuple.
     pub fn distance_vector(&self, other: &Particle) -> (f64, f64, f64) {
         let x_dist = (other.x - self.x).powf(2.0);
         let y_dist = (other.y - self.y).powf(2.0);
         let z_dist = (other.z - self.z).powf(2.0);
         return (x_dist, y_dist, z_dist);
     }
+    /// Returns a particle with all 0.0 values.
     pub fn new() -> Particle {
         return Particle {
             x: 0.0,
@@ -54,6 +58,7 @@ impl Particle {
     }   
 }
 #[test]
+/// Really lame test for Particle::new()
 fn test() {
     let test_particle = Particle::new();
     assert!(Particle {
