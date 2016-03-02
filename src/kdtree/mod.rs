@@ -1,10 +1,7 @@
 //TODO list
-//a) a function that takes in two particles and returns the force the first applies on the second
-//b) a function that takes in a node and a particle and returns a boolean of if the theta value is
-//   exceeded
-//c) a function that iterates over all values and returns a vector of particles after the gravity
-//   has been applied
 // speed check compare the mutated accel value vs the recursive addition
+// function that takes the acceleration on a particle and applies it
+// function that puts all of the new particles into a new kdtree
 mod particle;
 mod test;
 mod utilities;
@@ -16,7 +13,8 @@ use kdtree::dimension::Dimension;
 use kdtree::node::Node;
 extern crate rand;
 const max_pts:i32 = 3;
-const theta: f64 = 0.2;
+const theta:f64 = 0.2;
+const time_step:f64 = 0.2;
 
 pub struct KDTree {
     root: Node, // The root Node.
@@ -26,10 +24,6 @@ impl KDTree {
     pub fn display_tree(&self) {
         self.root.display_tree();
     }
-    pub fn iterate_over_nodes(&self) -> Vec<Node> {
-        let node = self.root.clone();
-        return node.iterate_over_nodes();
-    }
 }
 pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
     let size_of_vec = pts.len();
@@ -38,11 +32,12 @@ pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
         number_of_particles: size_of_vec,
     };
 }
+/// Returns a boolean representing whether or node the node is within the theta range
+/// of the particle. 
 fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
 // 1) distance from particle to COM of that node
 // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
-    //TODO implement node to particle function
     let dist = particle.distance(&node_as_particle);
     let x_max_min = max_min_x(&node.points.as_ref().expect(""));
     let y_max_min = max_min_y(&node.points.as_ref().expect(""));
@@ -54,8 +49,9 @@ fn theta_exceeded(particle:&Particle, node: &Node) -> bool {
     return dist * theta  > max_dist;
 }
 
-/// Applies force to a node.
-fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { //TODO turn these forces into velocities
+/// Given a particle and a node, particle and other, returns the acceleration that other is
+/// exerting on particle.
+fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f64, f64, f64) { 
     let node_as_particle = other.to_particle();
     let d_magnitude = particle.distance(&node_as_particle);
     let d_vector = particle.distance_vector(&node_as_particle);
@@ -67,7 +63,9 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
                         d_over_d_cubed.2 * node_as_particle.mass);
     return acceleration;
 }
-fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { //TODO turn these forces into velocities
+/// Given two particles, particle and other, returns the acceleration that other is exerting on
+/// particle.
+fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle) -> (f64, f64, f64) { 
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
     let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
@@ -80,45 +78,123 @@ fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle
 
 }
 
-pub fn apply_gravity(tree: KDTree) -> KDTree { //TODO - avoid having three copies of the particles at once.
-    let mut vec = traverse_tree(&tree);
-    let mut return_vec:Vec<Particle> = Vec::new();
-    let mut tmp_accel = (0.0,0.0,0.0);
-    let mut acceleration = (0.0,0.0,0.0);
-    for particle in vec {
-        for node in tree.iterate_over_nodes() {
-            if theta_exceeded(&particle, &node) { // If the theta value has been exceeded, take the
-                                                  // acceleration from the node. Else, if there are
-                                                  // particles, go through those particles.
-                    tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-                    acceleration.0 = acceleration.0 + tmp_accel.0;
-                    acceleration.1 = acceleration.1 + tmp_accel.1;
-                    acceleration.2 = acceleration.2 + tmp_accel.2;
-                }
-            else if node.points.is_some(){
-                for i in node.points.expect("") {
-                    tmp_accel = get_gravitational_acceleration_particle(&particle, &i);
+fn tree_after_gravity(node: &Node) -> KDTree {
+    let mut post_gravity_particle_vec:Vec<Particle> = traverse_tree_helper(node);
+    for i in 0..post_gravity_particle_vec.len() {
+        post_gravity_particle_vec[i] = particle_after_gravity(node, &post_gravity_particle_vec[i])
+    }
+    return new_kdtree(&mut post_gravity_particle_vec);
+}
+/*
+// TODO how to do this without so many vectors?
+fn tree_after_gravity_helper(node: &mut Node) -> Vec<Particle> {
+    let mut to_return:Vec<Particle> = Vec::new();
+    match node.left {
+        Some(ref mut node) => {
+            if node.points.is_some() {
+                to_return.append(&mut node.points.expect(""));
+            }
+            else {
+                to_return.append(&mut tree_after_gravity_helper(&mut *node));
+            }
+        },
+        None => (),
+
+    }
+    match node.right {
+        Some(ref mut node) => {
+            if node.points.is_some() {
+                to_return.append(&node.points.expect("").clone().as_mut());
+            }
+            else {
+                to_return.append(&mut tree_after_gravity_helper(&mut *node));
+            }
+        }
+        None => (),
+    }
+    return to_return;
+}
+*/
+/// Takes in a particle and a node and returns the particle with the gravity from the node and all
+/// subnodes applied to it.
+fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
+    let acceleration = particle_gravity(node, particle, (0.0,0.0,0.0));
+    let movement = (acceleration.0 * time_step,
+                    acceleration.1 * time_step,
+                    acceleration.2 * time_step);
+    let mut to_return = particle.clone();
+    to_return.add_acceleration(movement);
+    to_return.time_advance(time_step);
+    return to_return;
+}
+/// Returns the acceleration of a particle  after it has had gravity from the tree applied to it.
+// In this function, we approximate some particles if they exceed a certain critera specified in
+// "exceeds_theta()". If we reach a node and it is a leaf, then we automatically get the
+// acceleration from every particle in that node, but if we reach a node that is not a leaf and
+// exceeds_theta() returns true, then we treat the node as one giant particle and get the
+// acceleration from it.
+fn particle_gravity(node: &Node, particle: &Particle, acceleration_total: (f64, f64, f64)) -> (f64, f64, f64) {
+    let mut acceleration = acceleration_total.clone();
+	match node.left {
+		Some(ref node) => {
+            if node.points.is_some() {    // If the node is a leaf
+                let mut tmp_accel = (0.0, 0.0, 0.0);
+                for i in node.points.as_ref().expect("") { // recurse through particles
+                    tmp_accel =  get_gravitational_acceleration_particle(particle, i);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;
                 }
             }
+		    else if theta_exceeded(&particle, &node) {  // otherwise, check if theta is exceeded.
+                    let tmp_accel = get_gravitational_acceleration_node(&particle, &node); 
+                    acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                    acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
+                    acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
+            }
+            else {
+                    let tmp_accel =  particle_gravity(&node, &particle, acceleration);
+                    acceleration.0 = acceleration.0 + tmp_accel.0; // otherwise recurse
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
         }
-        let mut new_particle = particle.clone();
-        new_particle.x = particle.x + acceleration.0;
-        new_particle.y = particle.y + acceleration.1;
-        new_particle.z = particle.z + acceleration.2;
-        return_vec.push(new_particle);
+
+		None => (),
+	}
+	match node.right {
+		Some(ref node) => {
+            if node.points.is_some() { // same logic as above
+                let mut tmp_accel = (0.0, 0.0, 0.0);
+                for i in node.points.as_ref().expect("") { 
+                    tmp_accel =  get_gravitational_acceleration_particle(particle, i);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+                }
+            }
+		    else if theta_exceeded(&particle, &node) {  //TODO
+                    let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
+            else {
+                    let tmp_accel =  particle_gravity(&node, &particle, acceleration);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+            }
+        }
+		None => (),
     }
-    
-    return new_kdtree(&mut return_vec);
+    return (acceleration_total.0 + acceleration.0,
+            acceleration_total.1 + acceleration.1,
+            acceleration_total.2 + acceleration.2)
 }
-
-
+/// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
 fn new_root_node(pts: &mut [Particle]) -> Node {
     // Start and end are probably 0 and pts.len(), respectively.
-    // Should this function recurse by splitting the vectors, or by
-    // passing pointers to areas in the vector without mutating it?
     let start = 0 as usize;
     let end = pts.len();
     let length_of_points = pts.len() as i32;
@@ -189,7 +265,6 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             root_node.split_value = split_value;
         }
         let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
-//        pts.shrink_to_fit(); // Memory efficiency!
         root_node.left = Some(Box::new(new_root_node(&mut lower_vec)));
         root_node.right = Some(Box::new(new_root_node(&mut upper_vec)));
         // The center of mass is a recursive definition. This finds the average COM for
@@ -227,8 +302,8 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
     }
 }
 
-
-pub fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
+/// Traverses the tree and returns a vector of all particles in the tree.
+fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
 	let node = tree.root.clone();
 	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {

@@ -1,5 +1,8 @@
 use kdtree::particle::Particle;
 use kdtree::{new_kdtree, KDTree};
+// TODO list
+// test a tree after gravity has been applied to make sure it is done correctly
+// 
 #[test]
 #[allow(dead_code)]
 fn test_tree() {

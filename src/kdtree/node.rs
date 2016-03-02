@@ -14,6 +14,8 @@ pub struct Node {
 }
 
 impl Node {
+    // Some convenience functions.
+    /// Returns a node with all 0.0 or "None/Null" values.
     pub fn new() -> Node {
         return Node {
             split_dimension: Dimension::Null,
@@ -26,6 +28,9 @@ impl Node {
             r_max: 0.0,
         };
     }
+    // Used when treating a node as the sum of its parts in gravity calculations.
+    /// Converts a node into a particle with the x, y, z, and mass being derived from the center of
+    /// mass and the total mass of the particles it contains.
     pub fn to_particle(&self) -> Particle {
         return Particle {
             x: self.center_of_mass.0,
@@ -38,7 +43,10 @@ impl Node {
             radius: 0.0,
         };
     }
-    pub fn iterate_over_nodes(&self) -> Vec<Node> {
+    // Function that is not being used anymore. Returns a vector of the node and
+    // all of its subnodes.
+    /// Returns a vector of this node and all subnodes.
+    fn iterate_over_nodes(&self) -> Vec<Node> {
         let node = self.clone();
         let mut to_return:Vec<Node> = vec![node.clone()];
         match node.left {
@@ -59,6 +67,9 @@ impl Node {
         }
         return to_return;
     }
+    // A helpful function that is called in the tests. Prints out the contents of
+    // the tree in a rather ugly manner.
+    /// Recursively prints the node and all nodes within it.
     pub fn display_tree(&self) {
         let mut to_display = Node::display_tree_helper(self, 0);
         to_display.sort_by(|a, b| (a.2).cmp(&b.2));
@@ -76,6 +87,8 @@ impl Node {
         println!("{}", to_display_string);
     }
     // Thank you Steve Klabnik for your help with this function.
+    // Recursive helper for display_tree()
+    /// Recursive helper function for display_tree().
     fn display_tree_helper(node: &Node, level: i32) -> Vec<(Dimension, f64, i32)> {
         let dim = node.split_dimension.clone();
         let split_val = node.split_value;
