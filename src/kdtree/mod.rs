@@ -78,43 +78,14 @@ fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle
 
 }
 
-fn tree_after_gravity(node: &Node) -> KDTree {
+fn tree_after_gravity(node: &Node) -> KDTree { // TODO currently there is a time when the particles are stored twice.
+                                               // Store only accelerations perhaps?
     let mut post_gravity_particle_vec:Vec<Particle> = traverse_tree_helper(node);
-    for i in 0..post_gravity_particle_vec.len() {
+    for i in 0..post_gravity_particle_vec.len() { 
         post_gravity_particle_vec[i] = particle_after_gravity(node, &post_gravity_particle_vec[i])
     }
     return new_kdtree(&mut post_gravity_particle_vec);
 }
-/*
-// TODO how to do this without so many vectors?
-fn tree_after_gravity_helper(node: &mut Node) -> Vec<Particle> {
-    let mut to_return:Vec<Particle> = Vec::new();
-    match node.left {
-        Some(ref mut node) => {
-            if node.points.is_some() {
-                to_return.append(&mut node.points.expect(""));
-            }
-            else {
-                to_return.append(&mut tree_after_gravity_helper(&mut *node));
-            }
-        },
-        None => (),
-
-    }
-    match node.right {
-        Some(ref mut node) => {
-            if node.points.is_some() {
-                to_return.append(&node.points.expect("").clone().as_mut());
-            }
-            else {
-                to_return.append(&mut tree_after_gravity_helper(&mut *node));
-            }
-        }
-        None => (),
-    }
-    return to_return;
-}
-*/
 /// Takes in a particle and a node and returns the particle with the gravity from the node and all
 /// subnodes applied to it.
 fn particle_after_gravity(node: &Node, particle: &Particle) -> Particle {
