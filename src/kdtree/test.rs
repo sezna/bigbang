@@ -1,4 +1,5 @@
 use kdtree::particle::Particle;
+use kdtree::io::open_data_file;
 use kdtree::{new_kdtree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
@@ -70,4 +71,10 @@ fn go_to_edges(kdtree: KDTree) {
     }
     println!("number of nodes on right: {}\n", count_of_nodes);
     assert!(count_of_nodes == 15);
+}
+#[test]
+fn test_input() {
+   let test_vec = open_data_file("test_files/test_input.txt".to_string()); 
+   println!("test_vec len: {}", test_vec.len());
+   assert!(test_vec.len() == 3601);
 }

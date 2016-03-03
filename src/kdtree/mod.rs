@@ -4,6 +4,7 @@
 // function that puts all of the new particles into a new kdtree
 mod particle;
 mod test;
+mod io;
 mod utilities;
 mod node;
 mod dimension;
