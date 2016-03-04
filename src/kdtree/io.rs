@@ -27,7 +27,6 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
     let mut particles: Vec<Particle> = Vec::new();
     for i in s.chars() {
         if i != '\n' && i != ' ' {
-            println!("found character: {}", i);
             tmp_str = format!("{}{}", tmp_str, i);
         }
         else if i == ' ' {
@@ -37,25 +36,15 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
         else {
             tmp.push(tmp_str.clone());
             tmp_str = "".to_string();
-            println!("creating particle");
             if tmp.len() == 8 {
-                println!("39 {}", tmp[0]);
                 let x_val: f64 = tmp[0].parse().unwrap(); // TODO unwraps are bad
-                println!("41");
                 let y_val: f64 = tmp[1].parse().unwrap();
-                println!("43");
                 let z_val: f64 = tmp[2].parse().unwrap();
-                println!("45");
                 let vx_val:f64 = tmp[3].parse().unwrap();
-                println!("47");
                 let vy_val:f64 = tmp[4].parse().unwrap();
-                println!("49");
                 let vz_val:f64 = tmp[5].parse().unwrap();
-                println!("51");
                 let mass_val:f64 = tmp[6].parse().unwrap();
-                println!("53");
                 let radius_val:f64 = tmp[7].parse().unwrap();
-                println!("55");
                 let tmp_part = Particle {
                     x: x_val,
                     y: y_val,
