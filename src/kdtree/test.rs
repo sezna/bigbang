@@ -1,5 +1,5 @@
 use kdtree::particle::Particle;
-use kdtree::io::open_data_file;
+use kdtree::io::{open_data_file, write_data_file};
 use kdtree::{new_kdtree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
@@ -85,4 +85,5 @@ fn test_output() {
         test_vec.push(Particle::random_particle());
     }
     let kd = new_kdtree(&mut test_vec);
+    write_data_file(kd, "test_files/test_output.txt".to_string())
 }

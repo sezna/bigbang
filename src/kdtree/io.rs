@@ -79,7 +79,7 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
     return particles;
 }
 
-pub fn save_to_file(kdtree: KDTree, file_path: String) {
+pub fn write_data_file(kdtree: KDTree, file_path: String) {
     let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
     let to_write = traverse_tree(&kdtree);
     let mut to_write_string:String = "".to_string();
