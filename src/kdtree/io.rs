@@ -10,6 +10,7 @@ use kdtree::particle::Particle;
 
 /// Opens a utf8 file with one particle per line, space separated values of the format:
 /// x y z vx vy vz mass radius
+/// Must have a newline after the final particle.
 pub fn open_data_file(file_string: String) -> Vec<Particle> {
     let file_path = Path::new(&file_string);
     let display = file_path.display();
@@ -20,7 +21,7 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, Error::description(&why)),
-        Ok(_) => print!("{} contains:\n{}", display,s),
+        Ok(_) => (),
     }
     let mut tmp_str:String = "".to_string();
     let mut tmp:Vec<String> = Vec::new();
@@ -37,14 +38,23 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
             tmp.push(tmp_str.clone());
             tmp_str = "".to_string();
             if tmp.len() == 8 {
+//                println!("41");
                 let x_val: f64 = tmp[0].parse().unwrap(); // TODO unwraps are bad
+//                println!("43");
                 let y_val: f64 = tmp[1].parse().unwrap();
+//                println!("45");
                 let z_val: f64 = tmp[2].parse().unwrap();
+//                println!("47");
                 let vx_val:f64 = tmp[3].parse().unwrap();
+//                println!("49");
                 let vy_val:f64 = tmp[4].parse().unwrap();
+//                println!("51");
                 let vz_val:f64 = tmp[5].parse().unwrap();
+//                println!("53");
                 let mass_val:f64 = tmp[6].parse().unwrap();
+//                println!("55");
                 let radius_val:f64 = tmp[7].parse().unwrap();
+//                println!("57");
                 let tmp_part = Particle {
                     x: x_val,
                     y: y_val,
@@ -55,6 +65,7 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
                     mass: mass_val,
                     radius: radius_val,
                 };
+//            println!("pushing particle: {}", tmp_part.as_string()); 
                 particles.push(tmp_part);
                 tmp.clear();
             }
@@ -70,11 +81,16 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
 
 pub fn write_data_file(kdtree: KDTree, file_path: String) {
     let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-    let to_write = traverse_tree(&kdtree);
+    let mut to_write = traverse_tree(&kdtree);
     let mut to_write_string:String = "".to_string();
+    println!("to_write.len() = {}", to_write.len());
+    to_write_string = format!("{}", to_write.pop().expect("").as_string());
+    while !to_write.is_empty() {
+        to_write_string = format!("{}\n{}", to_write_string, to_write.pop().expect("").as_string());
+    }/*
     for i in to_write {
         to_write_string = format!("{}\n{}", to_write_string, i.as_string());
-    }
-    assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
-    
+    }*/
+    to_write_string = format!("{}\n", to_write_string);
+    assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len()); 
 }

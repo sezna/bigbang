@@ -85,5 +85,8 @@ fn test_output() {
         test_vec.push(Particle::random_particle());
     }
     let kd = new_kdtree(&mut test_vec);
-    write_data_file(kd, "test_files/test_output.txt".to_string())
+    write_data_file(kd, "test_files/test_output.txt".to_string());
+    let read_file = open_data_file("test_files/test_output.txt".to_string());
+    println!("test_vec.len() = {} read_file.len() = {}", test_vec.len(), read_file.len());
+    assert!(test_vec.len() == read_file.len());
 }
