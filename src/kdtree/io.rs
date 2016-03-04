@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fs::File;
+use kdtree::{KDTree, traverse_tree};
 use std::io::prelude::*;
 use std::path::Path;
 use kdtree::particle::Particle;
@@ -7,7 +8,8 @@ use kdtree::particle::Particle;
 // For now, data files are text files where there is one particle per line. Particles are stored as
 // x y z vx vy vz mass radius
 
-
+/// Opens a utf8 file with one particle per line, space separated values of the format:
+/// x y z vx vy vz mass radius
 pub fn open_data_file(file_string: String) -> Vec<Particle> {
     let file_path = Path::new(&file_string);
     let display = file_path.display();
@@ -75,4 +77,15 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
         }
     }
     return particles;
+}
+
+pub fn save_to_file(kdtree: KDTree, file_path: String) {
+    let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
+    let to_write = traverse_tree(&kdtree);
+    let mut to_write_string:String = "".to_string();
+    for i in to_write {
+        to_write_string = format!("{}\n{}", to_write_string, i.as_string());
+    }
+    assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
+    
 }

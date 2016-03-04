@@ -275,7 +275,7 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
 }
 
 /// Traverses the tree and returns a vector of all particles in the tree.
-fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
+pub fn traverse_tree(tree:&KDTree) -> Vec<Particle>{
 	let node = tree.root.clone();
 	let mut to_return:Vec<Particle> = Vec::new();
 	match node.left {

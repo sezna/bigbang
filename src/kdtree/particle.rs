@@ -26,6 +26,12 @@ impl Particle {
         };
 
     }
+    // used in writing output
+    /// Returns the particle as a string with space separated values.
+    pub fn as_string(&self) -> String {
+        return format!("{} {} {} {} {} {} {} {}", self.x, self.y, self.z, self.vx, self.vy,
+                       self.vz, self.mass, self.radius);
+    }
     /// Adds an acceleration to the velocity of the particle.
     pub fn add_acceleration(&mut self, acc:(f64, f64, f64)) {
         self.vx = self.vx + acc.0;

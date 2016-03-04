@@ -78,3 +78,11 @@ fn test_input() {
    println!("test_vec len: {}", test_vec.len());
    assert!(test_vec.len() == 3601);
 }
+#[test]
+fn test_output() {
+    let mut test_vec:Vec<Particle> = Vec::new();
+    for i in 0..1000 {
+        test_vec.push(Particle::random_particle());
+    }
+    let kd = new_kdtree(&mut test_vec);
+}
