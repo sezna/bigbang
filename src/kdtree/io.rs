@@ -39,23 +39,14 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
             tmp.push(tmp_str.clone());
             tmp_str = "".to_string();
             if tmp.len() == 8 {
-//                println!("41");
                 let x_val: f64 = tmp[0].parse().unwrap(); // TODO unwraps are bad
-//                println!("43");
                 let y_val: f64 = tmp[1].parse().unwrap();
-//                println!("45");
                 let z_val: f64 = tmp[2].parse().unwrap();
-//                println!("47");
                 let vx_val:f64 = tmp[3].parse().unwrap();
-//                println!("49");
                 let vy_val:f64 = tmp[4].parse().unwrap();
-//                println!("51");
                 let vz_val:f64 = tmp[5].parse().unwrap();
-//                println!("53");
                 let mass_val:f64 = tmp[6].parse().unwrap();
-//                println!("55");
                 let radius_val:f64 = tmp[7].parse().unwrap();
-//                println!("57");
                 let tmp_part = Particle {
                     x: x_val,
                     y: y_val,
@@ -66,7 +57,6 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
                     mass: mass_val,
                     radius: radius_val,
                 };
-//            println!("pushing particle: {}", tmp_part.as_string()); 
                 particles.push(tmp_part);
                 tmp.clear();
             }
