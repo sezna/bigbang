@@ -80,7 +80,12 @@ fn get_gravitational_acceleration_particle(particle: &Particle, other: &Particle
     return acceleration;
 
 }
-
+/// This function creates a vector of all particles from the tree and applies gravity to them.
+/// Returns a new KDTree. 
+// of note: The c++ implementation of this just stores a vector of accelerations and matches up the
+// indexes with the indexes of the particles, and then applies them. That way some memory is saved.
+// I am not sure if this will be necessary or very practical in the rust implementation (I would
+// have to implement indexing in my kdtree struct).
 fn tree_after_gravity(node: &Node) -> KDTree { // TODO currently there is a time when the particles are stored twice.
                                                // Store only accelerations perhaps?
     let mut post_gravity_particle_vec:Vec<Particle> = traverse_tree_helper(node);
