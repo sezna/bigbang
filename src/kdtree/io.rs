@@ -7,6 +7,7 @@ use kdtree::particle::Particle;
 
 // For now, data files are text files where there is one particle per line. Particles are stored as
 // x y z vx vy vz mass radius
+// TODO perhaps write the reading so that it doesn't require newlines?
 
 /// Opens a utf8 file with one particle per line, space separated values of the format:
 /// x y z vx vy vz mass radius

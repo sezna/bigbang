@@ -17,6 +17,8 @@ const max_pts:i32 = 3;
 const theta:f64 = 0.2;
 const time_step:f64 = 0.2;
 
+/// The main struct. Contains a root node and the total number of particles. Sort of a wrapper for
+/// the recursive node structure.
 pub struct KDTree {
     root: Node, // The root Node.
     number_of_particles: usize, // The number of particles in the tree.
