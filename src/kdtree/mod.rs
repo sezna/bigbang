@@ -184,7 +184,6 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
     let ydistance = (ymax - ymin).abs();
     let zdistance = (zmax - zmin).abs();
     if length_of_points <= max_pts {
-        let mut root_node = Node::new();
         // Here we calculate the center of mass and total mass for each axis and store
         // it as a three-tuple.
         let mut count = 0;
@@ -201,13 +200,18 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             }
             count = count + 1;
         }
-        root_node.center_of_mass = (x_total / total_mass as f64,
-                                    y_total / total_mass as f64,
-                                    z_total / total_mass as f64);
-        root_node.total_mass = total_mass;
-        root_node.r_max = max_radius;
-        root_node.points = Some(pts.to_vec());
-        return root_node;
+        return Node {
+            center_of_mass : (x_total / total_mass as f64,
+                              y_total / total_mass as f64,
+                              z_total / total_mass as f64),
+            total_mass: total_mass,
+            r_max: max_radius,
+            points: Some(pts.to_vec()),
+            right: None,
+            left: None,
+            split_dimension: None,
+            split_value: None,
+        };
         // So the objective here is to find the median value for whatever axis has the
         // greatest
         // disparity in distance. It is more efficient to pick three random values and
@@ -226,22 +230,22 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             // split on Z
             let (split_value, tmp) = find_median_z(pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = Dimension::Z;
-            root_node.split_value = split_value;
+            root_node.split_dimension = Some(Dimension::Z);
+            root_node.split_value = Some(split_value);
         } else if ydistance > xdistance && ydistance > zdistance {
             // "If the x distance is the greatest"
             // split on Y
             let (split_value, tmp) = find_median_y(pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = Dimension::Y;
-            root_node.split_value - split_value;
+            root_node.split_dimension = Some(Dimension::Y);
+            root_node.split_value = Some(split_value);
         } else {
             // "If the y distance is the greatest"
             // split on X
             let (split_value, tmp) = find_median_x(pts, start, end, mid);
             split_index = tmp;
-            root_node.split_dimension = Dimension::X;
-            root_node.split_value = split_value;
+            root_node.split_dimension = Some(Dimension::X);
+            root_node.split_value = Some(split_value);
         }
         let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
         root_node.left = Some(Box::new(new_root_node(&mut lower_vec)));
