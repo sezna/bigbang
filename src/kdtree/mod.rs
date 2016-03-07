@@ -342,24 +342,3 @@ pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
     }
     return to_return;
 }
-#[test]
-fn test_traversal() {
-    let mut vec: Vec<Particle> = Vec::new();
-    for x in 0..100 {
-        let particle = Particle::random_particle();
-        vec.push(particle);
-    }
-    let vec_clone = vec.clone();
-    let tree = new_kdtree(&mut vec);
-    let traversed_vec = traverse_tree(&tree);
-    let mut all_found = true;
-    for i in vec_clone {
-        if !traversed_vec.contains(&i) {
-            println!("particle not found");
-            all_found = false;
-        }
-    }
-
-    assert!(all_found);
-
-}

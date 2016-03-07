@@ -1,11 +1,47 @@
 extern crate kdtree;
 use kdtree::kdtree::particle::Particle;
 use kdtree::kdtree::io::{open_data_file, write_data_file};
-use kdtree::kdtree::{new_kdtree, KDTree};
+use kdtree::kdtree::{new_kdtree, KDTree, traverse_tree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
 
+#[test]
+fn test_traversal() {
+    let mut vec: Vec<Particle> = Vec::new();
+    for x in 0..100 {
+        let particle = Particle::random_particle();
+        vec.push(particle);
+    }
+    let vec_clone = vec.clone();
+    let tree = new_kdtree(&mut vec);
+    let traversed_vec = traverse_tree(&tree);
+    let mut all_found = true;
+    for i in vec_clone {
+        if !traversed_vec.contains(&i) {
+            println!("particle not found");
+            all_found = false;
+        }
+    }
 
+    assert!(all_found);
+
+}
+
+#[test]
+/// Really lame test for Particle::new()
+fn test() {
+    let test_particle = Particle::new();
+    assert!(Particle {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+        vx: 0.0,
+        vy: 0.0,
+        vz: 0.0,
+        radius: 0.0,
+        mass: 0.0,
+    } == test_particle);
+}
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
