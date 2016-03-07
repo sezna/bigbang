@@ -1,5 +1,5 @@
 extern crate rand;
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub struct Particle {
     pub vx: f64,
     pub vy: f64,
@@ -13,7 +13,7 @@ pub struct Particle {
 impl Particle {
     // Convenience function for testing.
     /// Generates a particle with random properties.
-    pub fn random_particle() -> Particle { 
+    pub fn random_particle() -> Particle {
         return Particle {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
@@ -29,17 +29,24 @@ impl Particle {
     // used in writing output
     /// Returns the particle as a string with space separated values.
     pub fn as_string(&self) -> String {
-        return format!("{} {} {} {} {} {} {} {}", self.x, self.y, self.z, self.vx, self.vy,
-                       self.vz, self.mass, self.radius);
+        return format!("{} {} {} {} {} {} {} {}",
+                       self.x,
+                       self.y,
+                       self.z,
+                       self.vx,
+                       self.vy,
+                       self.vz,
+                       self.mass,
+                       self.radius);
     }
     /// Adds an acceleration to the velocity of the particle.
-    pub fn add_acceleration(&mut self, acc:(f64, f64, f64)) {
+    pub fn add_acceleration(&mut self, acc: (f64, f64, f64)) {
         self.vx = self.vx + acc.0;
-        self.vy = self.vy + acc.0;
-        self.vz = self.vz + acc.0;
+        self.vy = self.vy + acc.1;
+        self.vz = self.vz + acc.2;
     }
     /// Adds the current velocity to the position. Takes in a duration of time.
-    pub fn time_advance(&mut self, time_step:f64) {
+    pub fn time_advance(&mut self, time_step: f64) {
         self.x = self.x + (self.vx * time_step);
         self.y = self.y + (self.vy * time_step);
         self.z = self.z + (self.vz * time_step);
@@ -63,17 +70,9 @@ impl Particle {
     }
     /// Returns a particle with all 0.0 values.
     pub fn new() -> Particle {
-        return Particle {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-            vx: 0.0,
-            vy: 0.0,
-            vz: 0.0,
-            radius: 0.0,
-            mass: 0.0,
-        } 
-    }   
+        Particle::default()
+    }
+
 }
 #[test]
 /// Really lame test for Particle::new()

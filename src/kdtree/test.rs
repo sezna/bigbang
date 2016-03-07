@@ -3,7 +3,7 @@ use kdtree::io::{open_data_file, write_data_file};
 use kdtree::{new_kdtree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
-// 
+//
 #[test]
 #[allow(dead_code)]
 fn test_tree() {
@@ -31,25 +31,25 @@ fn test_tree() {
     smaller_kdtree.display_tree();
     // Testing center of mass assignment
     let mut vector = vec![Particle {
-                          vx: 0.0,
-                          vy: 0.0,
-                          vz: 0.0,
-                          x: 1.0,
-                          y: 2.0,
-                          z: 3.0,
-                          mass: 2.0,
-                          radius: 1.0,
-                      },
-                      Particle {
-                          vx: 0.0,
-                          vy: 0.0,
-                          vz: 0.0,
-                          x: 2.0,
-                          y: 1.0,
-                          z: 3.0,
-                          mass: 2.0,
-                          radius: 1.0,
-                      }];
+                              vx: 0.0,
+                              vy: 0.0,
+                              vz: 0.0,
+                              x: 1.0,
+                              y: 2.0,
+                              z: 3.0,
+                              mass: 2.0,
+                              radius: 1.0,
+                          },
+                          Particle {
+                              vx: 0.0,
+                              vy: 0.0,
+                              vz: 0.0,
+                              x: 2.0,
+                              y: 1.0,
+                              z: 3.0,
+                              mass: 2.0,
+                              radius: 1.0,
+                          }];
     let center_of_mass_test = new_kdtree(&mut vector);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
@@ -74,19 +74,21 @@ fn go_to_edges(kdtree: KDTree) {
 }
 #[test]
 fn test_input() {
-   let test_vec = open_data_file("test_files/test_input.txt".to_string()); 
-   println!("test_vec len: {}", test_vec.len());
-   assert!(test_vec.len() == 3601);
+    let test_vec = open_data_file("test_files/test_input.txt".to_string());
+    println!("test_vec len: {}", test_vec.len());
+    assert!(test_vec.len() == 3601);
 }
 #[test]
 fn test_output() {
-    let mut test_vec:Vec<Particle> = Vec::new();
+    let mut test_vec: Vec<Particle> = Vec::new();
     for i in 0..1000 {
         test_vec.push(Particle::random_particle());
     }
     let kd = new_kdtree(&mut test_vec);
     write_data_file(kd, "test_files/test_output.txt".to_string());
     let read_file = open_data_file("test_files/test_output.txt".to_string());
-    println!("test_vec.len() = {} read_file.len() = {}", test_vec.len(), read_file.len());
+    println!("test_vec.len() = {} read_file.len() = {}",
+             test_vec.len(),
+             read_file.len());
     assert!(test_vec.len() == read_file.len());
 }
