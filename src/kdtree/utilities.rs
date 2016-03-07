@@ -4,6 +4,39 @@ use kdtree::particle::Particle;
 // and minimum values in the dimensions. Perhaps it could use a
 // refactor, as there is a lot of copied code.
 /// Returns the maximum and minimum x values in a slice of particles.
+//
+// pub fn max_min(particles: &[Particle]) -> (Point3, Point3) { -- for use when
+// switching to the point3 struct.
+// use std::f64;
+// assert!(particles.len() > 0);
+// let mut max = Point3::new(f64::MIN);
+// let mut min = Point3::new(f64::MAX);
+// for p in particles {
+// if p.x > max.x {
+// max.x = p.x;
+// }
+// if p.y > max.y {
+// max.y = p.y;
+// }
+// if p.z > max.z {
+// max.z = p.z;
+// }
+//
+// if p.x < min.x {
+// min.x = p.x;
+// }
+// if p.y < min.y {
+// min.y = p.y;
+// }
+// if p.z < min.z {
+// min.z = p.z;
+// }
+// }
+//
+// (max, min)
+// }
+//
+
 pub fn max_min_x(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].x;
@@ -59,15 +92,11 @@ pub fn find_median_z(pts: &mut [Particle], start: usize, end: usize, mid: usize)
         if pts[low].z < pts[start].z {
             low = low + 1;
         } else {
-            let tmp = pts[low].clone();
-            pts[low] = pts[high].clone();
-            pts[high] = tmp;
+            pts.swap(low, high);
             high -= 1;
         }
     }
-    let tmp = pts[high].clone();
-    pts[high] = pts[start].clone();
-    pts[start] = tmp;
+    pts.swap(start, high);
     if start == mid {
         return (pts[start].z, start);
     } else if high < mid {
@@ -84,15 +113,11 @@ pub fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize)
         if pts[low].y < pts[start].y {
             low = low + 1;
         } else {
-            let tmp = pts[low].clone();
-            pts[low] = pts[high].clone();
-            pts[high] = tmp;
+            pts.swap(low, high);
             high -= 1;
         }
     }
-    let tmp = pts[high].clone();
-    pts[high] = pts[start].clone();
-    pts[start] = tmp;
+    pts.swap(start, high);
     if start == mid {
         return (pts[start].y, start);
     } else if high < mid {
@@ -109,15 +134,11 @@ pub fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize)
         if pts[low].x < pts[start].x {
             low = low + 1;
         } else {
-            let tmp = pts[low].clone();
-            pts[low] = pts[high].clone();
-            pts[high] = tmp;
+            pts.swap(low, high);
             high -= 1;
         }
     }
-    let tmp = pts[high].clone();
-    pts[high] = pts[start].clone();
-    pts[start] = tmp;
+    pts.swap(start, high);
     if start == mid {
         return (pts[start].x, start);
     } else if high < mid {
@@ -126,4 +147,3 @@ pub fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize)
         return find_median_x(pts, start, high, mid);
     }
 }
-

@@ -2,15 +2,15 @@ use kdtree::dimension::Dimension;
 use kdtree::particle::Particle;
 #[derive(Clone)]
 pub struct Node {
-    pub split_dimension: Dimension,      // Dimension that this node splits at.
-    pub split_value: f64,                // Value that this node splits at.
-    pub left: Option<Box<Node>>,         // Left subtree.
-    pub right: Option<Box<Node>>,        // Right subtree.
-    pub points: Option<Vec<Particle>>,   // Vector of the points if this node is a Leaf.
+    pub split_dimension: Dimension, // Dimension that this node splits at.
+    pub split_value: f64, // Value that this node splits at.
+    pub left: Option<Box<Node>>, // Left subtree.
+    pub right: Option<Box<Node>>, // Right subtree.
+    pub points: Option<Vec<Particle>>, // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
-                                      * together. (x, y, z). */
-    pub total_mass: f64,                 // Total mass of all particles under this node.
-    pub r_max: f64,                      // Maximum radius that is a child of this node.
+                                          * together. (x, y, z). */
+    pub total_mass: f64, // Total mass of all particles under this node.
+    pub r_max: f64, // Maximum radius that is a child of this node.
 }
 
 impl Node {
@@ -48,11 +48,11 @@ impl Node {
     /// Returns a vector of this node and all subnodes.
     fn iterate_over_nodes(&self) -> Vec<Node> {
         let node = self.clone();
-        let mut to_return:Vec<Node> = vec![node.clone()];
+        let mut to_return: Vec<Node> = vec![node.clone()];
         match node.left {
             Some(ref node) => {
                 let node_left = node.left.clone().expect("");
-                let unboxed_node:Node = *node_left;
+                let unboxed_node: Node = *node_left;
                 to_return.append(&mut unboxed_node.iterate_over_nodes());
             }
             None => (),
@@ -60,7 +60,7 @@ impl Node {
         match node.right {
             Some(ref node) => {
                 let node_right = node.right.clone().expect("");
-                let unboxed_node:Node = *node_right;
+                let unboxed_node: Node = *node_right;
                 to_return.append(&mut unboxed_node.iterate_over_nodes());
             }
             None => (),
