@@ -1,7 +1,7 @@
 extern crate kdtree;
-use kdtree::particle::Particle;
-use kdtree::io::{open_data_file, write_data_file};
-use kdtree::{new_kdtree, KDTree};
+use kdtree::kdtree::particle::Particle;
+use kdtree::kdtree::io::{open_data_file, write_data_file};
+use kdtree::kdtree::{new_kdtree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
 

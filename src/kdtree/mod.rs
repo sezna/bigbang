@@ -19,8 +19,8 @@ const time_step: f64 = 0.2;
 /// The main struct. Contains a root node and the total number of particles. Sort of a wrapper for
 /// the recursive node structure.
 pub struct KDTree {
-    root: Node, // The root Node.
-    number_of_particles: usize, // The number of particles in the tree.
+    pub root: Node, // The root Node.
+    pub number_of_particles: usize, // The number of particles in the tree.
 }
 impl KDTree {
     pub fn display_tree(&self) {
