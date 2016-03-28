@@ -41,9 +41,9 @@ fn theta_exceeded(particle: &Particle, node: &Node) -> bool {
     // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
     let dist = particle.distance(&node_as_particle);
-    let x_max_min = max_min_x(&node.points.as_ref().expect(""));
-    let y_max_min = max_min_y(&node.points.as_ref().expect(""));
-    let z_max_min = max_min_z(&node.points.as_ref().expect(""));
+    let x_max_min = max_min_x(&node.points.as_ref().expect("11"));
+    let y_max_min = max_min_y(&node.points.as_ref().expect("12"));
+    let z_max_min = max_min_z(&node.points.as_ref().expect("13"));
     let x_distance = (x_max_min.0 - x_max_min.1).abs();
     let y_distance = (x_max_min.0 - x_max_min.1).abs();
     let z_distance = (x_max_min.0 - x_max_min.1).abs();
@@ -262,19 +262,19 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
         // each node.
         let left_mass = root_node.left
                                  .as_ref()
-                                 .expect("unexpected null node #1")
+                                 .expect("unexpected null node #3")
                                  .total_mass;
         let right_mass = root_node.right
                                   .as_ref()
-                                  .expect("unexpected null node #2")
+                                  .expect("unexpected null node #4")
                                   .total_mass;
         let (left_x, left_y, left_z) = root_node.left
                                                 .as_ref()
-                                                .expect("unexpected null node #3")
+                                                .expect("unexpected null node #5")
                                                 .center_of_mass;
         let (right_x, right_y, right_z) = root_node.right
                                                    .as_ref()
-                                                   .expect("unexpected null node #4")
+                                                   .expect("unexpected null node #6")
                                                    .center_of_mass;
         let total_mass = left_mass + right_mass;
         let (center_x, center_y, center_z) = (((left_mass * left_x) + (right_mass * right_x)) /
@@ -285,8 +285,8 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
                                               total_mass);
         root_node.center_of_mass = (center_x, center_y, center_z);
         // TODO refactor the next two lines, as they are a bit ugly
-        let left_r_max = root_node.left.as_ref().expect("unexpected null node #9").r_max;
-        let right_r_max = root_node.right.as_ref().expect("unexpected null node #10").r_max;
+        let left_r_max = root_node.left.as_ref().expect("unexpected null node #7").r_max;
+        let right_r_max = root_node.right.as_ref().expect("unexpected null node #8").r_max;
         let max_r_max = f64::max(left_r_max, right_r_max);
         root_node.r_max = max_r_max;
         return root_node;
@@ -312,7 +312,7 @@ pub fn traverse_tree(tree: &KDTree) -> Vec<Particle> {
         None => {
             to_return.append(&mut (node.points
                                        .as_ref()
-                                       .expect("unexpected null node #something")
+                                       .expect("unexpected null node #9")
                                        .clone()));
         }
     }
@@ -336,7 +336,7 @@ pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
         None => {
             to_return.append(&mut (node.points
                                        .as_ref()
-                                       .expect("unexpected null node #something")
+                                       .expect("unexpected null node #10")
                                        .clone()));
         }
     }
