@@ -128,7 +128,7 @@ fn particle_gravity(node: &Node,
         Some(ref node) => {
             if node.points.is_some() {
                 // If the node is a leaf
-                for i in node.points.as_ref().expect("") {
+                for i in node.points.as_ref().expect("unexpected null node 1") {
                     // recurse through particles
                     let tmp_accel = get_gravitational_acceleration_particle(particle, i);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
@@ -155,7 +155,7 @@ fn particle_gravity(node: &Node,
         Some(ref node) => {
             if node.points.is_some() {
                 // same logic as above
-                for i in node.points.as_ref().expect("") {
+                for i in node.points.as_ref().expect("unexpected null node 2") {
                     let tmp_accel = get_gravitational_acceleration_particle(particle, i);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
