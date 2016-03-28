@@ -90,7 +90,7 @@ fn get_gravitational_acceleration_particle(particle: &Particle,
 // I am not sure if this will be necessary or very practical in the rust
 // implementation (I would
 // have to implement indexing in my kdtree struct).
-fn tree_after_gravity(node: &Node) -> KDTree {
+pub fn tree_after_gravity(node: &Node) -> KDTree {
     // TODO currently there is a time when the particles are stored twice.
     // Store only accelerations perhaps?
     let mut post_gravity_particle_vec: Vec<Particle> = traverse_tree_helper(node);
