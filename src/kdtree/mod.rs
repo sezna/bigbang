@@ -41,9 +41,9 @@ fn theta_exceeded(particle: &Particle, node: &Node) -> bool {
     // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
     let dist = particle.distance(&node_as_particle);
-    let x_max_min = max_min_x(&node.points.as_ref().expect("11"));
-    let y_max_min = max_min_y(&node.points.as_ref().expect("12"));
-    let z_max_min = max_min_z(&node.points.as_ref().expect("13"));
+    let x_max_min = max_min_x(&traverse_tree_helper(node));
+    let y_max_min = max_min_y(&traverse_tree_helper(node));//&node.points.as_ref().expect("12"));
+    let z_max_min = max_min_z(&traverse_tree_helper(node));//&node.points.as_ref().expect("13"));
     let x_distance = (x_max_min.0 - x_max_min.1).abs();
     let y_distance = (x_max_min.0 - x_max_min.1).abs();
     let z_distance = (x_max_min.0 - x_max_min.1).abs();
