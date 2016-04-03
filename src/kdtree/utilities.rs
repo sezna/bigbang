@@ -36,7 +36,21 @@ use kdtree::particle::Particle;
 // (max, min)
 // }
 //
-
+pub fn xyz_distances(particles: &[Particle]) -> (f64, f64, f64) {
+    let (x_max, x_min) = max_min_x(particles);
+    let (y_max, y_min) = max_min_y(particles);
+    let (z_max, z_min) = max_min_z(particles);
+    let x_distance = (x_max - x_min).abs();
+    let y_distance = (y_max - y_min).abs();
+    let z_distance = (z_max - z_min).abs();
+    return (x_distance, y_distance, z_distance);
+}
+pub fn max_min_xyz(particles: &[Particle]) -> (f64, f64, f64, f64, f64, f64) {
+    let (xmax, xmin) = max_min_x(particles);
+    let (ymax, ymin) = max_min_y(particles);
+    let (zmax, zmin) = max_min_z(particles);
+    return (xmax, xmin, ymax, ymin, zmax, zmin);
+}
 pub fn max_min_x(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
     let mut to_return_min = particles[0].x;

@@ -36,18 +36,14 @@ pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
 }
 /// Returns a boolean representing whether or node the node is within the theta range
 /// of the particle.
+
+
 fn theta_exceeded(particle: &Particle, node: &Node) -> bool {
     // 1) distance from particle to COM of that node
     // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
     let dist = particle.distance(&node_as_particle);
-    let x_max_min = max_min_x(&traverse_tree_helper(node));
-    let y_max_min = max_min_y(&traverse_tree_helper(node));//&node.points.as_ref().expect("12"));
-    let z_max_min = max_min_z(&traverse_tree_helper(node));//&node.points.as_ref().expect("13"));
-    let x_distance = (x_max_min.0 - x_max_min.1).abs();
-    let y_distance = (x_max_min.0 - x_max_min.1).abs();
-    let z_distance = (x_max_min.0 - x_max_min.1).abs();
-    let max_dist = f64::max(x_distance, f64::max(y_distance, z_distance));
+    let max_dist = node.max_distance();
     return dist * theta > max_dist;
 }
 
@@ -209,6 +205,7 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             }
             count = count + 1;
         }
+        let (xmax, xmin, ymax, ymin, zmax, zmin) = max_min_xyz(pts);
         Node {
             center_of_mass: (x_total / total_mass as f64,
                              y_total / total_mass as f64,
@@ -220,6 +217,12 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             right: None,
             split_dimension: Dimension::Null,
             split_value: 0.0,
+            x_max: xmax,
+            x_min: xmin,
+            y_max: ymax,
+            y_min: ymin,
+            z_max: zmax,
+            z_min: zmin,
         }
         // So the objective here is to find the median value for whatever axis has the
         // greatest
@@ -289,6 +292,24 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
         let right_r_max = root_node.right.as_ref().expect("unexpected null node #8").r_max;
         let max_r_max = f64::max(left_r_max, right_r_max);
         root_node.r_max = max_r_max;
+        let xmin = f64::min(root_node.left.as_ref().expect("").x_min,
+        root_node.right.as_ref().expect("").x_min);
+        let xmax = f64::max(root_node.left.as_ref().expect("").x_max,
+        root_node.right.as_ref().expect("").x_max);
+        let ymin = f64::min(root_node.left.as_ref().expect("").y_min,
+        root_node.right.as_ref().expect("").y_min);
+        let ymax = f64::max(root_node.left.as_ref().expect("").y_max,
+        root_node.right.as_ref().expect("").y_max);
+        let zmin = f64::min(root_node.left.as_ref().expect("").z_min,
+        root_node.right.as_ref().expect("").z_min);
+        let zmax = f64::max(root_node.left.as_ref().expect("").z_max,
+        root_node.right.as_ref().expect("").z_max);
+        root_node.x_min = xmin;
+        root_node.x_max = xmax;
+        root_node.y_min = ymin;
+        root_node.y_max = ymax;
+        root_node.z_min = zmin;
+        root_node.z_max = zmax;
         return root_node;
     }
 }

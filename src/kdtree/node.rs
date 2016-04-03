@@ -11,6 +11,12 @@ pub struct Node {
                                           * together. (x, y, z). */
     pub total_mass: f64, // Total mass of all particles under this node.
     pub r_max: f64, // Maximum radius that is a child of this node.
+    pub x_min: f64,
+    pub x_max: f64,
+    pub y_min: f64,
+    pub y_max: f64,
+    pub z_min: f64,
+    pub z_max: f64,
 }
 
 impl Node {
@@ -26,6 +32,12 @@ impl Node {
             center_of_mass: (0.0, 0.0, 0.0), // (pos * mass) + (pos * mass) / sum of masses
             total_mass: 0.0,
             r_max: 0.0,
+            x_max: 0.0,
+            x_min: 0.0,
+            y_max: 0.0,
+            y_min: 0.0,
+            z_max: 0.0,
+            z_min: 0.0,
         };
     }
     // Used when treating a node as the sum of its parts in gravity calculations.
@@ -45,6 +57,12 @@ impl Node {
     }
     // Function that is not being used anymore. Returns a vector of the node and
     // all of its subnodes.
+    pub fn max_distance(&self) -> f64 {
+        let x_distance = (self.x_max - self.x_min).abs();
+        let y_distance = (self.y_max - self.y_min).abs();
+        let z_distance = (self.z_max - self.z_min).abs();
+        return  f64::max(x_distance, f64::max(y_distance, z_distance));
+    }
     /// Returns a vector of this node and all subnodes.
     fn iterate_over_nodes(&self) -> Vec<Node> {
         let node = self.clone();
