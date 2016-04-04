@@ -51,6 +51,15 @@ impl Particle {
         self.y = self.y + (self.vy * time_step);
         self.z = self.z + (self.vz * time_step);
     }
+    pub fn distance_squared(&self, other: &Particle) -> f64 {
+        // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
+        // all dist variables  are squared
+        let x_dist = (other.x - self.x).powf(2.0);
+        let y_dist = (other.y - self.y).powf(2.0);
+        let z_dist = (other.z - self.z).powf(2.0);
+        let distance = x_dist + y_dist + z_dist;
+        return distance;
+    }
     /// Returns the distance between the two particles
     pub fn distance(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))

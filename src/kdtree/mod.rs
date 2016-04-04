@@ -42,9 +42,9 @@ fn theta_exceeded(particle: &Particle, node: &Node) -> bool {
     // 1) distance from particle to COM of that node
     // 2) if 1) * theta > size (max diff) then
     let node_as_particle = node.to_particle();
-    let dist = particle.distance(&node_as_particle);
+    let dist = particle.distance_squared(&node_as_particle);
     let max_dist = node.max_distance();
-    return dist * theta > max_dist;
+    return (dist) * (theta * theta) > (max_dist * max_dist);
 }
 
 /// Given a particle and a node, particle and other, returns the acceleration that other is
@@ -293,17 +293,17 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
         let max_r_max = f64::max(left_r_max, right_r_max);
         root_node.r_max = max_r_max;
         let xmin = f64::min(root_node.left.as_ref().expect("").x_min,
-        root_node.right.as_ref().expect("").x_min);
+                            root_node.right.as_ref().expect("").x_min);
         let xmax = f64::max(root_node.left.as_ref().expect("").x_max,
-        root_node.right.as_ref().expect("").x_max);
+                            root_node.right.as_ref().expect("").x_max);
         let ymin = f64::min(root_node.left.as_ref().expect("").y_min,
-        root_node.right.as_ref().expect("").y_min);
+                            root_node.right.as_ref().expect("").y_min);
         let ymax = f64::max(root_node.left.as_ref().expect("").y_max,
-        root_node.right.as_ref().expect("").y_max);
+                            root_node.right.as_ref().expect("").y_max);
         let zmin = f64::min(root_node.left.as_ref().expect("").z_min,
-        root_node.right.as_ref().expect("").z_min);
+                            root_node.right.as_ref().expect("").z_min);
         let zmax = f64::max(root_node.left.as_ref().expect("").z_max,
-        root_node.right.as_ref().expect("").z_max);
+                            root_node.right.as_ref().expect("").z_max);
         root_node.x_min = xmin;
         root_node.x_max = xmax;
         root_node.y_min = ymin;

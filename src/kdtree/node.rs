@@ -58,9 +58,9 @@ impl Node {
     // Function that is not being used anymore. Returns a vector of the node and
     // all of its subnodes.
     pub fn max_distance(&self) -> f64 {
-        let x_distance = (self.x_max - self.x_min).abs();
-        let y_distance = (self.y_max - self.y_min).abs();
-        let z_distance = (self.z_max - self.z_min).abs();
+        let x_distance = (self.x_max - self.x_min);
+        let y_distance = (self.y_max - self.y_min);
+        let z_distance = (self.z_max - self.z_min);
         return  f64::max(x_distance, f64::max(y_distance, z_distance));
     }
     /// Returns a vector of this node and all subnodes.
