@@ -54,9 +54,9 @@ impl Particle {
     pub fn distance_squared(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         // all dist variables  are squared
-        let x_dist = (other.x - self.x).powf(2.0);
-        let y_dist = (other.y - self.y).powf(2.0);
-        let z_dist = (other.z - self.z).powf(2.0);
+        let x_dist = (other.x - self.x) * (other.x - self.x);
+        let y_dist = (other.y - self.y) * (other.y - self.y);
+        let z_dist = (other.z - self.z) * (other.z - self.z);
         let distance = x_dist + y_dist + z_dist;
         return distance;
     }
@@ -64,17 +64,17 @@ impl Particle {
     pub fn distance(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         // all dist variables  are squared
-        let x_dist = (other.x - self.x).powf(2.0);
-        let y_dist = (other.y - self.y).powf(2.0);
-        let z_dist = (other.z - self.z).powf(2.0);
+        let x_dist = (other.x - self.x) * (other.x - self.x); 
+        let y_dist = (other.y - self.y) * (other.y - self.y);
+        let z_dist = (other.z - self.z) * (other.z - self.z);
         let distance = f64::sqrt(x_dist + y_dist + z_dist);
         return distance;
     }
     /// Returns the distance between two particles as an (x:f64,y:f64,z:f64) tuple.
     pub fn distance_vector(&self, other: &Particle) -> (f64, f64, f64) {
-        let x_dist = (other.x - self.x).powf(2.0);
-        let y_dist = (other.y - self.y).powf(2.0);
-        let z_dist = (other.z - self.z).powf(2.0);
+        let x_dist = (other.x - self.x) * (other.x - self.x);
+        let y_dist = (other.y - self.y) * (other.y - self.y);
+        let z_dist = (other.z - self.z) * (other.z - self.z);
         return (x_dist, y_dist, z_dist);
     }
     /// Returns a particle with all 0.0 values.

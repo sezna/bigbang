@@ -53,9 +53,9 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
     let node_as_particle = other.to_particle();
     let d_magnitude = particle.distance(&node_as_particle);
     let d_vector = particle.distance_vector(&node_as_particle);
-    let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
-                          d_vector.1 / d_magnitude.powf(2.0),
-                          d_vector.2 / d_magnitude.powf(2.0));
+    let d_over_d_cubed = (d_vector.0 / d_magnitude * d_magnitude,
+                          d_vector.1 / d_magnitude * d_magnitude,
+                          d_vector.2 / d_magnitude * d_magnitude);
     let acceleration = (d_over_d_cubed.0 * node_as_particle.mass,
                         d_over_d_cubed.1 * node_as_particle.mass,
                         d_over_d_cubed.2 * node_as_particle.mass);
@@ -68,9 +68,9 @@ fn get_gravitational_acceleration_particle(particle: &Particle,
                                            -> (f64, f64, f64) {
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
-    let d_over_d_cubed = (d_vector.0 / d_magnitude.powf(2.0),
-                          d_vector.1 / d_magnitude.powf(2.0),
-                          d_vector.2 / d_magnitude.powf(2.0));
+    let d_over_d_cubed = (d_vector.0 / d_magnitude * d_magnitude,
+                          d_vector.1 / d_magnitude * d_magnitude,
+                          d_vector.2 / d_magnitude * d_magnitude);
     let acceleration = (d_over_d_cubed.0 * other.mass,
                         d_over_d_cubed.1 * other.mass,
                         d_over_d_cubed.2 * other.mass);
