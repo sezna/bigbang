@@ -98,7 +98,7 @@ pub fn tree_after_gravity(node: &Node) -> KDTree {
 /// Takes in a particle and a node and returns the particle with the gravity from the node and all
 /// subnodes applied to it.
 fn particle_after_gravity(node: &Node, particle: &mut Particle) {
-    let acceleration = particle_gravity(node, particle, (0.0, 0.0, 0.0));
+    let acceleration = particle_gravity(node, particle);
     let movement = (acceleration.0 * time_step,
                     acceleration.1 * time_step,
                     acceleration.2 * time_step);
@@ -116,10 +116,9 @@ fn particle_after_gravity(node: &Node, particle: &mut Particle) {
 // and get the
 // acceleration from it.
 fn particle_gravity(node: &Node,
-                    particle: &Particle,
-                    acceleration_total: (f64, f64, f64))
+                    particle: &Particle)
                     -> (f64, f64, f64) {
-    let mut acceleration = acceleration_total.clone();
+    let mut acceleration = (0.0, 0.0, 0.0);
     match node.left {
         Some(ref node) => {
             if node.points.is_some() {
@@ -138,7 +137,7 @@ fn particle_gravity(node: &Node,
                 acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                 acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
             } else {
-                let tmp_accel = particle_gravity(&node, &particle, acceleration);
+                let tmp_accel = particle_gravity(&node, &particle);
                 acceleration.0 = acceleration.0 + tmp_accel.0; // otherwise recurse
                 acceleration.1 = acceleration.1 + tmp_accel.1;
                 acceleration.2 = acceleration.2 + tmp_accel.2;
@@ -164,7 +163,7 @@ fn particle_gravity(node: &Node,
                 acceleration.1 = acceleration.1 + tmp_accel.1;
                 acceleration.2 = acceleration.2 + tmp_accel.2;
             } else {
-                let tmp_accel = particle_gravity(&node, &particle, acceleration);
+                let tmp_accel = particle_gravity(&node, &particle);
                 acceleration.0 = acceleration.0 + tmp_accel.0;
                 acceleration.1 = acceleration.1 + tmp_accel.1;
                 acceleration.2 = acceleration.2 + tmp_accel.2;
@@ -172,9 +171,9 @@ fn particle_gravity(node: &Node,
         }
         None => (),
     }
-    return (acceleration_total.0 + acceleration.0,
-            acceleration_total.1 + acceleration.1,
-            acceleration_total.2 + acceleration.2);
+    return (acceleration.0 + acceleration.0,
+            acceleration.1 + acceleration.1,
+            acceleration.2 + acceleration.2);
 }
 /// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
 fn new_root_node(pts: &mut [Particle]) -> Node {
