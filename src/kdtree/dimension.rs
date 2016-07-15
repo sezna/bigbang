@@ -5,7 +5,7 @@ pub enum Dimension {
     X,
     Y,
     Z,
-    Null,
+    None,
 }
 
 /// Convenience function that returns the Dimension as a &str.
@@ -15,7 +15,7 @@ impl Dimension {
             &Dimension::X => return "X",
             &Dimension::Y => return "Y",
             &Dimension::Z => return "Z",
-            _ => return "Null",
+            _ => return "None",
         }
     }
 }

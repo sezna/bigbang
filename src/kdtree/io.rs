@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::fs::File;
-use kdtree::{KDTree, traverse_tree};
+use kdtree::{KDTree};
 use std::io::prelude::*;
 use std::path::Path;
 use kdtree::particle::Particle;
@@ -68,7 +68,7 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
     }
     return particles;
 }
-
+/*
 pub fn write_data_file(kdtree: KDTree, file_path: String) {
     let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
     let mut to_write = traverse_tree(&kdtree);
@@ -85,4 +85,4 @@ pub fn write_data_file(kdtree: KDTree, file_path: String) {
     }*/
     to_write_string = format!("{}\n", to_write_string);
     assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
-}
+}*/
