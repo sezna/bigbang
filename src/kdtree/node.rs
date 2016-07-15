@@ -56,6 +56,20 @@ impl Node {
             properties: Properties::default(),
         };
     }
+
+    // Since this field is in both elements of the Enum, this is an accessor function.
+    pub fn properties(&self) -> &Properties {
+        match self {
+            &Node::Leaf{ref properties, ..} => {
+                return properties;
+            },
+            &Node::Interior{ref properties, ..} => {
+                return properties;
+            }
+
+        }
+    }
+
     pub fn new_interior() -> Node {
         return Node::Interior {
           split_dimension: Dimension::None,
