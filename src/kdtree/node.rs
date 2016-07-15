@@ -112,9 +112,9 @@ impl Node {
             &Node::Leaf{ref properties, ..} => properties,
             &Node::Interior{ref properties, ..} => properties,
         };
-        let x_distance = (properties.x_max - properties.x_min);
-        let y_distance = (properties.y_max - properties.y_min);
-        let z_distance = (properties.z_max - properties.z_min);
+        let x_distance = properties.x_max - properties.x_min;
+        let y_distance = properties.y_max - properties.y_min;
+        let z_distance = properties.z_max - properties.z_min;
         return f64::max(x_distance, f64::max(y_distance, z_distance));
     }
 //    /// Returns a vector of this node and all subnodes.

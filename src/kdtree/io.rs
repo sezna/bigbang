@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fs::File;
-use kdtree::{KDTree};
 use std::io::prelude::*;
 use std::path::Path;
 use kdtree::particle::Particle;

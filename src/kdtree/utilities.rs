@@ -40,9 +40,9 @@ pub fn xyz_distances(particles: &[Particle]) -> (f64, f64, f64) {
     let (x_max, x_min) = max_min_x(particles);
     let (y_max, y_min) = max_min_y(particles);
     let (z_max, z_min) = max_min_z(particles);
-    let x_distance = (x_max - x_min);
-    let y_distance = (y_max - y_min);
-    let z_distance = (z_max - z_min);
+    let x_distance = x_max - x_min;
+    let y_distance = y_max - y_min;
+    let z_distance = z_max - z_min;
     return (x_distance, y_distance, z_distance);
 }
 pub fn max_min_xyz(particles: &[Particle]) -> (f64, f64, f64, f64, f64, f64) {

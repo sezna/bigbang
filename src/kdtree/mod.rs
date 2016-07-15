@@ -1,3 +1,4 @@
+
 // TODO list
 // speed check compare the mutated accel value vs the recursive addition
 // function that takes the acceleration on a particle and applies it
@@ -12,9 +13,9 @@ use kdtree::particle::Particle;
 use kdtree::dimension::Dimension;
 use kdtree::node::{Node, Properties};
 extern crate rand;
-const max_pts: i32 = 3;
-const theta: f64 = 0.2;
-const time_step: f64 = 0.2;
+const MAX_PTS: i32 = 3;
+const THETA: f64 = 0.2;
+const TIME_STEP: f64 = 0.2;
 
 /// The main struct. Contains a root node and the total number of particles. Sort of a wrapper for
 /// the recursive node structure.
@@ -36,17 +37,17 @@ pub fn new_kdtree(pts: &mut Vec<Particle>) -> KDTree {
         number_of_particles: size_of_vec,
     };
 }
-/// Returns a boolean representing whether or node the node is within the theta range
+/// Returns a boolean representing whether or node the node is within the THETA range
 /// of the particle.
 
 
 fn theta_exceeded(particle: &Particle, node: &Node) -> bool {
     // 1) distance from particle to COM of that node
-    // 2) if 1) * theta > size (max diff) then
+    // 2) if 1) * THETA > size (max diff) then
     let node_as_particle = node.to_particle();
     let dist = particle.distance_squared(&node_as_particle);
     let max_dist = node.max_distance();
-    return (dist) * (theta * theta) > (max_dist * max_dist);
+    return (dist) * (THETA * THETA) > (max_dist * max_dist);
 }
 
 /// Given a particle and a node, particle and other, returns the acceleration that other is
@@ -102,24 +103,31 @@ pub fn tree_after_gravity(node: &Node) -> KDTree {
 /// subnodes applied to it.
 fn particle_after_gravity(node: &Node, particle: &mut Particle) {
     let acceleration = particle_gravity(node, particle);
-    let movement = (acceleration.0 * time_step,
-                    acceleration.1 * time_step,
-                    acceleration.2 * time_step);
+    let movement = (acceleration.0 * TIME_STEP,
+                    acceleration.1 * TIME_STEP,
+                    acceleration.2 * TIME_STEP);
     particle.add_acceleration(movement);
-    particle.time_advance(time_step);
+    particle.time_advance(TIME_STEP);
 }
 /// Returns the acceleration of a particle  after it has had gravity from the tree applied to it.
 // In this function, we approximate some particles if they exceed a certain
 // critera specified in
-// "exceeds_theta()". If we reach a node and it is a leaf, then we
+// "exceeds_THETA()". If we reach a node and it is a leaf, then we
 // automatically get the
 // acceleration from every particle in that node, but if we reach a node that
 // is not a leaf and
-// exceeds_theta() returns true, then we treat the node as one giant particle
+// exceeds_THETA() returns true, then we treat the node as one giant particle
 // and get the
 // acceleration from it.
 fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
     let mut acceleration = (0.0, 0.0, 0.0);
+        if theta_exceeded(&particle, &node) { // TODO do we want this here?
+            let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
+            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
+            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
+        }
+        else {
     match node {
         &Node::Leaf{ref points, ..} => {
             // if the node is a leaf
@@ -130,41 +138,46 @@ fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
                 acceleration.2 = acceleration.2 + tmp_accel.2;
             }
         } 
-        &Node::Interior{left: Some(ref left), right: Some(ref right), ..} => {
+        &Node::Interior{left: Some(ref left),  ..} => {
             // if the node is an interior node
             if theta_exceeded(&particle, &node) {
                 let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-                acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
                 acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                 acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
             } else {
-                        match *left {
+                        match **left {
                         Node::Interior{..} => {
                             let tmp_accel = particle_gravity(&left, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
                             acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                             acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
                         },
                         Node::Leaf{..} =>{
                             let tmp_accel = particle_gravity(&left, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
                             acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                             acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
                         },}
-                        match *right {
+            }
+        }
+        &Node::Interior{right: Some(ref right), ..} => {
+
+                        match **right {
                         Node::Interior{..} => {
                             let tmp_accel = particle_gravity(&right, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
                             acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                             acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
                         },
                         Node::Leaf{..} =>{
                             let tmp_accel = particle_gravity(&right, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
                             acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                             acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
                         },}
                 }
+        _ => {}
             }
 
         }
@@ -186,9 +199,9 @@ fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
 // acceleration.2 = acceleration.2 + tmp_accel.2;
 // }
 // } else if theta_exceeded(&particle, &node) {
-// otherwise, check if theta is exceeded.
+// otherwise, check if THETA is exceeded.
 // let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-// acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
+// acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
 // acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the
 // node's
 // acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
@@ -240,7 +253,7 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
     let xdistance = (xmax - xmin).abs();
     let ydistance = (ymax - ymin).abs();
     let zdistance = (zmax - zmin).abs();
-    if length_of_points <= max_pts {
+    if length_of_points <= MAX_PTS {
         // Here we calculate the center of mass and total mass for each axis and store
         // it as a three-tuple.
         let mut count = 0;
@@ -425,5 +438,4 @@ pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
                                    .clone()));
         }
     } */
-    return to_return;
 }
