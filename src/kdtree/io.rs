@@ -20,10 +20,9 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
         Ok(file) => file,
     };
     let mut s = String::new();
-    match file.read_to_string(&mut s) {
-        Err(why) => panic!("couldn't read {}: {}", display, Error::description(&why)),
-        Ok(_) => (),
-    }
+    if let Err(why) =  file.read_to_string(&mut s) {
+         panic!("couldn't read {}: {}", display, Error::description(&why));
+    };
     let mut tmp_str: String = String::new();
     let mut tmp: Vec<String> = Vec::new();
     let mut particles: Vec<Particle> = Vec::new();

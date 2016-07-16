@@ -58,11 +58,8 @@ impl Node {
 
     // Since this field is in both elements of the Enum, this is an accessor function.
     pub fn properties(&self) -> &Properties {
-        match self {
-            &Node::Leaf { ref properties, .. } => {
-                return properties;
-            }
-            &Node::Interior { ref properties, .. } => {
+        match *self {
+            Node::Leaf { ref properties, .. } | Node::Interior { ref properties, .. } => {
                 return properties;
             }
 
@@ -82,14 +79,8 @@ impl Node {
     /// Converts a node into a particle with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the particles it contains.
     pub fn to_particle(&self) -> Particle {
-        let center_of_mass = match self {
-            &Node::Leaf { ref properties, .. } => properties.center_of_mass,
-            &Node::Interior { ref properties, .. } => properties.center_of_mass,
-        };
-        let total_mass = match self {
-            &Node::Leaf { ref properties, .. } => properties.total_mass,
-            &Node::Interior { ref properties, .. } => properties.total_mass,
-        };
+        let center_of_mass = self.properties().center_of_mass;
+        let total_mass = self.properties().total_mass; 
         return Particle {
             x: center_of_mass.0,
             y: center_of_mass.1,
@@ -104,14 +95,11 @@ impl Node {
     // Function that is not being used anymore. Returns a vector of the node and
     // all of its subnodes.
     pub fn max_distance(&self) -> f64 {
-        let properties = match self {
-            &Node::Leaf { ref properties, .. } => properties,
-            &Node::Interior { ref properties, .. } => properties,
-        };
+        let properties = self.properties();
         let x_distance = properties.x_max - properties.x_min;
         let y_distance = properties.y_max - properties.y_min;
         let z_distance = properties.z_max - properties.z_min;
-        return f64::max(x_distance, f64::max(y_distance, z_distance));
+        f64::max(x_distance, f64::max(y_distance, z_distance))
     }
     //    /// Returns a vector of this node and all subnodes.
     //

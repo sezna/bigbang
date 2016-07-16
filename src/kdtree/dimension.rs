@@ -11,10 +11,10 @@ pub enum Dimension {
 /// Convenience function that returns the Dimension as a &str.
 impl Dimension {
     pub fn as_string(&self) -> &str {
-        match self {
-            &Dimension::X => return "X",
-            &Dimension::Y => return "Y",
-            &Dimension::Z => return "Z",
+        match *self {
+            Dimension::X => return "X",
+            Dimension::Y => return "Y",
+            Dimension::Z => return "Z",
             _ => return "None",
         }
     }

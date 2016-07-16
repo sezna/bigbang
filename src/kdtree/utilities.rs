@@ -103,7 +103,7 @@ pub fn find_median_z(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
         if pts[low].z < pts[start].z {
-            low = low + 1;
+            low += 1;
         } else {
             pts.swap(low, high);
             high -= 1;
@@ -124,7 +124,7 @@ pub fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
         if pts[low].y < pts[start].y {
-            low = low + 1;
+            low += 1;
         } else {
             pts.swap(low, high);
             high -= 1;
@@ -145,7 +145,7 @@ pub fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
         if pts[low].x < pts[start].x {
-            low = low + 1;
+            low += 1;
         } else {
             pts.swap(low, high);
             high -= 1;
