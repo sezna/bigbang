@@ -4,7 +4,6 @@ use kdtree::particle::Particle;
 // and minimum values in the dimensions. Perhaps it could use a
 // refactor, as there is a lot of copied code.
 /// Returns the maximum and minimum x values in a slice of particles.
-//
 // pub fn max_min(particles: &[Particle]) -> (Point3, Point3) { -- for use when
 // switching to the point3 struct.
 // use std::f64;

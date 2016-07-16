@@ -64,7 +64,7 @@ impl Particle {
     pub fn distance(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         // all dist variables  are squared
-        let x_dist = (other.x - self.x) * (other.x - self.x); 
+        let x_dist = (other.x - self.x) * (other.x - self.x);
         let y_dist = (other.y - self.y) * (other.y - self.y);
         let z_dist = (other.z - self.z) * (other.z - self.z);
         let distance = f64::sqrt(x_dist + y_dist + z_dist);
@@ -81,5 +81,4 @@ impl Particle {
     pub fn new() -> Particle {
         Particle::default()
     }
-
 }

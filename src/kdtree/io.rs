@@ -67,21 +67,20 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
     }
     return particles;
 }
-/*
-pub fn write_data_file(kdtree: KDTree, file_path: String) {
-    let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-    let mut to_write = traverse_tree(&kdtree);
-    let mut to_write_string: String = "".to_string();
-    println!("to_write.len() = {}", to_write.len());
-    to_write_string = format!("{}", to_write.pop().expect("").as_string());
-    while !to_write.is_empty() {
-        to_write_string = format!("{}\n{}",
-                                  to_write_string,
-                                  to_write.pop().expect("").as_string());
-    }/*
-    for i in to_write {
-        to_write_string = format!("{}\n{}", to_write_string, i.as_string());
-    }*/
-    to_write_string = format!("{}\n", to_write_string);
-    assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
-}*/
+// pub fn write_data_file(kdtree: KDTree, file_path: String) {
+// let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
+// let mut to_write = traverse_tree(&kdtree);
+// let mut to_write_string: String = "".to_string();
+// println!("to_write.len() = {}", to_write.len());
+// to_write_string = format!("{}", to_write.pop().expect("").as_string());
+// while !to_write.is_empty() {
+// to_write_string = format!("{}\n{}",
+// to_write_string,
+// to_write.pop().expect("").as_string());
+// }/*
+// for i in to_write {
+// to_write_string = format!("{}\n{}", to_write_string, i.as_string());
+// }*/
+// to_write_string = format!("{}\n", to_write_string);
+// assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
+// }

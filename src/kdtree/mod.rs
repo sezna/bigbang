@@ -21,9 +21,8 @@ const TIME_STEP: f64 = 0.2;
 /// the recursive node structure.
 pub struct KDTree {
     pub root: Node, // The root Node.
-        pub number_of_particles: usize, // The number of particles in the tree.
+    pub number_of_particles: usize, // The number of particles in the tree.
 }
-//
 // impl KDTree {
 // pub fn display_tree(&self) {
 // self.root.display_tree();
@@ -68,7 +67,7 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
 /// particle.
 fn get_gravitational_acceleration_particle(particle: &Particle,
                                            other: &Particle)
--> (f64, f64, f64) {
+                                           -> (f64, f64, f64) {
     let d_magnitude = particle.distance(other);
     let d_vector = particle.distance_vector(other);
     let d_over_d_cubed = (d_vector.0 / d_magnitude * d_magnitude,
@@ -81,7 +80,7 @@ fn get_gravitational_acceleration_particle(particle: &Particle,
 
 }
 /// This function creates a vector of all particles from the tree and applies gravity to them.
-/// Returns a new KDTree. 
+/// Returns a new KDTree.
 // of note: The c++ implementation of this just stores a vector of
 // accelerations and matches up the
 // indexes with the indexes of the particles, and then applies them. That way
@@ -103,9 +102,8 @@ pub fn tree_after_gravity(node: &Node) -> KDTree {
 /// subnodes applied to it.
 fn particle_after_gravity(node: &Node, particle: &mut Particle) {
     let acceleration = particle_gravity(node, particle);
-    let movement = (acceleration.0 * TIME_STEP,
-                    acceleration.1 * TIME_STEP,
-                    acceleration.2 * TIME_STEP);
+    let movement =
+        (acceleration.0 * TIME_STEP, acceleration.1 * TIME_STEP, acceleration.2 * TIME_STEP);
     particle.add_acceleration(movement);
     particle.time_advance(TIME_STEP);
 }
@@ -121,74 +119,73 @@ fn particle_after_gravity(node: &Node, particle: &mut Particle) {
 // acceleration from it.
 fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
     let mut acceleration = (0.0, 0.0, 0.0);
-        if theta_exceeded(&particle, &node) { // TODO do we want this here?
-            let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-        }
-        else {
-    match node {
-        &Node::Leaf{ref points, ..} => {
-            // if the node is a leaf
-            for i in points {
-                let tmp_accel = get_gravitational_acceleration_particle(particle, i);
-                acceleration.0 = acceleration.0 + tmp_accel.0;
-                acceleration.1 = acceleration.1 + tmp_accel.1;
-                acceleration.2 = acceleration.2 + tmp_accel.2;
-            }
-        } 
-        &Node::Interior{left: Some(ref left),  ..} => {
-            // if the node is an interior node
-            if theta_exceeded(&particle, &node) {
-                let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
-                acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-                acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-            } else {
-                        match **left {
-                        Node::Interior{..} => {
-                            let tmp_accel = particle_gravity(&left, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-                            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-                        },
-                        Node::Leaf{..} =>{
-                            let tmp_accel = particle_gravity(&left, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-                            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-                        },}
-            }
-        }
-        &Node::Interior{right: Some(ref right), ..} => {
-
-                        match **right {
-                        Node::Interior{..} => {
-                            let tmp_accel = particle_gravity(&right, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-                            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-                        },
-                        Node::Leaf{..} =>{
-                            let tmp_accel = particle_gravity(&right, particle);
-                            acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
-                            acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                            acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-                        },}
+    if theta_exceeded(&particle, &node) {
+        // TODO do we want this here?
+        let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+        acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
+        acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
+        acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
+    } else {
+        match node {
+            &Node::Leaf { ref points, .. } => {
+                // if the node is a leaf
+                for i in points {
+                    let tmp_accel = get_gravitational_acceleration_particle(particle, i);
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
                 }
-        _ => {}
             }
-
+            &Node::Interior { left: Some(ref left), .. } => {
+                // if the node is an interior node
+                if theta_exceeded(&particle, &node) {
+                    let tmp_accel = get_gravitational_acceleration_node(&particle, &node);
+                    acceleration.0 = acceleration.0 + tmp_accel.0; // if THETA was exceeded, then
+                    acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
+                    acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
+                } else {
+                    match **left {
+                        Node::Interior { .. } => {
+                            let tmp_accel = particle_gravity(&left, particle);
+                            acceleration.0 = acceleration.0 + tmp_accel.0;
+                            acceleration.1 = acceleration.1 + tmp_accel.1;
+                            acceleration.2 = acceleration.2 + tmp_accel.2;
+                        }
+                        Node::Leaf { .. } => {
+                            let tmp_accel = particle_gravity(&left, particle);
+                            acceleration.0 = acceleration.0 + tmp_accel.0;
+                            acceleration.1 = acceleration.1 + tmp_accel.1;
+                            acceleration.2 = acceleration.2 + tmp_accel.2;
+                        }
+                    }
+                }
+            }
+            &Node::Interior { right: Some(ref right), .. } => {
+                match **right {
+                    Node::Interior { .. } => {
+                        let tmp_accel = particle_gravity(&right, particle);
+                        acceleration.0 = acceleration.0 + tmp_accel.0;
+                        acceleration.1 = acceleration.1 + tmp_accel.1;
+                        acceleration.2 = acceleration.2 + tmp_accel.2;
+                    }
+                    Node::Leaf { .. } => {
+                        let tmp_accel = particle_gravity(&right, particle);
+                        acceleration.0 = acceleration.0 + tmp_accel.0;
+                        acceleration.1 = acceleration.1 + tmp_accel.1;
+                        acceleration.2 = acceleration.2 + tmp_accel.2;
+                    }
+                }
+            }
+            _ => {}
         }
+
+    }
 
     return (acceleration.0 + acceleration.0,
             acceleration.1 + acceleration.1,
             acceleration.2 + acceleration.2);
 }
 
-//
-//
 // if node.points.is_some() {
 // If the node is a leaf
 // for i in node.points.as_ref().expect("unexpected null node 1") {
@@ -271,9 +268,8 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             count = count + 1;
         }
         let (xmax, xmin, ymax, ymin, zmax, zmin) = max_min_xyz(pts);
-        let com = (x_total / totalmass as f64,
-                   y_total / totalmass as f64,
-                   z_total / totalmass as f64);
+        let com =
+            (x_total / totalmass as f64, y_total / totalmass as f64, z_total / totalmass as f64);
         let props = Properties {
             x_max: xmax,
             x_min: xmin,
@@ -290,7 +286,7 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
             points: pts.to_vec(),
         }
     } else {
-//        let mut root_node = Node::new_interior();
+        //        let mut root_node = Node::new_interior();
         let split_index;
         let mid = (start + end) / 2 as usize;
         let (split_dimension, split_value) = if zdistance > ydistance && zdistance > xdistance {
@@ -317,56 +313,50 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
         let right = Some(Box::new(new_root_node(&mut upper_vec)));
         // The center of mass is a recursive definition. This finds the average COM for
         // each node.
-        let left_mass = left
-            .as_ref()
+        let left_mass = left.as_ref()
             .expect("unexpected null node #3")
             .properties()
             .total_mass;
-        let right_mass = right
-            .as_ref()
+        let right_mass = right.as_ref()
             .expect("unexpected null node #4")
             .properties()
             .total_mass;
-        let (left_x, left_y, left_z) = left
-            .as_ref()
+        let (left_x, left_y, left_z) = left.as_ref()
             .expect("unexpected null node #5")
             .properties()
             .center_of_mass;
-        let (right_x, right_y, right_z) = right
-            .as_ref()
+        let (right_x, right_y, right_z) = right.as_ref()
             .expect("unexpected null node #6")
             .properties()
             .center_of_mass;
         let total_mass = left_mass + right_mass;
-        let (center_x, center_y, center_z) = (((left_mass * left_x) + (right_mass * right_x)) /
-                                              total_mass,
-                                              ((left_mass * left_y) + (right_mass * right_y)) /
-                                              total_mass,
-                                              ((left_mass * left_z) + (right_mass * right_z)) /
-                                              total_mass);
+        let (center_x, center_y, center_z) =
+            (((left_mass * left_x) + (right_mass * right_x)) / total_mass,
+             ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
+             ((left_mass * left_z) + (right_mass * right_z)) / total_mass);
         let center_of_mass = (center_x, center_y, center_z);
         // TODO refactor the next two lines, as they are a bit ugly
         let left_r_max = left.as_ref().expect("unexpected null node #7").properties().r_max;
         let right_r_max = right.as_ref().expect("unexpected null node #8").properties().r_max;
         let r_max = f64::max(left_r_max, right_r_max);
         let x_min = f64::min(left.as_ref().expect("").properties().x_min,
-        right.as_ref().expect("").properties().x_min);
+                             right.as_ref().expect("").properties().x_min);
         let x_max = f64::max(left.as_ref().expect("").properties().x_max,
-        right.as_ref().expect("").properties().x_max);
+                             right.as_ref().expect("").properties().x_max);
         let y_min = f64::min(left.as_ref().expect("").properties().y_min,
-        right.as_ref().expect("").properties().y_min);
+                             right.as_ref().expect("").properties().y_min);
         let y_max = f64::max(left.as_ref().expect("").properties().y_max,
-        right.as_ref().expect("").properties().y_max);
+                             right.as_ref().expect("").properties().y_max);
         let z_min = f64::min(left.as_ref().expect("").properties().z_min,
-        right.as_ref().expect("").properties().z_min);
+                             right.as_ref().expect("").properties().z_min);
         let z_max = f64::max(left.as_ref().expect("").properties().z_max,
-        right.as_ref().expect("").properties().z_max);
-        return Node::Interior{
+                             right.as_ref().expect("").properties().z_max);
+        return Node::Interior {
             split_dimension: split_dimension,
             split_value: split_value,
             left: left,
             right: right,
-            properties: Properties{
+            properties: Properties {
                 center_of_mass: center_of_mass,
                 total_mass: total_mass,
                 r_max: r_max,
@@ -376,66 +366,64 @@ fn new_root_node(pts: &mut [Particle]) -> Node {
                 y_max: y_max,
                 z_min: z_min,
                 z_max: z_max,
-            }
-        }
+            },
+        };
     }
 }
-/*
-/// Traverses the tree and returns a vector of all particles in the tree.
-pub fn traverse_tree(tree: &KDTree) -> Vec<Particle> {
-let node = tree.root.clone();
-let mut to_return: Vec<Particle> = Vec::new();
-match node.left {
-Some(ref node) => {
-println!("appended a particle left");
-to_return.append(&mut traverse_tree_helper(node));
-}
-None => (),
-}
-match node.right {
-Some(ref node) => {
-println!("appended a particlei right");
-to_return.append(&mut traverse_tree_helper(node));
-}
-None => {
-to_return.append(&mut (node.points
-.as_ref()
-.expect("unexpected null node #9")
-.clone()));
-}
-}
-return to_return;
+// Traverses the tree and returns a vector of all particles in the tree.
+// pub fn traverse_tree(tree: &KDTree) -> Vec<Particle> {
+// let node = tree.root.clone();
+// let mut to_return: Vec<Particle> = Vec::new();
+// match node.left {
+// Some(ref node) => {
+// println!("appended a particle left");
+// to_return.append(&mut traverse_tree_helper(node));
+// }
+// None => (),
+// }
+// match node.right {
+// Some(ref node) => {
+// println!("appended a particlei right");
+// to_return.append(&mut traverse_tree_helper(node));
+// }
+// None => {
+// to_return.append(&mut (node.points
+// .as_ref()
+// .expect("unexpected null node #9")
+// .clone()));
+// }
+// }
+// return to_return;
 // return node.points.as_ref().expect("unexpected null vector of points");
-
-}*/
+//
+// }
 // Traverses tree and returns first child found with points.
 pub fn traverse_tree_helper(node: &Node) -> Vec<Particle> {
     let mut to_return: Vec<Particle> = Vec::new();
     match node {
-        &Node::Interior{..} =>  {
+        &Node::Interior { .. } => {
             to_return.append(&mut traverse_tree_helper(node));
         }
-        &Node::Leaf{ref points, ..} => {
+        &Node::Leaf { ref points, .. } => {
             to_return.append(&mut points.clone());
         }
     }
     return to_return;
-    /*
-    match node.left {
-        Some(ref node) => {
-            to_return.append(&mut traverse_tree_helper(node));
-        }
-        None => (),
-    }
-    match node.right {
-        Some(ref node) => {
-            to_return.append(&mut traverse_tree_helper(node));
-        }
-        None => {
-            to_return.append(&mut (node.points
-                                   .as_ref()
-                                   .expect("unexpected null node #10")
-                                   .clone()));
-        }
-    } */
+    // match node.left {
+    // Some(ref node) => {
+    // to_return.append(&mut traverse_tree_helper(node));
+    // }
+    // None => (),
+    // }
+    // match node.right {
+    // Some(ref node) => {
+    // to_return.append(&mut traverse_tree_helper(node));
+    // }
+    // None => {
+    // to_return.append(&mut (node.points
+    // .as_ref()
+    // .expect("unexpected null node #10")
+    // .clone()));
+    // }
+    // }
 }
