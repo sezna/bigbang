@@ -47,9 +47,9 @@ impl Particle {
     }
     /// Adds the current velocity to the position. Takes in a duration of time.
     pub fn time_advance(&mut self, time_step: f64) {
-        self.x += (self.vx * time_step);
-        self.y += (self.vy * time_step);
-        self.z += (self.vz * time_step);
+        self.x += self.vx * time_step;
+        self.y += self.vy * time_step;
+        self.z += self.vz * time_step;
     }
     pub fn distance_squared(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
@@ -57,8 +57,7 @@ impl Particle {
         let x_dist = (other.x - self.x) * (other.x - self.x);
         let y_dist = (other.y - self.y) * (other.y - self.y);
         let z_dist = (other.z - self.z) * (other.z - self.z);
-        let distance = x_dist + y_dist + z_dist;
-        distance
+        x_dist + y_dist + z_dist
     }
     /// Returns the distance between the two particles
     pub fn distance(&self, other: &Particle) -> f64 {

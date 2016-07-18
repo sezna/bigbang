@@ -42,13 +42,13 @@ pub fn xyz_distances(particles: &[Particle]) -> (f64, f64, f64) {
     let x_distance = x_max - x_min;
     let y_distance = y_max - y_min;
     let z_distance = z_max - z_min;
-    return (x_distance, y_distance, z_distance);
+    (x_distance, y_distance, z_distance)
 }
 pub fn max_min_xyz(particles: &[Particle]) -> (f64, f64, f64, f64, f64, f64) {
     let (xmax, xmin) = max_min_x(particles);
     let (ymax, ymin) = max_min_y(particles);
     let (zmax, zmin) = max_min_z(particles);
-    return (xmax, xmin, ymax, ymin, zmax, zmin);
+    (xmax, xmin, ymax, ymin, zmax, zmin)
 }
 pub fn max_min_x(particles: &[Particle]) -> (f64, f64) {
     let mut to_return_max = 0.0;
@@ -61,7 +61,7 @@ pub fn max_min_x(particles: &[Particle]) -> (f64, f64) {
             to_return_min = i.x;
         }
     }
-    return (to_return_max, to_return_min);
+    (to_return_max, to_return_min)
 }
 
 /// Returns the maximum and minimum y values in a slice of particles.
@@ -76,7 +76,7 @@ pub fn max_min_y(particles: &[Particle]) -> (f64, f64) {
             to_return_min = i.y;
         }
     }
-    return (to_return_max, to_return_min);
+    (to_return_max, to_return_min)
 }
 
 /// Returns the maximum and minimum z values in a slice of particles.
@@ -91,7 +91,7 @@ pub fn max_min_z(particles: &[Particle]) -> (f64, f64) {
             to_return_min = i.z;
         }
     }
-    return (to_return_max, to_return_min);
+    (to_return_max, to_return_min)
 }
 // The following three functions just find median points  for the x, y, or z
 // dimension. Perhaps it could use a refactor, because there is a lot of copied
@@ -111,11 +111,11 @@ pub fn find_median_z(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     }
     pts.swap(start, high);
     if start == mid {
-        return (pts[start].z, start);
+        (pts[start].z, start)
     } else if high < mid {
-        return find_median_z(pts, high + 1, end, mid);
+        find_median_z(pts, high + 1, end, mid)
     } else {
-        return find_median_z(pts, start, high, mid);
+        find_median_z(pts, start, high, mid)
     }
 }
 /// Returns the median "y" value in a slice of particles.
@@ -132,11 +132,11 @@ pub fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     }
     pts.swap(start, high);
     if start == mid {
-        return (pts[start].y, start);
+        (pts[start].y, start)
     } else if high < mid {
-        return find_median_y(pts, high + 1, end, mid);
+        find_median_y(pts, high + 1, end, mid)
     } else {
-        return find_median_y(pts, start, high, mid);
+        find_median_y(pts, start, high, mid)
     }
 }
 /// Returns the median "x" value in a slice of particles.
@@ -153,10 +153,10 @@ pub fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     }
     pts.swap(start, high);
     if start == mid {
-        return (pts[start].x, start);
+        (pts[start].x, start)
     } else if high < mid {
-        return find_median_x(pts, high + 1, end, mid);
+        find_median_x(pts, high + 1, end, mid)
     } else {
-        return find_median_x(pts, start, high, mid);
+        find_median_x(pts, start, high, mid)
     }
 }

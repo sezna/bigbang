@@ -1,14 +1,14 @@
-use std::error::Error;
+/*use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use kdtree::particle::Particle;
-
+*/
 // For now, data files are text files where there is one particle per line.
 // Particles are stored as
 // x y z vx vy vz mass radius
 // TODO perhaps write the reading so that it doesn't require newlines?
-
+/*
 /// Opens a utf8 file with one particle per line, space separated values of the format:
 /// x y z vx vy vz mass radius
 /// Must have a newline after the final particle.
@@ -20,8 +20,8 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
         Ok(file) => file,
     };
     let mut s = String::new();
-    if let Err(why) =  file.read_to_string(&mut s) {
-         panic!("couldn't read {}: {}", display, Error::description(&why));
+    if let Err(why) = file.read_to_string(&mut s) {
+        panic!("couldn't read {}: {}", display, Error::description(&why));
     };
     let mut tmp_str: String = String::new();
     let mut tmp: Vec<String> = Vec::new();
@@ -60,12 +60,12 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
             } else {
                 println!("vec_len: {}", particles.len());
                 println!("Input file invalid.");
-                return vec![Particle::new()];
+                vec![Particle::new()]
             }
         }
     }
-    return particles;
-}
+    particles
+}*/
 // pub fn write_data_file(kdtree: KDTree, file_path: String) {
 // let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
 // let mut to_write = traverse_tree(&kdtree);

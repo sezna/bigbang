@@ -50,38 +50,37 @@ impl Node {
     // Some convenience functions.
     /// Returns a node with all 0.0 or "None/Null" values.
     pub fn new_leaf() -> Node {
-        return Node::Leaf {
+        Node::Leaf {
             points: Vec::new(),
             properties: Properties::default(),
-        };
+        }
     }
 
     // Since this field is in both elements of the Enum, this is an accessor function.
     pub fn properties(&self) -> &Properties {
         match *self {
-            Node::Leaf { ref properties, .. } | Node::Interior { ref properties, .. } => {
-                return properties;
-            }
+            Node::Leaf { ref properties, .. } |
+            Node::Interior { ref properties, .. } => properties,
 
         }
     }
 
     pub fn new_interior() -> Node {
-        return Node::Interior {
+        Node::Interior {
             split_dimension: Dimension::None,
             split_value: 0.0,
             left: None,
             right: None,
             properties: Properties::default(),
-        };
+        }
     }
     // Used when treating a node as the sum of its parts in gravity calculations.
     /// Converts a node into a particle with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the particles it contains.
     pub fn to_particle(&self) -> Particle {
         let center_of_mass = self.properties().center_of_mass;
-        let total_mass = self.properties().total_mass; 
-        return Particle {
+        let total_mass = self.properties().total_mass;
+        Particle {
             x: center_of_mass.0,
             y: center_of_mass.1,
             z: center_of_mass.2,
@@ -90,7 +89,7 @@ impl Node {
             vz: 0.0,
             mass: total_mass,
             radius: 0.0,
-        };
+        }
     }
     // Function that is not being used anymore. Returns a vector of the node and
     // all of its subnodes.

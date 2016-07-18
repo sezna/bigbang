@@ -58,9 +58,9 @@ fn get_gravitational_acceleration_node(particle: &Particle, other: &Node) -> (f6
     let d_over_d_cubed = (d_vector.0 / d_magnitude * d_magnitude,
                           d_vector.1 / d_magnitude * d_magnitude,
                           d_vector.2 / d_magnitude * d_magnitude);
-(d_over_d_cubed.0 * node_as_particle.mass,
-                        d_over_d_cubed.1 * node_as_particle.mass,
-                        d_over_d_cubed.2 * node_as_particle.mass)
+    (d_over_d_cubed.0 * node_as_particle.mass,
+     d_over_d_cubed.1 * node_as_particle.mass,
+     d_over_d_cubed.2 * node_as_particle.mass)
 }
 /// Given two particles, particle and other, returns the acceleration that other is exerting on
 /// particle.
@@ -72,9 +72,7 @@ fn get_gravitational_acceleration_particle(particle: &Particle,
     let d_over_d_cubed = (d_vector.0 / d_magnitude * d_magnitude,
                           d_vector.1 / d_magnitude * d_magnitude,
                           d_vector.2 / d_magnitude * d_magnitude);
-    (d_over_d_cubed.0 * other.mass,
-                        d_over_d_cubed.1 * other.mass,
-                        d_over_d_cubed.2 * other.mass)
+    (d_over_d_cubed.0 * other.mass, d_over_d_cubed.1 * other.mass, d_over_d_cubed.2 * other.mass)
 
 }
 /// This function creates a vector of all particles from the tree and applies gravity to them.
@@ -120,41 +118,43 @@ fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
     if theta_exceeded(particle, node) {
         // TODO do we want this here?
         let tmp_accel = get_gravitational_acceleration_node(particle, node);
-                        acceleration.0 += tmp_accel.0;
-                        acceleration.1 += tmp_accel.1;
-                        acceleration.2 += tmp_accel.2;
+        acceleration.0 += tmp_accel.0;
+        acceleration.1 += tmp_accel.1;
+        acceleration.2 += tmp_accel.2;
     } else {
         match *node {
             Node::Leaf { ref points, .. } => {
                 // if the node is a leaf
                 for i in points {
                     let tmp_accel = get_gravitational_acceleration_particle(particle, i);
-                        acceleration.0 += tmp_accel.0;
-                        acceleration.1 += tmp_accel.1;
-                        acceleration.2 += tmp_accel.2;
+                    acceleration.0 += tmp_accel.0;
+                    acceleration.1 += tmp_accel.1;
+                    acceleration.2 += tmp_accel.2;
                 }
             }
             Node::Interior { left: Some(ref left), .. } => {
                 // if the node is an interior node
                 if theta_exceeded(particle, node) {
                     let tmp_accel = get_gravitational_acceleration_node(particle, node);
-                        acceleration.0 += tmp_accel.0;
-                        acceleration.1 += tmp_accel.1;
-                        acceleration.2 += tmp_accel.2;
+                    acceleration.0 += tmp_accel.0;
+                    acceleration.1 += tmp_accel.1;
+                    acceleration.2 += tmp_accel.2;
                 } else {
                     match **left {
-                        Node::Interior { .. } | Node::Leaf { .. } => {
+                        Node::Interior { .. } |
+                        Node::Leaf { .. } => {
                             let tmp_accel = particle_gravity(left, particle);
-                        acceleration.0 += tmp_accel.0;
-                        acceleration.1 += tmp_accel.1;
-                        acceleration.2 += tmp_accel.2;
+                            acceleration.0 += tmp_accel.0;
+                            acceleration.1 += tmp_accel.1;
+                            acceleration.2 += tmp_accel.2;
                         }
                     }
                 }
             }
             Node::Interior { right: Some(ref right), .. } => {
                 match **right {
-                    Node::Interior { .. } | Node::Leaf{ .. }=> {
+                    Node::Interior { .. } |
+                    Node::Leaf { .. } => {
                         let tmp_accel = particle_gravity(right, particle);
                         acceleration.0 += tmp_accel.0;
                         acceleration.1 += tmp_accel.1;
@@ -168,8 +168,8 @@ fn particle_gravity(node: &Node, particle: &Particle) -> (f64, f64, f64) {
     }
 
     (acceleration.0 + acceleration.0,
-            acceleration.1 + acceleration.1,
-            acceleration.2 + acceleration.2)
+     acceleration.1 + acceleration.1,
+     acceleration.2 + acceleration.2)
 }
 
 // if node.points.is_some() {
