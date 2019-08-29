@@ -1,7 +1,10 @@
-extern crate kdtree;
-use kdtree::kdtree::particle::Particle;
-use kdtree::kdtree::io::{open_data_file, write_data_file};
-use kdtree::kdtree::{new_kdtree, KDTree, traverse_tree};
+#![feature(test)]
+#![cfg(test)]
+
+extern crate test;
+use self::kdtree::kdtree::io::{open_data_file, write_data_file};
+use self::kdtree::kdtree::particle::Particle;
+use self::kdtree::kdtree::{new_kdtree, traverse_tree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
 
@@ -24,23 +27,24 @@ fn test_traversal() {
     }
 
     assert!(all_found);
-
 }
 
 #[test]
 /// Really lame test for Particle::new()
 fn test() {
     let test_particle = Particle::new();
-    assert!(Particle {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-        vx: 0.0,
-        vy: 0.0,
-        vz: 0.0,
-        radius: 0.0,
-        mass: 0.0,
-    } == test_particle);
+    assert!(
+        Particle {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            vx: 0.0,
+            vy: 0.0,
+            vz: 0.0,
+            radius: 0.0,
+            mass: 0.0,
+        } == test_particle
+    );
 }
 #[test]
 #[allow(dead_code)]
@@ -68,26 +72,28 @@ fn test_tree() {
     let smaller_kdtree = new_kdtree(&mut smaller_vec);
     smaller_kdtree.display_tree();
     // Testing center of mass assignment
-    let mut vector = vec![Particle {
-                              vx: 0.0,
-                              vy: 0.0,
-                              vz: 0.0,
-                              x: 1.0,
-                              y: 2.0,
-                              z: 3.0,
-                              mass: 2.0,
-                              radius: 1.0,
-                          },
-                          Particle {
-                              vx: 0.0,
-                              vy: 0.0,
-                              vz: 0.0,
-                              x: 2.0,
-                              y: 1.0,
-                              z: 3.0,
-                              mass: 2.0,
-                              radius: 1.0,
-                          }];
+    let mut vector = vec![
+        Particle {
+            vx: 0.0,
+            vy: 0.0,
+            vz: 0.0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+            mass: 2.0,
+            radius: 1.0,
+        },
+        Particle {
+            vx: 0.0,
+            vy: 0.0,
+            vz: 0.0,
+            x: 2.0,
+            y: 1.0,
+            z: 3.0,
+            mass: 2.0,
+            radius: 1.0,
+        },
+    ];
     let center_of_mass_test = new_kdtree(&mut vector);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
@@ -125,8 +131,10 @@ fn test_output() {
     let kd = new_kdtree(&mut test_vec);
     write_data_file(kd, "test_files/test_output.txt".to_string());
     let read_file = open_data_file("test_files/test_output.txt".to_string());
-    println!("test_vec.len() = {} read_file.len() = {}",
-             test_vec.len(),
-             read_file.len());
+    println!(
+        "test_vec.len() = {} read_file.len() = {}",
+        test_vec.len(),
+        read_file.len()
+    );
     assert!(test_vec.len() == read_file.len());
 }

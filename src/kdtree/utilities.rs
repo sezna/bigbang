@@ -1,4 +1,6 @@
+use super::Dimension;
 use kdtree::particle::Particle;
+use std::cmp::Ordering;
 
 // The following three functions just return a tuple of the maximum
 // and minimum values in the dimensions. Perhaps it could use a
@@ -36,64 +38,45 @@ use kdtree::particle::Particle;
 // (max, min)
 // }
 //
+
+/// Returns the absolute distance in every dimension (the range in every dimension)
+/// of an array slice of particles.
 pub fn xyz_distances(particles: &[Particle]) -> (f64, f64, f64) {
-    let (x_max, x_min) = max_min_x(particles);
-    let (y_max, y_min) = max_min_y(particles);
-    let (z_max, z_min) = max_min_z(particles);
-    let x_distance = (x_max - x_min);
-    let y_distance = (y_max - y_min);
-    let z_distance = (z_max - z_min);
-    return (x_distance, y_distance, z_distance);
-}
-pub fn max_min_xyz(particles: &[Particle]) -> (f64, f64, f64, f64, f64, f64) {
-    let (xmax, xmin) = max_min_x(particles);
-    let (ymax, ymin) = max_min_y(particles);
-    let (zmax, zmin) = max_min_z(particles);
-    return (xmax, xmin, ymax, ymin, zmax, zmin);
-}
-pub fn max_min_x(particles: &[Particle]) -> (f64, f64) {
-    let mut to_return_max = 0.0;
-    let mut to_return_min = particles[0].x;
-    for i in particles {
-        if i.x > to_return_max {
-            to_return_max = i.x;
-        }
-        if i.x < to_return_min {
-            to_return_min = i.x;
-        }
-    }
-    return (to_return_max, to_return_min);
+    let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(particles);
+    let x_distance = x_max - x_min;
+    let y_distance = y_max - y_min;
+    let z_distance = z_max - z_min;
+    return (x_distance.abs(), y_distance.abs(), z_distance.abs());
 }
 
-/// Returns the maximum and minimum y values in a slice of particles.
-pub fn max_min_y(particles: &[Particle]) -> (f64, f64) {
-    let mut to_return_max = 0.0;
-    let mut to_return_min = particles[0].y;
-    for i in particles {
-        if i.y > to_return_max {
-            to_return_max = i.y;
-        }
-        if i.y < to_return_min {
-            to_return_min = i.y;
-        }
-    }
-    return (to_return_max, to_return_min);
+pub fn max_min_xyz(particles: &[Particle]) -> (&f64, &f64, &f64, &f64, &f64, &f64) {
+    let (x_max, x_min) = max_min(Dimension::X, particles);
+    let (y_max, y_min) = max_min(Dimension::Y, particles);
+    let (z_max, z_min) = max_min(Dimension::Z, particles);
+    return (x_max, x_min, y_max, y_min, z_max, z_min);
 }
 
 /// Returns the maximum and minimum z values in a slice of particles.
-pub fn max_min_z(particles: &[Particle]) -> (f64, f64) {
-    let mut to_return_max = 0.0;
-    let mut to_return_min = particles[0].z;
-    for i in particles {
-        if i.z > to_return_max {
-            to_return_max = i.z;
-        }
-        if i.z < to_return_min {
-            to_return_min = i.z;
-        }
-    }
-    return (to_return_max, to_return_min);
+pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
+    let cmp_func: Box<dyn Fn(&Particle, &Particle) -> Ordering> = match dim {
+        Dimension::X => Box::new(|a, b| a.x.partial_cmp(&b.x).unwrap_or_else(|| Ordering::Equal)),
+        Dimension::Y => Box::new(|a, b| a.y.partial_cmp(&b.y).unwrap_or_else(|| Ordering::Equal)),
+        Dimension::Z => Box::new(|a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal)),
+    };
+    (
+        &particles
+            .iter()
+            .max_by(|a, b| cmp_func(a, b))
+            .expect(&format!("no max {} found", dim.as_string()))
+            .z,
+        &particles
+            .iter()
+            .min_by(|a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal))
+            .expect(&format!("no min {} found", dim.as_string()))
+            .z,
+    )
 }
+
 // The following three functions just find median points  for the x, y, or z
 // dimension. Perhaps it could use a refactor, because there is a lot of copied
 // code. They return a tuple of the value being split at and the index being

@@ -1,11 +1,9 @@
-
 #[derive(Clone, PartialEq)]
 /// Used to represent which dimension the KDTree node has split on.
 pub enum Dimension {
     X,
     Y,
     Z,
-    Null,
 }
 
 /// Convenience function that returns the Dimension as a &str.
@@ -15,7 +13,6 @@ impl Dimension {
             &Dimension::X => return "X",
             &Dimension::Y => return "Y",
             &Dimension::Z => return "Z",
-            _ => return "Null",
         }
     }
 }
