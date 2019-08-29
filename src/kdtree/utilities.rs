@@ -58,10 +58,10 @@ pub fn max_min_xyz(particles: &[Particle]) -> (&f64, &f64, &f64, &f64, &f64, &f6
 
 /// Returns the maximum and minimum z values in a slice of particles.
 pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
-    let cmp_func: Box<dyn Fn(&Particle, &Particle) -> Ordering> = match dim {
-        Dimension::X => Box::new(|a, b| a.x.partial_cmp(&b.x).unwrap_or_else(|| Ordering::Equal)),
-        Dimension::Y => Box::new(|a, b| a.y.partial_cmp(&b.y).unwrap_or_else(|| Ordering::Equal)),
-        Dimension::Z => Box::new(|a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal)),
+    let cmp_func: fn(&Particle, &Particle) -> Ordering = match dim {
+        Dimension::X => |a, b| a.x.partial_cmp(&b.x).unwrap_or_else(|| Ordering::Equal),
+        Dimension::Y => |a, b| a.y.partial_cmp(&b.y).unwrap_or_else(|| Ordering::Equal),
+        Dimension::Z => |a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal),
     };
     (
         &particles
@@ -71,7 +71,7 @@ pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
             .z,
         &particles
             .iter()
-            .min_by(|a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal))
+            .min_by(|a, b| cmp_func(a, b))
             .expect(&format!("no min {} found", dim.as_string()))
             .z,
     )

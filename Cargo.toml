@@ -1,7 +1,7 @@
 [package]
 name = "kdtree"
 version = "0.1.0"
-authors = ["Alex <ahansen2@trinity.edu>"]
+authors = ["Alex <alex@alex-hansen.com>"]
 [dependencies]
 rand = "0.3"
 [features]
