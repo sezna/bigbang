@@ -1,9 +1,9 @@
+use kdtree::particle::Particle;
+use kdtree::{traverse_tree, KDTree};
 use std::error::Error;
 use std::fs::File;
-use kdtree::{KDTree, traverse_tree};
 use std::io::prelude::*;
 use std::path::Path;
-use kdtree::particle::Particle;
 
 // For now, data files are text files where there is one particle per line.
 // Particles are stored as
@@ -38,7 +38,6 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
             tmp.push(tmp_str.clone());
             tmp_str = "".to_string();
             if tmp.len() == 8 {
-
                 let x_val: f64 = tmp[0].parse().unwrap(); // TODO unwraps are bad
                 let y_val: f64 = tmp[1].parse().unwrap();
                 let z_val: f64 = tmp[2].parse().unwrap();
@@ -72,17 +71,19 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
 pub fn write_data_file(kdtree: KDTree, file_path: String) {
     let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
     let mut to_write = traverse_tree(&kdtree);
-    let mut to_write_string: String = "".to_string();
+    let mut to_write_string: String;
     println!("to_write.len() = {}", to_write.len());
     to_write_string = format!("{}", to_write.pop().expect("").as_string());
     while !to_write.is_empty() {
-        to_write_string = format!("{}\n{}",
-                                  to_write_string,
-                                  to_write.pop().expect("").as_string());
-    }/*
-    for i in to_write {
-        to_write_string = format!("{}\n{}", to_write_string, i.as_string());
-    }*/
+        to_write_string = format!(
+            "{}\n{}",
+            to_write_string,
+            to_write.pop().expect("").as_string()
+        );
+    } /*
+      for i in to_write {
+          to_write_string = format!("{}\n{}", to_write_string, i.as_string());
+      }*/
     to_write_string = format!("{}\n", to_write_string);
     assert!(file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len());
 }
