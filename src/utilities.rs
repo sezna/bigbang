@@ -1,5 +1,5 @@
 use super::Dimension;
-use kdtree::particle::Particle;
+use crate::particle::Particle;
 use std::cmp::Ordering;
 
 // The following three functions just return a tuple of the maximum

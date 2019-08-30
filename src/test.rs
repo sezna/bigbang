@@ -2,9 +2,9 @@
 #![cfg(test)]
 
 extern crate test;
-use self::kdtree::kdtree::io::{open_data_file, write_data_file};
-use self::kdtree::kdtree::particle::Particle;
-use self::kdtree::kdtree::{new_kdtree, traverse_tree, KDTree};
+use super::io::{open_data_file, write_data_file};
+use super::particle::Particle;
+use super::{new_kdtree, traverse_tree, KDTree};
 // TODO list
 // test a tree after gravity has been applied to make sure it is done correctly
 

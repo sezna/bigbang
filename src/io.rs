@@ -1,5 +1,5 @@
-use kdtree::particle::Particle;
-use kdtree::{traverse_tree, KDTree};
+use crate::particle::Particle;
+use crate::{traverse_tree, KDTree};
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
