@@ -1,5 +1,5 @@
-use kdtree::dimension::Dimension;
-use kdtree::particle::Particle;
+use crate::dimension::Dimension;
+use crate::particle::Particle;
 #[derive(Clone)]
 pub struct Node {
     pub split_dimension: Option<Dimension>, // Dimension that this node splits at.

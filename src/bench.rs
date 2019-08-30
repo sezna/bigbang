@@ -1,9 +1,9 @@
 #![feature(test)]
 extern crate kdtree;
 extern crate test;
-use self::kdtree::kdtree::particle::Particle;
-use self::kdtree::kdtree::{new_kdtree, KDTree};
 use self::test::Bencher;
+use crate::particle::Particle;
+use crate::{new_kdtree, KDTree};
 #[bench]
 fn bench_tree(b: &mut Bencher) {
     b.iter(|| new_kdtree(&mut vec![Particle::random_particle(); 1000]));
