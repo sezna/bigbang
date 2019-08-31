@@ -1,5 +1,3 @@
-#![feature(test)]
-extern crate kdtree;
 extern crate test;
 use self::test::Bencher;
 use crate::particle::Particle;
@@ -12,9 +10,9 @@ fn bench_tree(b: &mut Bencher) {
 #[bench]
 /// Bench the function which gets the minimum and maximum values for z out of an array slice of particles.
 /// This is iterated heavily so the performance of this function impacts the performance of the structure as a whole.
-fn bench_min_max_z(&mut b: test::Bencher) {
+fn bench_min_max(b: &mut Bencher) {
     let mut test_vec: Vec<Particle> = Vec::new();
-    for i in 0..1000 {
+    for _ in 0..1000 {
         test_vec.push(Particle::random_particle());
     }
     let kd = new_kdtree(&mut test_vec);

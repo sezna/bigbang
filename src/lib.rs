@@ -1,12 +1,14 @@
+#![feature(test)]
 // TODO list
 // speed check compare the mutated accel value vs the recursive addition
 // function that takes the acceleration on a particle and applies it
 // function that puts all of the new particles into a new kdtree
+mod bench;
 pub mod dimension;
 pub mod io;
 pub mod node;
 pub mod particle;
-pub mod utilities;
+mod utilities;
 use dimension::Dimension;
 use node::Node;
 use particle::Particle;

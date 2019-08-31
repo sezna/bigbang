@@ -1,43 +1,7 @@
 use super::Dimension;
 use crate::particle::Particle;
 use std::cmp::Ordering;
-
-// The following three functions just return a tuple of the maximum
-// and minimum values in the dimensions. Perhaps it could use a
-// refactor, as there is a lot of copied code.
-/// Returns the maximum and minimum x values in a slice of particles.
-//
-// pub fn max_min(particles: &[Particle]) -> (Point3, Point3) { -- for use when
-// switching to the point3 struct.
-// use std::f64;
-// assert!(particles.len() > 0);
-// let mut max = Point3::new(f64::MIN);
-// let mut min = Point3::new(f64::MAX);
-// for p in particles {
-// if p.x > max.x {
-// max.x = p.x;
-// }
-// if p.y > max.y {
-// max.y = p.y;
-// }
-// if p.z > max.z {
-// max.z = p.z;
-// }
-//
-// if p.x < min.x {
-// min.x = p.x;
-// }
-// if p.y < min.y {
-// min.y = p.y;
-// }
-// if p.z < min.z {
-// min.z = p.z;
-// }
-// }
-//
-// (max, min)
-// }
-//
+extern crate test;
 
 /// Returns the absolute distance in every dimension (the range in every dimension)
 /// of an array slice of particles.
@@ -56,22 +20,51 @@ pub fn max_min_xyz(particles: &[Particle]) -> (&f64, &f64, &f64, &f64, &f64, &f6
     return (x_max, x_min, y_max, y_min, z_max, z_min);
 }
 
+#[bench]
+fn bench_min_max(b: &mut test::Bencher) {
+    let mut test_vec: Vec<Particle> = Vec::new();
+    for _ in 0..1000 {
+        test_vec.push(Particle::random_particle());
+    }
+    // TODO make it do this with different vecs
+    b.iter(|| max_min_xyz(&test_vec));
+}
+
 /// Returns the maximum and minimum z values in a slice of particles.
 pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
-    let cmp_func: fn(&Particle, &Particle) -> Ordering = match dim {
-        Dimension::X => |a, b| a.x.partial_cmp(&b.x).unwrap_or_else(|| Ordering::Equal),
-        Dimension::Y => |a, b| a.y.partial_cmp(&b.y).unwrap_or_else(|| Ordering::Equal),
-        Dimension::Z => |a, b| a.z.partial_cmp(&b.z).unwrap_or_else(|| Ordering::Equal),
-    };
     (
         &particles
             .iter()
-            .max_by(|a, b| cmp_func(a, b))
+            .max_by(|a, b| {
+                match dim {
+                    Dimension::X => &a.x,
+                    Dimension::Y => &a.y,
+                    Dimension::Z => &a.z,
+                }
+                .partial_cmp(match dim {
+                    Dimension::X => &b.x,
+                    Dimension::Y => &b.y,
+                    Dimension::Z => &b.z,
+                })
+                .unwrap_or_else(|| Ordering::Equal)
+            })
             .expect(&format!("no max {} found", dim.as_string()))
             .z,
         &particles
             .iter()
-            .min_by(|a, b| cmp_func(a, b))
+            .min_by(|a, b| {
+                match dim {
+                    Dimension::X => &a.x,
+                    Dimension::Y => &a.y,
+                    Dimension::Z => &a.z,
+                }
+                .partial_cmp(match dim {
+                    Dimension::X => &b.x,
+                    Dimension::Y => &b.y,
+                    Dimension::Z => &b.z,
+                })
+                .unwrap_or_else(|| Ordering::Equal)
+            })
             .expect(&format!("no min {} found", dim.as_string()))
             .z,
     )

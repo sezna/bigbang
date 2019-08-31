@@ -21,7 +21,7 @@ pub struct Node {
 
 impl Node {
     // Some convenience functions.
-    /// Returns a node with all 0.0 or "None/Null" values.
+    /// Returns a node with default values.
     pub fn new() -> Node {
         return Node {
             split_dimension: None,
