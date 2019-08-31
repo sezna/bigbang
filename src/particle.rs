@@ -1,4 +1,5 @@
 extern crate rand;
+use super::Dimension;
 #[derive(Clone, PartialEq, Default)]
 pub struct Particle {
     pub vx: f64,
@@ -24,20 +25,14 @@ impl Particle {
             radius: rand::random::<f64>(),
             mass: rand::random::<f64>(),
         };
-
     }
     // used in writing output
     /// Returns the particle as a string with space separated values.
     pub fn as_string(&self) -> String {
-        return format!("{} {} {} {} {} {} {} {}",
-                       self.x,
-                       self.y,
-                       self.z,
-                       self.vx,
-                       self.vy,
-                       self.vz,
-                       self.mass,
-                       self.radius);
+        return format!(
+            "{} {} {} {} {} {} {} {}",
+            self.x, self.y, self.z, self.vx, self.vy, self.vz, self.mass, self.radius
+        );
     }
     /// Adds an acceleration to the velocity of the particle.
     pub fn add_acceleration(&mut self, acc: (f64, f64, f64)) {
@@ -64,7 +59,7 @@ impl Particle {
     pub fn distance(&self, other: &Particle) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         // all dist variables  are squared
-        let x_dist = (other.x - self.x) * (other.x - self.x); 
+        let x_dist = (other.x - self.x) * (other.x - self.x);
         let y_dist = (other.y - self.y) * (other.y - self.y);
         let z_dist = (other.z - self.z) * (other.z - self.z);
         let distance = f64::sqrt(x_dist + y_dist + z_dist);
@@ -81,5 +76,11 @@ impl Particle {
     pub fn new() -> Particle {
         Particle::default()
     }
-
+    pub fn get_dim(&self, dim: &Dimension) -> &f64 {
+        match dim {
+            &Dimension::X => &self.x,
+            &Dimension::Y => &self.y,
+            &Dimension::Z => &self.z,
+        }
+    }
 }

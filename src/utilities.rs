@@ -36,34 +36,18 @@ pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
         &particles
             .iter()
             .max_by(|a, b| {
-                match dim {
-                    Dimension::X => &a.x,
-                    Dimension::Y => &a.y,
-                    Dimension::Z => &a.z,
-                }
-                .partial_cmp(match dim {
-                    Dimension::X => &b.x,
-                    Dimension::Y => &b.y,
-                    Dimension::Z => &b.z,
-                })
-                .unwrap_or_else(|| Ordering::Equal)
+                a.get_dim(&dim)
+                    .partial_cmp(b.get_dim(&dim))
+                    .unwrap_or_else(|| Ordering::Equal)
             })
             .expect(&format!("no max {} found", dim.as_string()))
             .z,
         &particles
             .iter()
             .min_by(|a, b| {
-                match dim {
-                    Dimension::X => &a.x,
-                    Dimension::Y => &a.y,
-                    Dimension::Z => &a.z,
-                }
-                .partial_cmp(match dim {
-                    Dimension::X => &b.x,
-                    Dimension::Y => &b.y,
-                    Dimension::Z => &b.z,
-                })
-                .unwrap_or_else(|| Ordering::Equal)
+                a.get_dim(&dim)
+                    .partial_cmp(b.get_dim(&dim))
+                    .unwrap_or_else(|| Ordering::Equal)
             })
             .expect(&format!("no min {} found", dim.as_string()))
             .z,
