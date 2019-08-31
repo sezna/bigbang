@@ -2,7 +2,6 @@ use super::Dimension;
 use crate::particle::Particle;
 use std::cmp::Ordering;
 extern crate test;
-
 /// Returns the absolute distance in every dimension (the range in every dimension)
 /// of an array slice of particles.
 pub fn xyz_distances(particles: &[Particle]) -> (f64, f64, f64) {
@@ -21,7 +20,7 @@ pub fn max_min_xyz(particles: &[Particle]) -> (&f64, &f64, &f64, &f64, &f64, &f6
 }
 
 #[bench]
-fn bench_min_max(b: &mut test::Bencher) {
+fn bench_max_min(b: &mut test::Bencher) {
     let mut test_vec: Vec<Particle> = Vec::new();
     for _ in 0..1000 {
         test_vec.push(Particle::random_particle());
@@ -54,37 +53,23 @@ pub fn max_min(dim: Dimension, particles: &[Particle]) -> (&f64, &f64) {
     )
 }
 
-// The following three functions just find median points  for the x, y, or z
-// dimension. Perhaps it could use a refactor, because there is a lot of copied
-// code. They return a tuple of the value being split at and the index being
-// split at.
-/// Returns the median "z" value in a slice of particles.
-pub fn find_median_z(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
-    let mut low = (start + 1) as usize;
-    let mut high = (end - 1) as usize; //exclusive end
-    while low <= high {
-        if pts[low].z < pts[start].z {
-            low = low + 1;
-        } else {
-            pts.swap(low, high);
-            high -= 1;
-        }
-    }
-    pts.swap(start, high);
-    if start == mid {
-        return (pts[start].z, start);
-    } else if high < mid {
-        return find_median_z(pts, high + 1, end, mid);
-    } else {
-        return find_median_z(pts, start, high, mid);
-    }
+/// Finds the median value for a given dimension in a slice of particles.
+/// Making one that clones/uses immutability could be an interesting performance benchmark.
+pub fn find_median(dim: Dimension, pts: &mut [Particle]) -> (&f64, usize) {
+    find_median_helper(dim, pts, 0, pts.len(), pts.len() / 2usize)
 }
-/// Returns the median "y" value in a slice of particles.
-pub fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
+
+fn find_median_helper(
+    dim: Dimension,
+    pts: &mut [Particle],
+    start: usize,
+    end: usize,
+    mid: usize,
+) -> (&f64, usize) {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
-        if pts[low].y < pts[start].y {
+        if pts[low].get_dim(&dim) < pts[start].get_dim(&dim) {
             low = low + 1;
         } else {
             pts.swap(low, high);
@@ -93,31 +78,10 @@ pub fn find_median_y(pts: &mut [Particle], start: usize, end: usize, mid: usize)
     }
     pts.swap(start, high);
     if start == mid {
-        return (pts[start].y, start);
+        return (pts[start].get_dim(&dim), start);
     } else if high < mid {
-        return find_median_y(pts, high + 1, end, mid);
+        return find_median_helper(dim, pts, high + 1, end, mid);
     } else {
-        return find_median_y(pts, start, high, mid);
-    }
-}
-/// Returns the median "x" value in a slice of particles.
-pub fn find_median_x(pts: &mut [Particle], start: usize, end: usize, mid: usize) -> (f64, usize) {
-    let mut low = (start + 1) as usize;
-    let mut high = (end - 1) as usize; //exclusive end
-    while low <= high {
-        if pts[low].x < pts[start].x {
-            low = low + 1;
-        } else {
-            pts.swap(low, high);
-            high -= 1;
-        }
-    }
-    pts.swap(start, high);
-    if start == mid {
-        return (pts[start].x, start);
-    } else if high < mid {
-        return find_median_x(pts, high + 1, end, mid);
-    } else {
-        return find_median_x(pts, start, high, mid);
+        return find_median_helper(dim, pts, start, high, mid);
     }
 }

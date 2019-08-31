@@ -40,6 +40,44 @@ impl Node {
             z_min: 0.0,
         };
     }
+
+    /// Looks into its own children's maximum and minimum values, setting its own
+    /// values accordingly.
+    pub fn set_max_mins(&mut self) {
+        let xmin = f64::min(
+            self.left.as_ref().unwrap().x_min,
+            self.right.as_ref().unwrap().x_min,
+        );
+        let xmax = f64::max(
+            self.left.as_ref().unwrap().x_max,
+            self.right.as_ref().unwrap().x_max,
+        );
+        let ymin = f64::min(
+            self.left.as_ref().unwrap().y_min,
+            self.right.as_ref().unwrap().y_min,
+        );
+        let ymax = f64::max(
+            self.left.as_ref().unwrap().y_max,
+            self.right.as_ref().unwrap().y_max,
+        );
+        let zmin = f64::min(
+            self.left.as_ref().unwrap().z_min,
+            self.right.as_ref().unwrap().z_min,
+        );
+        let zmax = f64::max(
+            self.left.as_ref().unwrap().z_max,
+            self.right.as_ref().unwrap().z_max,
+        );
+        let left_r_max = self.left.as_ref().expect("unexpected null node #7").r_max;
+        let right_r_max = self.right.as_ref().expect("unexpected null node #8").r_max;
+        self.r_max = f64::max(left_r_max, right_r_max);
+        self.x_min = xmin;
+        self.x_max = xmax;
+        self.y_min = ymin;
+        self.y_max = ymax;
+        self.z_min = zmin;
+        self.z_max = zmax;
+    }
     // Used when treating a node as the sum of its parts in gravity calculations.
     /// Converts a node into a particle with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the particles it contains.

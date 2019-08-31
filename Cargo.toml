@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Alex <alex@alex-hansen.com>"]
 [dependencies]
 rand = "0.3"
+either = "1.5"
 [features]
 nightly = []
