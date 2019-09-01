@@ -1,5 +1,6 @@
 #![feature(test)]
 extern crate either;
+extern crate rand;
 extern crate test;
 // TODO list
 // speed check compare the mutated accel value vs the recursive addition
@@ -13,9 +14,37 @@ mod utilities;
 use dimension::Dimension;
 use gravtree::GravTree;
 use node::Node;
-extern crate rand;
+use std::ffi::CString;
+
 #[allow(unused_imports)] // this is used in the test
 use entity::Entity;
+/* FFI interface functions are all plopped right here. I don't know if there's a better place to put them. */
+
+use std::os::raw::c_int;
+use std::slice;
+
+#[no_mangle]
+pub unsafe extern "C" fn new(array: *const Entity, length: c_int) -> GravTree {
+    assert!(!array.is_null(), "Null pointer in new()");
+    let array: &[Entity] = slice::from_raw_parts(array, length as usize);
+    let mut rust_vec_of_entities = Vec::from(array);
+    return GravTree::new(&mut rust_vec_of_entities);
+}
+
+#[no_mangle]
+pub extern "C" fn time_step(gravtree: GravTree) -> GravTree {
+    return gravtree.time_step();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn from_data_file(filepath: CString) -> GravTree {
+    return GravTree::from_data_file(filepath.into_string().unwrap()).unwrap();
+}
+
+#[no_mangle]
+pub extern "C" fn write_data_file(filepath: String, gravtree: GravTree) {
+    gravtree.write_data_file(filepath);
+}
 
 #[test]
 fn test_traversal() {
