@@ -3,14 +3,18 @@ use super::Dimension;
 use crate::Node;
 use either::{Either, Left, Right};
 /// The length of time that passes each step. This coefficient is multiplied by the velocity
-/// before the velocity is added to the position of the particles each step.
+/// before the velocity is added to the position of the entities each step.
 const TIME_STEP: f64 = 0.2;
-/// The tolerance for the distance from a particle to the center of mass of an entity
+/// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
-/// particle instead of recursing into it.
+/// entity instead of recursing into it.
 const THETA: f64 = 0.2;
 #[derive(Clone, PartialEq, Default)]
-pub struct Particle {
+
+/// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
+/// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
+/// them around according to the gravity they exert on each other.
+pub struct Entity {
     pub vx: f64,
     pub vy: f64,
     pub vz: f64,
@@ -20,11 +24,15 @@ pub struct Particle {
     pub radius: f64,
     pub mass: f64,
 }
-impl Particle {
-    // Convenience function for testing.
-    /// Generates a particle with random properties.
-    pub fn random_particle() -> Particle {
-        return Particle {
+impl Entity {
+    /// Returns an entity with all 0.0 values.
+    pub fn new() -> Entity {
+        Entity::default()
+    }
+    /// Convenience function for testing.
+    /// Generates an entity with random properties.
+    pub fn random_entity() -> Entity {
+        return Entity {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
             vz: rand::random::<f64>(),
@@ -36,16 +44,16 @@ impl Particle {
         };
     }
 
-    /// Returns a new particle after gravity from a node has been applied to it.
+    /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
-    pub fn apply_gravity_from(&self, node: &Node) -> Particle {
-        let acceleration = self.particle_gravity(node);
+    pub fn apply_gravity_from(&self, node: &Node) -> Entity {
+        let acceleration = self.get_entity_acceleration_from(node);
         let (vx, vy, vz) = (
             self.vx + acceleration.0 * TIME_STEP,
             self.vy + acceleration.1 * TIME_STEP,
             self.vz + acceleration.2 * TIME_STEP,
         );
-        return Particle {
+        return Entity {
             vx: vx,
             vy: vy,
             vz: vz,
@@ -57,28 +65,17 @@ impl Particle {
         };
     }
 
-    // used in writing output
-    /// Returns the particle as a string with space separated values.
+    /// Returns the entity as a string with space separated values.
     pub fn as_string(&self) -> String {
         return format!(
             "{} {} {} {} {} {} {} {}",
             self.x, self.y, self.z, self.vx, self.vy, self.vz, self.mass, self.radius
         );
     }
-    /// Adds an acceleration to the velocity of the particle.
-    pub fn add_acceleration(&mut self, acc: (f64, f64, f64)) {
-        self.vx = self.vx + acc.0;
-        self.vy = self.vy + acc.1;
-        self.vz = self.vz + acc.2;
-    }
-    /// Adds the current velocity to the position. Takes in a duration of time.
-    pub fn time_advance(&mut self, time_step: f64) {
-        self.x = self.x + (self.vx * time_step);
-        self.y = self.y + (self.vy * time_step);
-        self.z = self.z + (self.vz * time_step);
-    }
-    pub fn distance_squared(&self, other: &Particle) -> f64 {
-        // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
+    /// The returns the distance squared between two particles.
+    /// Take the sqrt of this to get the distance.
+    fn distance_squared(&self, other: &Entity) -> f64 {
+        // (x2 - x1) + (y2 - y1) + (z2 - z1)
         // all dist variables  are squared
         let x_dist = (other.x - self.x) * (other.x - self.x);
         let y_dist = (other.y - self.y) * (other.y - self.y);
@@ -86,27 +83,19 @@ impl Particle {
         let distance = x_dist + y_dist + z_dist;
         return distance;
     }
-    /// Returns the distance between the two particles
-    pub fn distance(&self, other: &Particle) -> f64 {
+    /// Returns the distance between the two entities
+    fn distance(&self, other: &Entity) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
-        // all dist variables  are squared
-        let x_dist = (other.x - self.x) * (other.x - self.x);
-        let y_dist = (other.y - self.y) * (other.y - self.y);
-        let z_dist = (other.z - self.z) * (other.z - self.z);
-        let distance = f64::sqrt(x_dist + y_dist + z_dist);
-        return distance;
+        f64::sqrt(self.distance_squared(other))
     }
-    /// Returns the distance between two particles as an (x:f64,y:f64,z:f64) tuple.
-    pub fn distance_vector(&self, other: &Particle) -> (f64, f64, f64) {
+    /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
+    fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
         let x_dist = (other.x - self.x) * (other.x - self.x);
         let y_dist = (other.y - self.y) * (other.y - self.y);
         let z_dist = (other.z - self.z) * (other.z - self.z);
         return (x_dist, y_dist, z_dist);
     }
-    /// Returns a particle with all 0.0 values.
-    pub fn new() -> Particle {
-        Particle::default()
-    }
+
     pub fn get_dim(&self, dim: &Dimension) -> &f64 {
         match dim {
             &Dimension::X => &self.x,
@@ -116,23 +105,23 @@ impl Particle {
     }
 
     /// Returns a boolean representing whether or node the node is within the theta range
-    /// of the particle.
+    /// of the entity.
     fn theta_exceeded(&self, node: &Node) -> bool {
-        // 1) distance from particle to COM of that node
+        // 1) distance from entity to COM of that node
         // 2) if 1) * theta > size (max diff) then
-        let node_as_particle = node.as_particle();
-        let dist = self.distance_squared(&node_as_particle);
+        let node_as_entity = node.as_entity();
+        let dist = self.distance_squared(&node_as_entity);
         let max_dist = node.max_distance();
         return (dist) * (THETA * THETA) > (max_dist * max_dist);
     }
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
-    /// self. Other can be either a particle or a node.
-    fn get_gravitational_acceleration(&self, oth: Either<&Particle, &Node>) -> (f64, f64, f64) {
+    /// self. Other can be either an entity or a node.
+    fn get_gravitational_acceleration(&self, oth: Either<&Entity, &Node>) -> (f64, f64, f64) {
         // TODO get rid of this clone
         let other = match oth {
-            Left(particle) => particle.clone(),
-            Right(node) => node.as_particle(),
+            Left(entity) => entity.clone(),
+            Right(node) => node.as_entity(),
         };
         let d_magnitude = self.distance(&other);
         let d_vector = self.distance_vector(&other);
@@ -149,19 +138,19 @@ impl Particle {
         return acceleration;
     }
 
-    /// Returns the acceleration of a particle after it has had gravity from the node applied to it.
-    /// In this function, we approximate some particles if they exceed a certain critera specified in
+    /// Returns the acceleration of an entity after it has had gravity from the specified node applied to it.
+    /// In this function, we approximate some entities if they exceed a certain critera specified in
     /// "exceeds_theta()". If we reach a node and it is a leaf, then we automatically get the
-    /// acceleration from every particle in that node, but if we reach a node that is not a leaf and
-    /// exceeds_theta() returns true, then we treat the node as one giant particle and get the
+    /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
+    /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn particle_gravity(&self, node: &Node) -> (f64, f64, f64) {
+    pub fn get_entity_acceleration_from(&self, node: &Node) -> (f64, f64, f64) {
         let mut acceleration = (0f64, 0f64, 0f64);
         if node.left.is_some() {
             if node.points.is_some() {
                 // If the node is a leaf
                 for i in node.points.as_ref().expect("unexpected null node 1") {
-                    // iterate through particles, accumulating the accelerations
+                    // iterate through entities, accumulating the accelerations
                     // they are exerting on self.
                     let tmp_accel = self.get_gravitational_acceleration(Left(i));
                     acceleration.0 = acceleration.0 + tmp_accel.0;
@@ -176,7 +165,7 @@ impl Particle {
                 acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
                 acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
             } else {
-                let tmp_accel = self.particle_gravity(&node);
+                let tmp_accel = self.get_entity_acceleration_from(&node);
                 acceleration.0 = acceleration.0 + tmp_accel.0; // otherwise recurse
                 acceleration.1 = acceleration.1 + tmp_accel.1;
                 acceleration.2 = acceleration.2 + tmp_accel.2;
@@ -200,7 +189,7 @@ impl Particle {
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;
                 } else {
-                    let tmp_accel = self.particle_gravity(&node);
+                    let tmp_accel = self.get_entity_acceleration_from(&node);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;

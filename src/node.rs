@@ -1,5 +1,5 @@
 use crate::dimension::Dimension;
-use crate::particle::Particle;
+use crate::entity::Entity;
 use utilities::{find_median, max_min_xyz, xyz_distances};
 /// MAX_PTS represents the maximum amount of points allowed in a node.
 const MAX_PTS: i32 = 3;
@@ -10,10 +10,10 @@ pub struct Node {
     pub split_value: f64,                   // Value that this node splits at.
     pub left: Option<Box<Node>>,            // Left subtree.
     pub right: Option<Box<Node>>,           // Right subtree.
-    pub points: Option<Vec<Particle>>,      // Vector of the points if this node is a Leaf.
+    pub points: Option<Vec<Entity>>,        // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
                                           * together. (x, y, z). */
-    pub total_mass: f64, // Total mass of all particles under this node.
+    pub total_mass: f64, // Total mass of all entities under this node.
     pub r_max: f64,      // Maximum radius that is a child of this node.
     pub x_min: f64,
     pub x_max: f64,
@@ -83,10 +83,10 @@ impl Node {
         self.z_max = zmax;
     }
     // Used when treating a node as the sum of its parts in gravity calculations.
-    /// Converts a node into a particle with the x, y, z, and mass being derived from the center of
-    /// mass and the total mass of the particles it contains.
-    pub fn as_particle(&self) -> Particle {
-        return Particle {
+    /// Converts a node into an entity with the x, y, z, and mass being derived from the center of
+    /// mass and the total mass of the entities it contains.
+    pub fn as_entity(&self) -> Entity {
+        return Entity {
             x: self.center_of_mass.0,
             y: self.center_of_mass.1,
             z: self.center_of_mass.2,
@@ -107,8 +107,8 @@ impl Node {
     }
 
     // Traverses tree and returns first child found with points.
-    pub fn traverse_tree_helper(&self) -> Vec<Particle> {
-        let mut to_return: Vec<Particle> = Vec::new();
+    pub fn traverse_tree_helper(&self) -> Vec<Entity> {
+        let mut to_return: Vec<Entity> = Vec::new();
         match self.left {
             Some(ref node) => {
                 to_return.append(&mut node.traverse_tree_helper());
@@ -132,8 +132,8 @@ impl Node {
         return to_return;
     }
 
-    /// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &mut [Particle]) -> Node {
+    /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
+    pub fn new_root_node(pts: &mut [Entity]) -> Node {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let (xdistance, ydistance, zdistance) = xyz_distances(pts);

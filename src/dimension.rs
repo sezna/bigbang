@@ -1,5 +1,5 @@
 #[derive(Clone, PartialEq)]
-/// Used to represent which dimension the KDTree node has split on.
+/// Used to represent which dimension the GravTree node has split on.
 pub enum Dimension {
     X,
     Y,
