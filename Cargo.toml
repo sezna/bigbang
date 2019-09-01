@@ -1,5 +1,5 @@
 [package]
-name = "kdtree"
+name = "grav_tree"
 version = "0.1.0"
 authors = ["Alex <alex@alex-hansen.com>"]
 [dependencies]
