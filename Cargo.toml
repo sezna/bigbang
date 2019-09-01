@@ -5,5 +5,5 @@ authors = ["Alex <alex@alex-hansen.com>"]
 [dependencies]
 rand = "0.3"
 either = "1.5"
-[features]
-nightly = []
+[lib]
+crate-type = ["cdylib", "lib"]

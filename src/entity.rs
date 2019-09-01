@@ -14,6 +14,7 @@ const THETA: f64 = 0.2;
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
+#[repr(C)]
 pub struct Entity {
     pub vx: f64,
     pub vy: f64,
