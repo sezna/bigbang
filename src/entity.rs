@@ -2,14 +2,7 @@ extern crate rand;
 use super::Dimension;
 use crate::Node;
 use either::{Either, Left, Right};
-/// The length of time that passes each step. This coefficient is multiplied by the velocity
-/// before the velocity is added to the position of the entities each step.
-const TIME_STEP: f64 = 0.2;
-/// The tolerance for the distance from an entity to the center of mass of an entity
-/// If the distance is beyond this threshold, we treat the entire node as one giant
-/// entity instead of recursing into it.
-const THETA: f64 = 0.2;
-#[derive(Clone, PartialEq, Default)]
+#[derive(Clone, PartialEq)]
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
@@ -24,12 +17,10 @@ pub struct Entity {
     pub z: f64,
     pub radius: f64,
     pub mass: f64,
+    pub theta: f64,
+    pub time_step: f64,
 }
 impl Entity {
-    /// Returns an entity with all 0.0 values.
-    pub fn new() -> Entity {
-        Entity::default()
-    }
     /// Convenience function for testing.
     /// Generates an entity with random properties.
     pub fn random_entity() -> Entity {
@@ -42,6 +33,8 @@ impl Entity {
             z: rand::random::<f64>(),
             radius: rand::random::<f64>(),
             mass: rand::random::<f64>(),
+            theta: 0.2,
+            time_step: 0.2,
         };
     }
 
@@ -50,19 +43,21 @@ impl Entity {
     pub fn apply_gravity_from(&self, node: &Node) -> Entity {
         let acceleration = self.get_entity_acceleration_from(node);
         let (vx, vy, vz) = (
-            self.vx + acceleration.0 * TIME_STEP,
-            self.vy + acceleration.1 * TIME_STEP,
-            self.vz + acceleration.2 * TIME_STEP,
+            self.vx + acceleration.0 * self.time_step,
+            self.vy + acceleration.1 * self.time_step,
+            self.vz + acceleration.2 * self.time_step,
         );
         return Entity {
             vx: vx,
             vy: vy,
             vz: vz,
-            x: self.x + (vx * TIME_STEP),
-            y: self.y + (vy * TIME_STEP),
-            z: self.z + (vz * TIME_STEP),
+            x: self.x + (vx * self.time_step),
+            y: self.y + (vy * self.time_step),
+            z: self.z + (vz * self.time_step),
             radius: self.radius,
             mass: self.mass,
+            theta: self.theta,
+            time_step: self.time_step,
         };
     }
 
@@ -113,7 +108,7 @@ impl Entity {
         let node_as_entity = node.as_entity();
         let dist = self.distance_squared(&node_as_entity);
         let max_dist = node.max_distance();
-        return (dist) * (THETA * THETA) > (max_dist * max_dist);
+        return (dist) * (self.theta * self.theta) > (max_dist * max_dist);
     }
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
