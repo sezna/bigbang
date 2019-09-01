@@ -1,5 +1,5 @@
 use crate::particle::Particle;
-use crate::{traverse_tree, KDTree};
+use crate::KDTree;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -70,7 +70,7 @@ pub fn open_data_file(file_string: String) -> Vec<Particle> {
 
 pub fn write_data_file(kdtree: KDTree, file_path: String) {
     let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-    let mut to_write = traverse_tree(&kdtree);
+    let mut to_write = kdtree.as_vec();
     let mut to_write_string: String;
     println!("to_write.len() = {}", to_write.len());
     to_write_string = format!("{}", to_write.pop().expect("").as_string());

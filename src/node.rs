@@ -1,5 +1,9 @@
 use crate::dimension::Dimension;
 use crate::particle::Particle;
+use utilities::{find_median, max_min_xyz, xyz_distances};
+/// MAX_PTS represents the maximum amount of points allowed in a node.
+const MAX_PTS: i32 = 3;
+
 #[derive(Clone)]
 pub struct Node {
     pub split_dimension: Option<Dimension>, // Dimension that this node splits at.
@@ -100,5 +104,141 @@ impl Node {
         let y_distance = self.y_max - self.y_min;
         let z_distance = self.z_max - self.z_min;
         return f64::max(x_distance, f64::max(y_distance, z_distance));
+    }
+
+    // Traverses tree and returns first child found with points.
+    pub fn traverse_tree_helper(&self) -> Vec<Particle> {
+        let mut to_return: Vec<Particle> = Vec::new();
+        match self.left {
+            Some(ref node) => {
+                to_return.append(&mut node.traverse_tree_helper());
+            }
+            None => (),
+        }
+        match self.right {
+            Some(ref node) => {
+                to_return.append(&mut node.traverse_tree_helper());
+            }
+            None => {
+                to_return.append(
+                    &mut (self
+                        .points
+                        .as_ref()
+                        .expect("unexpected null node #10")
+                        .clone()),
+                );
+            }
+        }
+        return to_return;
+    }
+
+    /// Takes in a mutable slice of particles and creates a recursive 3d tree structure.
+    pub fn new_root_node(pts: &mut [Particle]) -> Node {
+        // Start and end are probably 0 and pts.len(), respectively.
+        let length_of_points = pts.len() as i32;
+        let (xdistance, ydistance, zdistance) = xyz_distances(pts);
+        // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
+        if length_of_points <= MAX_PTS {
+            // then we convert it into a leaf node.
+
+            // we calculate the center of mass and total mass for each axis and store it as a three-tuple.
+            // This admittedly terse `fold` used to be a for loop. I refactored it for the sake of immutability.
+            // I'm still unsure if this was optimal.
+            let (x_total, y_total, z_total, max_radius, total_mass) =
+                pts.iter().fold((0.0, 0.0, 0.0, 0.0, 0.0), |acc, pt| {
+                    (
+                        acc.0 + (pt.x * pt.mass),
+                        acc.1 + (pt.y * pt.mass),
+                        acc.2 + (pt.z * pt.mass),
+                        if acc.3 > pt.radius { acc.3 } else { pt.radius },
+                        acc.4 + pt.mass,
+                    )
+                });
+
+            let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(pts);
+            Node {
+                center_of_mass: (
+                    x_total / total_mass as f64,
+                    y_total / total_mass as f64,
+                    z_total / total_mass as f64,
+                ),
+                total_mass: total_mass,
+                r_max: max_radius,
+                points: Some(pts.to_vec()),
+                left: None,
+                right: None,
+                split_dimension: None,
+                split_value: 0.0,
+                x_max: *x_max,
+                x_min: *x_min,
+                y_max: *y_max,
+                y_min: *y_min,
+                z_max: *z_max,
+                z_min: *z_min,
+            }
+        // So the objective here is to find the median value for whatever axis has the greatest disparity in distance.
+        // It is more efficient to pick three random values and pick the median of those as the pivot point, so that is
+        // done if the vector has enough points. Otherwise, it picks the first element. FindMiddle just returns the middle
+        // value of the three f64's given to it. Hopefully there is a more idomatic way to do this.
+        } else {
+            let mut root_node = Node::new();
+            let split_index;
+            let (split_dimension, split_value) = if zdistance > ydistance && zdistance > xdistance {
+                // "If the z distance is the greatest"
+                // split on Z
+                let (split_value, tmp) = find_median(Dimension::Z, pts);
+                split_index = tmp;
+                (Dimension::Z, split_value)
+            } else if ydistance > xdistance && ydistance > zdistance {
+                // "If the x distance is the greatest"
+                // split on Y
+                let (split_value, tmp) = find_median(Dimension::Y, pts);
+                split_index = tmp;
+                (Dimension::Y, split_value)
+            } else {
+                // "If the y distance is the greatest"
+                // split on X
+                let (split_value, tmp) = find_median(Dimension::X, pts);
+                split_index = tmp;
+                (Dimension::X, split_value)
+            };
+            root_node.split_dimension = Some(split_dimension);
+            root_node.split_value = *split_value;
+            let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
+            root_node.left = Some(Box::new(Node::new_root_node(&mut lower_vec)));
+            root_node.right = Some(Box::new(Node::new_root_node(&mut upper_vec)));
+            // The center of mass is a recursive definition. This finds the average COM for
+            // each node.
+            let left_mass = root_node
+                .left
+                .as_ref()
+                .expect("unexpected null node #3")
+                .total_mass;
+            let right_mass = root_node
+                .right
+                .as_ref()
+                .expect("unexpected null node #4")
+                .total_mass;
+            let (left_x, left_y, left_z) = root_node
+                .left
+                .as_ref()
+                .expect("unexpected null node #5")
+                .center_of_mass;
+            let (right_x, right_y, right_z) = root_node
+                .right
+                .as_ref()
+                .expect("unexpected null node #6")
+                .center_of_mass;
+            let total_mass = left_mass + right_mass;
+            let (center_x, center_y, center_z) = (
+                ((left_mass * left_x) + (right_mass * right_x)) / total_mass,
+                ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
+                ((left_mass * left_z) + (right_mass * right_z)) / total_mass,
+            );
+            root_node.center_of_mass = (center_x, center_y, center_z);
+            // TODO refactor the next two lines, as they are a bit ugly
+            root_node.set_max_mins();
+            return root_node;
+        }
     }
 }
