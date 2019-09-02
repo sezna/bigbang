@@ -10,4 +10,4 @@ clean:
 	rm -f ./examples/c_example
 build:
 	$(CARGO_BIN) build --release
-	$(GCC_BIN) -std=c99 -o ./examples/c_example ./examples/c_example.c -Isrc  -L. -l:target/release/grav_tree.so
+	$(GCC_BIN) -std=c99 -o ./examples/c_example ./examples/c_example.c -Isrc  -L./target/release/ -lgrav_tree
