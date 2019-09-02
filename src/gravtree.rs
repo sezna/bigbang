@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+#[repr(C)]
 pub struct GravTree {
     pub root: Node,            // The root Node.
     number_of_entities: usize, // The number of entities in the tree.
