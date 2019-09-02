@@ -14,13 +14,13 @@ mod utilities;
 use dimension::Dimension;
 use gravtree::GravTree;
 use node::Node;
-use std::ffi::CString;
+use std::ffi::CStr;
 
 #[allow(unused_imports)] // this is used in the test
 use entity::Entity;
 /* FFI interface functions are all plopped right here. I don't know if there's a better place to put them. */
 
-use std::os::raw::{c_double, c_int};
+use std::os::raw::{c_char, c_double, c_int};
 use std::slice;
 
 #[no_mangle]
@@ -49,13 +49,15 @@ pub extern "C" fn time_step(gravtree: GravTree) -> GravTree {
 
 #[no_mangle]
 pub unsafe extern "C" fn from_data_file(
-    filepath: CString,
+    file_path_buff: *const c_char,
     theta: c_double,
     max_pts: c_int,
     time_step: c_double,
 ) -> GravTree {
+    let file_path = CStr::from_ptr(file_path_buff);
+
     return GravTree::from_data_file(
-        filepath.into_string().unwrap(),
+        String::from(file_path.to_str().unwrap()),
         f64::from(theta),
         i32::from(max_pts),
         f64::from(time_step),
@@ -64,8 +66,9 @@ pub unsafe extern "C" fn from_data_file(
 }
 
 #[no_mangle]
-pub extern "C" fn write_data_file(filepath: String, gravtree: GravTree) {
-    gravtree.write_data_file(filepath);
+pub extern "C" fn write_data_file(file_path_buff: *const c_char, gravtree: GravTree) {
+    let file_path = unsafe { CStr::from_ptr(file_path_buff) };
+    gravtree.write_data_file(String::from(file_path.to_str().unwrap()));
 }
 
 #[test]
