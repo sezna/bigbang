@@ -1,6 +1,6 @@
 
 
-language = "C++"
+language = "C"
 
 
 
@@ -14,8 +14,8 @@ include_version = false
 # namespace = "my_namespace"
 namespaces = []
 sys_includes = []
-includes = []
-no_includes = false
+includes = ["stdint.h"]
+no_includes = true
 
 
 

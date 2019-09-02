@@ -2,6 +2,7 @@ use crate::dimension::Dimension;
 use crate::entity::Entity;
 use utilities::{find_median, max_min_xyz, xyz_distances};
 
+#[repr(C)]
 #[derive(Clone)]
 pub struct Node {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
