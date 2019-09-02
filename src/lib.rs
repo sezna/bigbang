@@ -49,6 +49,7 @@ pub extern "C" fn new(
 #[no_mangle]
 pub extern "C" fn time_step(gravtree_buf: *mut c_uchar) -> *mut c_uchar {
     let gravtree: GravTree = unsafe { transmute_copy(&gravtree_buf) };
+    // A seg fault happens in the below line.
     let _gravtree = unsafe { transmute(Box::new(gravtree.time_step())) };
     return _gravtree;
 }
@@ -69,8 +70,7 @@ pub extern "C" fn from_data_file(
         f64::from(time_step),
     )
     .unwrap();
-    // Seg fault is happening within the below line.
-    let _gravtree = unsafe { transmute(Box::new(gravtree.time_step())) };
+    let _gravtree = unsafe { transmute(Box::new(gravtree)) };
     return _gravtree;
 }
 
