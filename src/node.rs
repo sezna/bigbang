@@ -4,21 +4,21 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 
 #[derive(Clone)]
 pub struct Node {
-    pub split_dimension: Option<Dimension>, // Dimension that this node splits at.
-    pub split_value: f64,                   // Value that this node splits at.
-    pub left: Option<Box<Node>>,            // Left subtree.
-    pub right: Option<Box<Node>>,           // Right subtree.
-    pub points: Option<Vec<Entity>>,        // Vector of the points if this node is a Leaf.
+    split_dimension: Option<Dimension>, // Dimension that this node splits at.
+    split_value: f64,                   // Value that this node splits at.
+    pub left: Option<Box<Node>>,        // Left subtree.
+    pub right: Option<Box<Node>>,       // Right subtree.
+    pub points: Option<Vec<Entity>>,    // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
-                                          * together. (x, y, z). */
-    pub total_mass: f64, // Total mass of all entities under this node.
-    pub r_max: f64,      // Maximum radius that is a child of this node.
-    pub x_min: f64,
-    pub x_max: f64,
-    pub y_min: f64,
-    pub y_max: f64,
-    pub z_min: f64,
-    pub z_max: f64,
+                                         * together. (x, y, z). */
+    total_mass: f64, // Total mass of all entities under this node.
+    r_max: f64,      // Maximum radius that is a child of this node.
+    x_min: f64,
+    x_max: f64,
+    y_min: f64,
+    y_max: f64,
+    z_min: f64,
+    z_max: f64,
     time_step: f64,
     /// max_pts represents the maximum amount of points allowed in a node.
     theta: f64,
