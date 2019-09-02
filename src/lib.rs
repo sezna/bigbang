@@ -1,4 +1,5 @@
 #![feature(test)]
+#![deny(improper_ctypes)]
 extern crate either;
 extern crate rand;
 extern crate test;
@@ -15,58 +16,67 @@ use dimension::Dimension;
 use gravtree::GravTree;
 use node::Node;
 use std::ffi::CStr;
+use std::mem::{transmute, transmute_copy};
 
 #[allow(unused_imports)] // this is used in the test
 use entity::Entity;
 /* FFI interface functions are all plopped right here. I don't know if there's a better place to put them. */
 
-use std::os::raw::{c_char, c_double, c_int};
+use std::os::raw::{c_char, c_double, c_int, c_uchar};
 use std::slice;
 
 #[no_mangle]
-pub unsafe extern "C" fn new(
+pub extern "C" fn new(
     array: *const Entity,
     length: c_int,
     theta: c_double,
     max_pts: c_int,
     time_step: c_double,
-) -> GravTree {
+) -> *mut c_uchar {
     assert!(!array.is_null(), "Null pointer in new()");
-    let array: &[Entity] = slice::from_raw_parts(array, length as usize);
+    let array: &[Entity] = unsafe { slice::from_raw_parts(array, length as usize) };
     let mut rust_vec_of_entities = Vec::from(array);
-    return GravTree::new(
+    let gravtree = GravTree::new(
         &mut rust_vec_of_entities,
         f64::from(theta),
         i32::from(max_pts),
         f64::from(time_step),
     );
+    let _gravtree = unsafe { transmute(Box::new(gravtree)) };
+    return _gravtree;
 }
 
 #[no_mangle]
-pub extern "C" fn time_step(gravtree: GravTree) -> GravTree {
-    return gravtree.time_step();
+pub extern "C" fn time_step(gravtree_buf: *mut c_uchar) -> *mut c_uchar {
+    let gravtree: GravTree = unsafe { transmute_copy(&gravtree_buf) };
+    let _gravtree = unsafe { transmute(Box::new(gravtree.time_step())) };
+    return _gravtree;
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn from_data_file(
+pub extern "C" fn from_data_file(
     file_path_buff: *const c_char,
     theta: c_double,
     max_pts: c_int,
     time_step: c_double,
-) -> GravTree {
-    let file_path = CStr::from_ptr(file_path_buff);
+) -> *mut c_uchar {
+    let file_path = unsafe { CStr::from_ptr(file_path_buff) };
 
-    return GravTree::from_data_file(
+    let gravtree = GravTree::from_data_file(
         String::from(file_path.to_str().unwrap()),
         f64::from(theta),
         i32::from(max_pts),
         f64::from(time_step),
     )
     .unwrap();
+    // Seg fault is happening within the below line.
+    let _gravtree = unsafe { transmute(Box::new(gravtree.time_step())) };
+    return _gravtree;
 }
 
 #[no_mangle]
-pub extern "C" fn write_data_file(file_path_buff: *const c_char, gravtree: GravTree) {
+pub extern "C" fn write_data_file(file_path_buff: *const c_char, gravtree_buf: *mut c_uchar) {
+    let gravtree: GravTree = unsafe { transmute_copy(&gravtree_buf) };
     let file_path = unsafe { CStr::from_ptr(file_path_buff) };
     gravtree.write_data_file(String::from(file_path.to_str().unwrap()));
 }
