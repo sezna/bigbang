@@ -1,5 +1,6 @@
 use crate::entity::Entity;
 use crate::Node;
+use rayon::prelude::*;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -74,12 +75,15 @@ impl GravTree {
     pub fn time_step(&self) -> GravTree {
         // TODO currently there is a time when the entities are stored twice.
         // Store only accelerations perhaps?
-        let mut post_gravity_entity_vec: Vec<Entity> = self.root.traverse_tree_helper();
-        for i in &mut post_gravity_entity_vec {
-            *i = i.apply_gravity_from(&self.root);
-        }
+        let post_gravity_entity_vec: Vec<Entity> = self.root.traverse_tree_helper();
+        // for i in &mut post_gravity_entity_vec {
+        //     *i = i.apply_gravity_from(&self.root);
+        // }
         return GravTree::new(
-            &mut post_gravity_entity_vec,
+            &mut post_gravity_entity_vec
+                .par_iter()
+                .map(|x| x.apply_gravity_from(&self.root))
+                .collect(),
             self.theta,
             self.max_pts,
             self.time_step,

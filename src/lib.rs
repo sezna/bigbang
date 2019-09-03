@@ -2,6 +2,7 @@
 #![deny(improper_ctypes)]
 extern crate either;
 extern crate rand;
+extern crate rayon;
 extern crate test;
 // TODO list
 // speed check compare the mutated accel value vs the recursive addition
@@ -16,13 +17,13 @@ use dimension::Dimension;
 use gravtree::GravTree;
 use node::Node;
 use std::ffi::CStr;
-use std::mem::{transmute, transmute_copy};
+use std::mem::transmute_copy;
 
 #[allow(unused_imports)] // this is used in the test
 use entity::Entity;
 /* FFI interface functions are all plopped right here. I don't know if there's a better place to put them. */
 
-use std::os::raw::{c_char, c_double, c_int, c_uchar};
+use std::os::raw::{c_char, c_double, c_int, c_uchar, c_void};
 use std::slice;
 
 #[no_mangle]
@@ -32,7 +33,7 @@ pub extern "C" fn new(
     theta: c_double,
     max_pts: c_int,
     time_step: c_double,
-) -> *mut c_uchar {
+) -> *mut c_void {
     assert!(!array.is_null(), "Null pointer in new()");
     let array: &[Entity] = unsafe { slice::from_raw_parts(array, length as usize) };
     let mut rust_vec_of_entities = Vec::from(array);
@@ -42,15 +43,15 @@ pub extern "C" fn new(
         i32::from(max_pts),
         f64::from(time_step),
     );
-    let _gravtree = unsafe { transmute(Box::new(gravtree)) };
+    let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
     return _gravtree;
 }
 
 #[no_mangle]
-pub extern "C" fn time_step(gravtree_buf: *mut c_uchar) -> *mut c_uchar {
-    let gravtree: GravTree = unsafe { transmute_copy(&gravtree_buf) };
+pub extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
+    let gravtree: Box<GravTree> = unsafe { Box::from_raw(gravtree_buf as *mut GravTree) };
     // A seg fault happens in the below line.
-    let _gravtree = unsafe { transmute(Box::new(gravtree.time_step())) };
+    let _gravtree = Box::into_raw(Box::new(gravtree.time_step())) as *mut c_void;
     return _gravtree;
 }
 
@@ -60,7 +61,7 @@ pub extern "C" fn from_data_file(
     theta: c_double,
     max_pts: c_int,
     time_step: c_double,
-) -> *mut c_uchar {
+) -> *mut c_void {
     let file_path = unsafe { CStr::from_ptr(file_path_buff) };
 
     let gravtree = GravTree::from_data_file(
@@ -70,7 +71,7 @@ pub extern "C" fn from_data_file(
         f64::from(time_step),
     )
     .unwrap();
-    let _gravtree = unsafe { transmute(Box::new(gravtree)) };
+    let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
     return _gravtree;
 }
 
@@ -171,4 +172,20 @@ fn go_to_edges(grav_tree: GravTree, left_nodes: usize, right_nodes: usize) {
         node2 = node2.right.expect("unexpected null node #2\n");
     }
     assert!(count_of_nodes == right_nodes);
+}
+
+#[bench]
+fn bench_time_step(b: &mut test::Bencher) {
+    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
+    for _ in 0..100 {
+        for _ in 0..100 {
+            for _ in 0..10 {
+                let entity = Entity::random_entity();
+                vec_that_wants_to_be_a_kdtree.push(entity);
+            }
+        }
+    }
+
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    b.iter(|| test_tree = test_tree.time_step())
 }

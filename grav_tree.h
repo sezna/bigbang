@@ -23,8 +23,8 @@ unsigned char *from_data_file(const char *file_path_buff,
                               int max_pts,
                               double time_step);
 
-unsigned char *new(const Entity *array, int length, double theta, int max_pts, double time_step);
+void *new(const Entity *array, int length, double theta, int max_pts, double time_step);
 
-unsigned char *time_step(unsigned char *gravtree_buf);
+void *time_step(void *gravtree_buf);
 
 void write_data_file(const char *file_path_buff, unsigned char *gravtree_buf);

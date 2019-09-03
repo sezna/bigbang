@@ -1,7 +1,6 @@
 use super::Dimension;
 use crate::entity::Entity;
 use std::cmp::Ordering;
-extern crate test;
 /// Returns the absolute distance in every dimension (the range in every dimension)
 /// of an array slice of entities.
 pub fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
