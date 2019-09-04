@@ -25,7 +25,7 @@ impl GravTree {
     pub fn new(pts: &mut Vec<Entity>, theta: f64, max_pts: i32, time_step: f64) -> GravTree {
         let size_of_vec = pts.len();
         return GravTree {
-            root: Node::new_r(oot_node(pts, theta, max_pts, time_step),
+            root: Node::new_root_node(pts, theta, max_pts, time_step),
             number_of_entities: size_of_vec,
             theta: theta,
             max_pts: max_pts,
@@ -75,12 +75,10 @@ impl GravTree {
     pub fn time_step(&self) -> GravTree {
         // TODO currently there is a time when the entities are stored twice.
         // Store only accelerations perhaps?
-        println!("1");
         let post_gravity_entity_vec: Vec<Entity> = self.root.traverse_tree_helper();
-        println!("2");
         return GravTree::new(
             &mut post_gravity_entity_vec
-                .iter()
+                .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
             self.theta,
