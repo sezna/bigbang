@@ -41,7 +41,6 @@ impl Entity {
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
     pub fn apply_gravity_from(&self, node: &Node) -> Entity {
-        println!("3");
         let acceleration = self.get_entity_acceleration_from(node);
         let (vx, vy, vz) = (
             self.vx + acceleration.0 * self.time_step,
@@ -143,37 +142,31 @@ impl Entity {
     /// acceleration from it.
     pub fn get_entity_acceleration_from(&self, node: &Node) -> (f64, f64, f64) {
         let mut acceleration = (0f64, 0f64, 0f64);
-        println!("4");
-        if node.left.is_some() {
-            println!("5");
-            if node.points.is_some() {
-                println!("6");
-                // If the node is a leaf
-                for i in node.points.as_ref().expect("unexpected null node 1") {
-                    // iterate through entities, accumulating the accelerations
-                    // they are exerting on self.
-                    let tmp_accel = self.get_gravitational_acceleration(Left(i));
+        match node.left {
+            Some(ref node) => {
+                if node.points.is_some() {
+                    // same logic as above
+                    for i in node.points.as_ref().expect("unexpected null node 2") {
+                        let tmp_accel = self.get_gravitational_acceleration(Left(i));
+                        acceleration.0 = acceleration.0 + tmp_accel.0;
+                        acceleration.1 = acceleration.1 + tmp_accel.1;
+                        acceleration.2 = acceleration.2 + tmp_accel.2;
+                    }
+                } else if self.theta_exceeded(&node) {
+                    // TODO
+                    let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                    acceleration.0 = acceleration.0 + tmp_accel.0;
+                    acceleration.1 = acceleration.1 + tmp_accel.1;
+                    acceleration.2 = acceleration.2 + tmp_accel.2;
+                } else {
+                    let tmp_accel = self.get_entity_acceleration_from(&node);
                     acceleration.0 = acceleration.0 + tmp_accel.0;
                     acceleration.1 = acceleration.1 + tmp_accel.1;
                     acceleration.2 = acceleration.2 + tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node) {
-                println!("7");
-                // otherwise, check if the theta threshold is exceeded. If so, we want to
-                // calculate the forces from the node as a whole
-                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
-                acceleration.0 = acceleration.0 + tmp_accel.0; // if theta was exceeded, then
-                acceleration.1 = acceleration.1 + tmp_accel.1; // get the force from the node's
-                acceleration.2 = acceleration.2 + tmp_accel.2; // COM and mass
-            } else {
-                println!("8");
-                let tmp_accel = self.get_entity_acceleration_from(&node);
-                acceleration.0 = acceleration.0 + tmp_accel.0; // otherwise recurse
-                acceleration.1 = acceleration.1 + tmp_accel.1;
-                acceleration.2 = acceleration.2 + tmp_accel.2;
             }
+            None => (),
         }
-
         match node.right {
             Some(ref node) => {
                 if node.points.is_some() {
