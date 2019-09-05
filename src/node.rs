@@ -4,7 +4,7 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 /// The length of time that passes each step. This coefficient is multiplied by the velocity
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Node {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
@@ -24,27 +24,9 @@ pub struct Node {
 }
 
 impl Node {
-    // Some convenience functions.
-    /// Returns a node with default values.
     pub fn new() -> Node {
-        return Node {
-            split_dimension: None,
-            split_value: 0.0,
-            left: None,
-            right: None,
-            points: None,
-            center_of_mass: (0.0, 0.0, 0.0), // (pos * mass) + (pos * mass) / sum of masses
-            total_mass: 0.0,
-            r_max: 0.0,
-            x_max: 0.0,
-            x_min: 0.0,
-            y_max: 0.0,
-            y_min: 0.0,
-            z_max: 0.0,
-            z_min: 0.0,
-        };
+        Node::default()
     }
-
     /// Looks into its own children's maximum and minimum values, setting its own
     /// values accordingly.
     pub fn set_max_mins(&mut self) {
@@ -86,7 +68,7 @@ impl Node {
     /// Converts a node into an entity with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the entities it contains.
     pub fn as_entity(&self) -> Entity {
-        return Entity {
+        Entity {
             x: self.center_of_mass.0,
             y: self.center_of_mass.1,
             z: self.center_of_mass.2,
@@ -95,7 +77,7 @@ impl Node {
             vz: 0.0,
             mass: self.total_mass,
             radius: 0.0,
-        };
+        }
     }
     // Function that is not being used anymore. Returns a vector of the node and
     // all of its subnodes.
@@ -103,33 +85,27 @@ impl Node {
         let x_distance = self.x_max - self.x_min;
         let y_distance = self.y_max - self.y_min;
         let z_distance = self.z_max - self.z_min;
-        return f64::max(x_distance, f64::max(y_distance, z_distance));
+        f64::max(x_distance, f64::max(y_distance, z_distance))
     }
 
     // Traverses tree and returns first child found with points.
     pub fn traverse_tree_helper(&self) -> Vec<Entity> {
         let mut to_return: Vec<Entity> = Vec::new();
-        match self.left {
-            Some(ref node) => {
-                to_return.append(&mut node.traverse_tree_helper());
-            }
-            None => (),
+        if let Some(node) = &self.left {
+            to_return.append(&mut node.traverse_tree_helper());
         }
-        match self.right {
-            Some(ref node) => {
-                to_return.append(&mut node.traverse_tree_helper());
-            }
-            None => {
-                to_return.append(
-                    &mut (self
-                        .points
-                        .as_ref()
-                        .expect("unexpected null node #10")
-                        .clone()),
-                );
-            }
+        if let Some(node) = &self.right {
+            to_return.append(&mut node.traverse_tree_helper());
+        } else {
+            to_return.append(
+                &mut (self
+                    .points
+                    .as_ref()
+                    .expect("unexpected null node #10")
+                    .clone()),
+            );
         }
-        return to_return;
+        to_return
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
@@ -162,7 +138,7 @@ impl Node {
                     y_total / total_mass as f64,
                     z_total / total_mass as f64,
                 ),
-                total_mass: total_mass,
+                total_mass,
                 r_max: max_radius,
                 points: Some(pts.to_vec()),
                 left: None,
@@ -238,7 +214,7 @@ impl Node {
             root_node.center_of_mass = (center_x, center_y, center_z);
             // TODO refactor the next two lines, as they are a bit ugly
             root_node.set_max_mins();
-            return root_node;
+            root_node
         }
     }
 }
