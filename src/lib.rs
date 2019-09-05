@@ -1,5 +1,4 @@
 #![feature(test)]
-#![deny(improper_ctypes)]
 extern crate either;
 extern crate rand;
 extern crate rayon;

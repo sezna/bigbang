@@ -6,5 +6,7 @@ authors = ["Alex <alex@alex-hansen.com>"]
 rand = "0.7.0"
 either = "1.5"
 rayon = "1.2.0"
-[lib]
-crate-type = ["cdylib", "lib", "staticlib"]
+[features]
+nightly = []
+[profile.bench]
+debug = true
