@@ -7,6 +7,4 @@ rand = "0.7.0"
 either = "1.5"
 rayon = "1.2.0"
 [features]
-nightly = []
-[profile.bench]
-debug = true
+nightly = []    
