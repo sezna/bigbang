@@ -1,7 +1,9 @@
 use crate::dimension::Dimension;
 use crate::entity::Entity;
 use utilities::{find_median, max_min_xyz, xyz_distances};
-
+/// The length of time that passes each step. This coefficient is multiplied by the velocity
+/// before the velocity is added to the position of the entities each step.
+const MAX_PTS: i32 = 3;
 #[derive(Clone)]
 pub struct Node {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
@@ -19,15 +21,12 @@ pub struct Node {
     y_max: f64,
     z_min: f64,
     z_max: f64,
-    time_step: f64,
-    /// max_pts represents the maximum amount of points allowed in a node.
-    theta: f64,
 }
 
 impl Node {
     // Some convenience functions.
     /// Returns a node with default values.
-    pub fn new(theta: f64, time_step: f64) -> Node {
+    pub fn new() -> Node {
         return Node {
             split_dimension: None,
             split_value: 0.0,
@@ -43,8 +42,6 @@ impl Node {
             y_min: 0.0,
             z_max: 0.0,
             z_min: 0.0,
-            theta: theta,
-            time_step: time_step,
         };
     }
 
@@ -98,8 +95,6 @@ impl Node {
             vz: 0.0,
             mass: self.total_mass,
             radius: 0.0,
-            theta: self.theta,
-            time_step: self.time_step,
         };
     }
     // Function that is not being used anymore. Returns a vector of the node and
@@ -138,12 +133,12 @@ impl Node {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &mut [Entity], theta: f64, max_pts: i32, time_step: f64) -> Node {
+    pub fn new_root_node(pts: &mut [Entity]) -> Node {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let (xdistance, ydistance, zdistance) = xyz_distances(pts);
         // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
-        if length_of_points <= max_pts {
+        if length_of_points <= MAX_PTS {
             // then we convert it into a leaf node.
 
             // we calculate the center of mass and total mass for each axis and store it as a three-tuple.
@@ -180,15 +175,13 @@ impl Node {
                 y_min: *y_min,
                 z_max: *z_max,
                 z_min: *z_min,
-                theta: theta,
-                time_step: time_step,
             }
         // So the objective here is to find the median value for whatever axis has the greatest disparity in distance.
         // It is more efficient to pick three random values and pick the median of those as the pivot point, so that is
         // done if the vector has enough points. Otherwise, it picks the first element. FindMiddle just returns the middle
         // value of the three f64's given to it. Hopefully there is a more idomatic way to do this.
         } else {
-            let mut root_node = Node::new(theta, time_step);
+            let mut root_node = Node::new();
             let split_index;
             let (split_dimension, split_value) = if zdistance > ydistance && zdistance > xdistance {
                 // "If the z distance is the greatest"
@@ -212,18 +205,8 @@ impl Node {
             root_node.split_dimension = Some(split_dimension);
             root_node.split_value = *split_value;
             let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
-            root_node.left = Some(Box::new(Node::new_root_node(
-                &mut lower_vec,
-                theta,
-                max_pts,
-                time_step,
-            )));
-            root_node.right = Some(Box::new(Node::new_root_node(
-                &mut upper_vec,
-                theta,
-                max_pts,
-                time_step,
-            )));
+            root_node.left = Some(Box::new(Node::new_root_node(&mut lower_vec)));
+            root_node.right = Some(Box::new(Node::new_root_node(&mut upper_vec)));
             // The center of mass is a recursive definition. This finds the average COM for
             // each node.
             let left_mass = root_node

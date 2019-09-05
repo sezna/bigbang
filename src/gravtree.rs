@@ -9,25 +9,14 @@ use std::path::Path;
 pub struct GravTree {
     pub root: Node,            // The root Node.
     number_of_entities: usize, // The number of entities in the tree.
-    /// The tolerance for the distance from an entity to the center of mass of an entity
-    /// If the distance is beyond this threshold, we treat the entire node as one giant
-    /// entity instead of recursing into it.
-    theta: f64,
-    max_pts: i32,
-    /// The length of time that passes each step. This coefficient is multiplied by the velocity
-    /// before the velocity is added to the position of the entities each step.
-    time_step: f64,
 }
 
 impl GravTree {
-    pub fn new(pts: &mut Vec<Entity>, theta: f64, max_pts: i32, time_step: f64) -> GravTree {
+    pub fn new(pts: &mut Vec<Entity>) -> GravTree {
         let size_of_vec = pts.len();
         return GravTree {
-            root: Node::new_root_node(pts, theta, max_pts, time_step),
+            root: Node::new_root_node(pts),
             number_of_entities: size_of_vec,
-            theta: theta,
-            max_pts: max_pts,
-            time_step: time_step,
         };
     }
     /// Traverses the tree and returns a vector of all entities in the tree.
@@ -79,9 +68,6 @@ impl GravTree {
                 .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
-            self.theta,
-            self.max_pts,
-            self.time_step,
         );
     }
 
@@ -98,12 +84,7 @@ impl GravTree {
     /// Returns a new GravTree with the data from the file on success, or an error
     /// message if the data format is incorrect.
     /// Panics if the file path provided is incorrect.
-    pub fn from_data_file(
-        file_string: String,
-        theta: f64,
-        max_pts: i32,
-        time_step: f64,
-    ) -> Result<GravTree, &'static str> {
+    pub fn from_data_file(file_string: String) -> Result<GravTree, &'static str> {
         let file_path = Path::new(&file_string);
         let display = file_path.display();
         let mut file = match File::open(&file_path) {
@@ -146,8 +127,6 @@ impl GravTree {
                         vz: vz_val,
                         mass: mass_val,
                         radius: radius_val,
-                        theta: theta,
-                        time_step: time_step,
                     };
                     entities.push(tmp_part);
                     tmp.clear();
@@ -156,7 +135,7 @@ impl GravTree {
                 }
             }
         }
-        return Ok(GravTree::new(&mut entities, theta, max_pts, time_step));
+        return Ok(GravTree::new(&mut entities));
     }
 
     /// Writes a utf8 file with one entity per line, space separated values of the format:
@@ -182,7 +161,7 @@ impl GravTree {
 }
 #[test]
 fn test_input() {
-    let test_tree = GravTree::from_data_file("test_files/test_input.txt".to_string(), 0.2, 3, 0.2);
+    let test_tree = GravTree::from_data_file("test_files/test_input.txt".to_string());
     assert!(test_tree.unwrap().as_vec().len() == 3601);
 }
 #[test]
@@ -191,8 +170,8 @@ fn test_output() {
     for _ in 0..1000 {
         test_vec.push(Entity::random_entity());
     }
-    let kd = GravTree::new(&mut test_vec, 0.2, 3, 0.2);
+    let kd = GravTree::new(&mut test_vec);
     GravTree::write_data_file(kd, "test_files/test_output.txt".to_string());
-    let test_tree = GravTree::from_data_file("test_files/test_output.txt".to_string(), 0.2, 3, 0.2);
+    let test_tree = GravTree::from_data_file("test_files/test_output.txt".to_string());
     assert!(test_vec.len() == test_tree.unwrap().as_vec().len());
 }

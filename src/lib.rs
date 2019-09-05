@@ -22,26 +22,15 @@ use std::mem::transmute_copy;
 use entity::Entity;
 /* FFI interface functions are all plopped right here. */
 
-use std::os::raw::{c_char, c_double, c_int, c_uchar, c_void};
+use std::os::raw::{c_char, c_int, c_uchar, c_void};
 use std::slice;
 
 #[no_mangle]
-pub extern "C" fn new(
-    array: *const Entity,
-    length: c_int,
-    theta: c_double,
-    max_pts: c_int,
-    time_step: c_double,
-) -> *mut c_void {
+pub extern "C" fn new(array: *const Entity, length: c_int) -> *mut c_void {
     assert!(!array.is_null(), "Null pointer in new()");
     let array: &[Entity] = unsafe { slice::from_raw_parts(array, length as usize) };
     let mut rust_vec_of_entities = Vec::from(array);
-    let gravtree = GravTree::new(
-        &mut rust_vec_of_entities,
-        f64::from(theta),
-        i32::from(max_pts),
-        f64::from(time_step),
-    );
+    let gravtree = GravTree::new(&mut rust_vec_of_entities);
     let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
     return _gravtree;
 }
@@ -55,21 +44,10 @@ pub extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
 }
 
 #[no_mangle]
-pub extern "C" fn from_data_file(
-    file_path_buff: *const c_char,
-    theta: c_double,
-    max_pts: c_int,
-    time_step: c_double,
-) -> *mut c_void {
+pub extern "C" fn from_data_file(file_path_buff: *const c_char) -> *mut c_void {
     let file_path = unsafe { CStr::from_ptr(file_path_buff) };
 
-    let gravtree = GravTree::from_data_file(
-        String::from(file_path.to_str().unwrap()),
-        f64::from(theta),
-        i32::from(max_pts),
-        f64::from(time_step),
-    )
-    .unwrap();
+    let gravtree = GravTree::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
     let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
     return _gravtree;
 }
@@ -89,7 +67,7 @@ fn test_traversal() {
         vec.push(entity);
     }
     let vec_clone = vec.clone();
-    let tree = GravTree::new(&mut vec, 0.2, 3, 0.2);
+    let tree = GravTree::new(&mut vec);
     let traversed_vec = tree.as_vec();
     let mut all_found = true;
     for i in vec_clone {
@@ -113,7 +91,7 @@ fn test_time_step() {
         }
     }
 
-    let test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
     let _ = test_tree.time_step();
 }
 
@@ -123,13 +101,13 @@ fn test_tree() {
     let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
     for _ in 0..100 {
         for _ in 0..100 {
-            for _ in 0..100 {
+            for _ in 0..10 {
                 let entity = Entity::random_entity();
                 vec_that_wants_to_be_a_kdtree.push(entity);
             }
         }
     }
-    let kdtree_test = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let kdtree_test = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
     assert!(kdtree_test.get_number_of_entities() == 100000);
     // kdtree_test.display_tree();
     go_to_edges(kdtree_test, 14usize, 15usize);
@@ -149,8 +127,6 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
-            theta: 0.2,
-            time_step: 0.2,
         },
         Entity {
             vx: 0.0,
@@ -161,11 +137,9 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
-            theta: 0.2,
-            time_step: 0.2,
         },
     ];
-    let center_of_mass_test = GravTree::new(&mut vector, 0.2, 3, 0.2);
+    let center_of_mass_test = GravTree::new(&mut vector);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
 #[allow(dead_code)]
@@ -201,7 +175,7 @@ fn bench_time_step_05(b: &mut test::Bencher) {
         }
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
     b.iter(|| test_tree = test_tree.time_step())
 }
 
@@ -217,7 +191,7 @@ fn bench_time_step_10(b: &mut test::Bencher) {
         }
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
     b.iter(|| test_tree = test_tree.time_step())
 }
 
@@ -233,6 +207,6 @@ fn bench_time_step_12(b: &mut test::Bencher) {
         }
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
     b.iter(|| test_tree = test_tree.time_step())
 }
