@@ -26,36 +26,36 @@ use std::os::raw::{c_char, c_int, c_uchar, c_void};
 use std::slice;
 
 #[no_mangle]
-pub extern "C" fn new(array: *const Entity, length: c_int) -> *mut c_void {
+pub unsafe extern "C" fn new(array: *const Entity, length: c_int) -> *mut c_void {
     assert!(!array.is_null(), "Null pointer in new()");
-    let array: &[Entity] = unsafe { slice::from_raw_parts(array, length as usize) };
+    let array: &[Entity] = slice::from_raw_parts(array, length as usize);
     let mut rust_vec_of_entities = Vec::from(array);
     let gravtree = GravTree::new(&mut rust_vec_of_entities);
-    let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
-    return _gravtree;
+    Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 
 #[no_mangle]
-pub extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
-    let gravtree: Box<GravTree> = unsafe { Box::from_raw(gravtree_buf as *mut GravTree) };
+pub unsafe extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
+    let gravtree: Box<GravTree> = Box::from_raw(gravtree_buf as *mut GravTree);
     // A seg fault happens in the below line.
-    let _gravtree = Box::into_raw(Box::new(gravtree.time_step())) as *mut c_void;
-    return _gravtree;
+    Box::into_raw(Box::new(gravtree.time_step())) as *mut c_void
 }
 
 #[no_mangle]
-pub extern "C" fn from_data_file(file_path_buff: *const c_char) -> *mut c_void {
-    let file_path = unsafe { CStr::from_ptr(file_path_buff) };
+pub unsafe extern "C" fn from_data_file(file_path_buff: *const c_char) -> *mut c_void {
+    let file_path = CStr::from_ptr(file_path_buff);
 
     let gravtree = GravTree::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
-    let _gravtree = Box::into_raw(Box::new(gravtree)) as *mut c_void;
-    return _gravtree;
+    Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 
 #[no_mangle]
-pub extern "C" fn write_data_file(file_path_buff: *const c_char, gravtree_buf: *mut c_uchar) {
-    let gravtree: GravTree = unsafe { transmute_copy(&gravtree_buf) };
-    let file_path = unsafe { CStr::from_ptr(file_path_buff) };
+pub unsafe extern "C" fn write_data_file(
+    file_path_buff: *const c_char,
+    gravtree_buf: *mut c_uchar,
+) {
+    let gravtree: GravTree = transmute_copy(&gravtree_buf);
+    let file_path = CStr::from_ptr(file_path_buff);
     gravtree.write_data_file(String::from(file_path.to_str().unwrap()));
 }
 
@@ -108,7 +108,7 @@ fn test_tree() {
         }
     }
     let kdtree_test = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
-    assert!(kdtree_test.get_number_of_entities() == 100000);
+    assert!(kdtree_test.get_number_of_entities() == 100_000);
     // kdtree_test.display_tree();
     go_to_edges(kdtree_test, 14usize, 15usize);
     let mut smaller_vec: Vec<Entity> = Vec::new();
@@ -151,13 +151,13 @@ fn go_to_edges(grav_tree: GravTree, left_nodes: usize, right_nodes: usize) {
     let mut node = grav_tree.root.left.expect("null root node\n");
     let mut node2 = node.clone();
     while node.left.is_some() {
-        count_of_nodes = count_of_nodes + 1;
+        count_of_nodes += 1;
         node = node.left.expect("unexpected null node #1\n");
     }
     assert!(count_of_nodes == left_nodes);
     count_of_nodes = 0;
     while node2.right.is_some() {
-        count_of_nodes = count_of_nodes + 1;
+        count_of_nodes += 1;
         node2 = node2.right.expect("unexpected null node #2\n");
     }
     assert!(count_of_nodes == right_nodes);

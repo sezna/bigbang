@@ -14,37 +14,30 @@ pub struct GravTree {
 impl GravTree {
     pub fn new(pts: &mut Vec<Entity>) -> GravTree {
         let size_of_vec = pts.len();
-        return GravTree {
+        GravTree {
             root: Node::new_root_node(pts),
             number_of_entities: size_of_vec,
-        };
+        }
     }
     /// Traverses the tree and returns a vector of all entities in the tree.
     pub fn as_vec(&self) -> Vec<Entity> {
         let node = self.root.clone();
         let mut to_return: Vec<Entity> = Vec::new();
-        match node.left {
-            Some(ref node) => {
-                to_return.append(&mut node.traverse_tree_helper());
-            }
-            None => (),
+        if let Some(node) = &node.left {
+            to_return.append(&mut node.traverse_tree_helper());
         }
-        match node.right {
-            Some(ref node) => {
-                to_return.append(&mut node.traverse_tree_helper());
-            }
-            None => {
-                to_return.append(
-                    &mut (node
-                        .points
-                        .as_ref()
-                        .expect("unexpected null node #9")
-                        .clone()),
-                );
-            }
+        if let Some(node) = &node.right {
+            to_return.append(&mut node.traverse_tree_helper());
+        } else {
+            to_return.append(
+                &mut (node
+                    .points
+                    .as_ref()
+                    .expect("unexpected null node #9")
+                    .clone()),
+            );
         }
-        return to_return;
-        // return node.points.as_ref().expect("unexpected null vector of points");
+        to_return
     }
     /// Gets the total number of entities contained by this tree.
     pub fn get_number_of_entities(&self) -> usize {
@@ -63,12 +56,12 @@ impl GravTree {
         // TODO currently there is a time when the entities are stored twice.
         // Store only accelerations perhaps?
         let post_gravity_entity_vec: Vec<Entity> = self.root.traverse_tree_helper();
-        return GravTree::new(
+        GravTree::new(
             &mut post_gravity_entity_vec
                 .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
-        );
+        )
     }
 
     // For now, data files are text files where there is one entity per line.
@@ -92,9 +85,8 @@ impl GravTree {
             Ok(file) => file,
         };
         let mut s = String::new();
-        match file.read_to_string(&mut s) {
-            Err(why) => panic!("couldn't read {}: {}", display, Error::description(&why)),
-            Ok(_) => (),
+        if let Err(why) = file.read_to_string(&mut s) {
+            panic!("couldn't read {}: {}", display, Error::description(&why))
         }
         let mut tmp_str: String = String::new();
         let mut tmp: Vec<String> = Vec::new();
@@ -135,7 +127,7 @@ impl GravTree {
                 }
             }
         }
-        return Ok(GravTree::new(&mut entities));
+        Ok(GravTree::new(&mut entities))
     }
 
     /// Writes a utf8 file with one entity per line, space separated values of the format:
@@ -145,7 +137,7 @@ impl GravTree {
         let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
         let mut to_write = self.as_vec();
         let mut to_write_string: String;
-        to_write_string = format!("{}", to_write.pop().expect("").as_string());
+        to_write_string = to_write.pop().expect("").as_string().to_string();
         while !to_write.is_empty() {
             to_write_string = format!(
                 "{}\n{}",
