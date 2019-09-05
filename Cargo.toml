@@ -8,3 +8,5 @@ either = "1.5"
 rayon = "1.2.0"
 [features]
 nightly = []    
+[lib]
+crate-type = ["cdylib", "lib", "staticlib"]
