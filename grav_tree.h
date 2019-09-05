@@ -14,16 +14,11 @@ typedef struct Entity {
   double z;
   double radius;
   double mass;
-  double theta;
-  double time_step;
 } Entity;
 
-unsigned char *from_data_file(const char *file_path_buff,
-                              double theta,
-                              int max_pts,
-                              double time_step);
+void *from_data_file(const char *file_path_buff);
 
-void *new(const Entity *array, int length, double theta, int max_pts, double time_step);
+void *new(const Entity *array, int length);
 
 void *time_step(void *gravtree_buf);
 
