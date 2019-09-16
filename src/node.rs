@@ -5,12 +5,12 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
 #[derive(Clone, Default)]
-pub struct Node {
+pub struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
-    pub left: Option<Box<Node>>,        // Left subtree.
-    pub right: Option<Box<Node>>,       // Right subtree.
-    pub points: Option<Vec<Entity>>,    // Vector of the points if this node is a Leaf.
+    pub left: Option<Box<Node<T>>>,        // Left subtree.
+    pub right: Option<Box<Node<T>>>,       // Right subtree.
+    pub points: Option<Vec<T>>,    // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
                                          * together. (x, y, z). */
     total_mass: f64, // Total mass of all entities under this node.
@@ -23,8 +23,12 @@ pub struct Node {
     z_max: f64,
 }
 
-impl Node {
-    pub fn new() -> Node {
+pub trait AsEntity {
+    fn as_entity(self) -> Entity;
+}
+
+impl <T: AsEntity + Clone> Node<T> {
+    pub fn new() -> Node<T> {
         Node::default()
     }
     /// Looks into its own children's maximum and minimum values, setting its own
@@ -89,8 +93,8 @@ impl Node {
     }
 
     // Traverses tree and returns first child found with points.
-    pub fn traverse_tree_helper(&self) -> Vec<Entity> {
-        let mut to_return: Vec<Entity> = Vec::new();
+    pub fn traverse_tree_helper(&self) -> Vec<T> {
+        let mut to_return: Vec<T> = Vec::new();
         if let Some(node) = &self.left {
             to_return.append(&mut node.traverse_tree_helper());
         }
@@ -109,7 +113,7 @@ impl Node {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &mut [Entity]) -> Node {
+    pub fn new_root_node(pts: &mut [T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let (xdistance, ydistance, zdistance) = xyz_distances(pts);
@@ -121,6 +125,8 @@ impl Node {
             // This admittedly terse `fold` used to be a for loop. I refactored it for the sake of immutability.
             // I'm still unsure if this was optimal.
             let (x_total, y_total, z_total, max_radius, total_mass) =
+                // making this iterator parallel negatively impacts performance, at least for
+                // bench_05 and bench_10
                 pts.iter().fold((0.0, 0.0, 0.0, 0.0, 0.0), |acc, pt| {
                     (
                         acc.0 + (pt.x * pt.mass),
@@ -166,13 +172,13 @@ impl Node {
                 split_index = tmp;
                 (Dimension::Z, split_value)
             } else if ydistance > xdistance && ydistance > zdistance {
-                // "If the x distance is the greatest"
+                // "If the y distance is the greatest"
                 // split on Y
                 let (split_value, tmp) = find_median(Dimension::Y, pts);
                 split_index = tmp;
                 (Dimension::Y, split_value)
             } else {
-                // "If the y distance is the greatest"
+                // "If the x distance is the greatest"
                 // split on X
                 let (split_value, tmp) = find_median(Dimension::X, pts);
                 split_index = tmp;
@@ -212,7 +218,6 @@ impl Node {
                 ((left_mass * left_z) + (right_mass * right_z)) / total_mass,
             );
             root_node.center_of_mass = (center_x, center_y, center_z);
-            // TODO refactor the next two lines, as they are a bit ugly
             root_node.set_max_mins();
             root_node
         }

@@ -5,24 +5,24 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-
-pub struct GravTree {
-    pub root: Node,            // The root Node.
+use crate::node::AsEntity;
+pub struct GravTree<T: AsEntity + Clone> {
+    pub root: Node<T>,            // The root Node.
     number_of_entities: usize, // The number of entities in the tree.
 }
 
-impl GravTree {
-    pub fn new(pts: &mut Vec<Entity>) -> GravTree {
+impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
+    pub fn new(pts: &mut Vec<T>) -> GravTree<T> where T: AsEntity {
         let size_of_vec = pts.len();
         GravTree {
-            root: Node::new_root_node(pts),
+            root: Node::<T>::new_root_node(&mut pts[..]),
             number_of_entities: size_of_vec,
         }
     }
     /// Traverses the tree and returns a vector of all entities in the tree.
-    pub fn as_vec(&self) -> Vec<Entity> {
+    pub fn as_vec(&self) -> Vec<T> {
         let node = self.root.clone();
-        let mut to_return: Vec<Entity> = Vec::new();
+        let mut to_return: Vec<T> = Vec::new();
         if let Some(node) = &node.left {
             to_return.append(&mut node.traverse_tree_helper());
         }
@@ -52,11 +52,11 @@ impl GravTree {
     // some memory is saved.
     // I am not sure if this will be necessary or very practical in the rust
     // implementation (I would have to implement indexing in my GravTree struct).
-    pub fn time_step(&self) -> GravTree {
+    pub fn time_step(&self) -> GravTree<T> {
         // TODO currently there is a time when the entities are stored twice.
         // Store only accelerations perhaps?
-        let post_gravity_entity_vec: Vec<Entity> = self.root.traverse_tree_helper();
-        GravTree::new(
+        let post_gravity_entity_vec: Vec<T> = self.root.traverse_tree_helper();
+        GravTree::<T>::new(
             &mut post_gravity_entity_vec
                 .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
@@ -77,7 +77,7 @@ impl GravTree {
     /// Returns a new GravTree with the data from the file on success, or an error
     /// message if the data format is incorrect.
     /// Panics if the file path provided is incorrect.
-    pub fn from_data_file(file_string: String) -> Result<GravTree, &'static str> {
+    pub fn from_data_file(file_string: String) -> Result<GravTree<T>, &'static str> {
         let file_path = Path::new(&file_string);
         let display = file_path.display();
         let mut file = match File::open(&file_path) {
