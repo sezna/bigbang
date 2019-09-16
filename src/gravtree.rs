@@ -6,12 +6,12 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use crate::node::AsEntity;
-pub struct GravTree<T: AsEntity + Clone> {
+pub struct GravTree<T: AsEntity + Clone + Default> {
     pub root: Node<T>,            // The root Node.
     number_of_entities: usize, // The number of entities in the tree.
 }
 
-impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
+impl <T: AsEntity + Clone + Default>GravTree<T> {
     pub fn new(pts: &mut Vec<T>) -> GravTree<T> where T: AsEntity {
         let size_of_vec = pts.len();
         GravTree {
@@ -58,7 +58,8 @@ impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
         let post_gravity_entity_vec: Vec<T> = self.root.traverse_tree_helper();
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
-                .par_iter()
+       //TODO make this a par iter later         .par_iter()
+                .iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
         )
@@ -77,7 +78,7 @@ impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
     /// Returns a new GravTree with the data from the file on success, or an error
     /// message if the data format is incorrect.
     /// Panics if the file path provided is incorrect.
-    pub fn from_data_file(file_string: String) -> Result<GravTree<T>, &'static str> {
+    pub fn from_data_file(file_string: String) -> Result<GravTree<Entity>, &'static str> {
         let file_path = Path::new(&file_string);
         let display = file_path.display();
         let mut file = match File::open(&file_path) {
@@ -135,7 +136,7 @@ impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
     /// This is compatible with SwiftVis visualizations.
     pub fn write_data_file(self, file_path: String) {
         let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-        let mut to_write = self.as_vec();
+        let mut to_write: Vec<Entity> = self.as_vec().iter().map(|x| x.as_entity()).collect();
         let mut to_write_string: String;
         to_write_string = to_write.pop().expect("").as_string().to_string();
         while !to_write.is_empty() {
@@ -153,7 +154,7 @@ impl <T: AsEntity + Clone + IntoParallelRefIterator>GravTree<T> {
 }
 #[test]
 fn test_input() {
-    let test_tree = GravTree::from_data_file("test_files/test_input.txt".to_string());
+    let test_tree = GravTree::<Entity>::from_data_file("test_files/test_input.txt".to_string());
     assert!(test_tree.unwrap().as_vec().len() == 3601);
 }
 #[test]
@@ -164,6 +165,6 @@ fn test_output() {
     }
     let kd = GravTree::new(&mut test_vec);
     GravTree::write_data_file(kd, "test_files/test_output.txt".to_string());
-    let test_tree = GravTree::from_data_file("test_files/test_output.txt".to_string());
+    let test_tree = GravTree::<Entity>::from_data_file("test_files/test_output.txt".to_string());
     assert!(test_vec.len() == test_tree.unwrap().as_vec().len());
 }
