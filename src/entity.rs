@@ -2,6 +2,8 @@ extern crate rand;
 use super::Dimension;
 use crate::Node;
 use either::{Either, Left, Right};
+use node::AsEntity;
+
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
 /// entity instead of recursing into it.
@@ -24,6 +26,13 @@ pub struct Entity {
     pub radius: f64,
     pub mass: f64,
 }
+
+impl AsEntity for Entity {
+    fn as_entity(self) -> Entity {
+        return self;
+    }
+}
+
 impl Entity {
     /// Convenience function for testing.
     /// Generates an entity with random properties.
@@ -42,7 +51,7 @@ impl Entity {
 
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
-    pub fn apply_gravity_from(&self, node: &Node) -> Entity {
+    pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> Entity {
         let acceleration = self.get_entity_acceleration_from(node);
         let (vx, vy, vz) = (
             self.vx + acceleration.0 * TIME_STEP,
@@ -101,7 +110,7 @@ impl Entity {
 
     /// Returns a boolean representing whether or node the node is within the theta range
     /// of the entity.
-    fn theta_exceeded(&self, node: &Node) -> bool {
+    fn theta_exceeded<T: AsEntity + Clone>(&self, node: &Node<T>) -> bool {
         // 1) distance from entity to COM of that node
         // 2) if 1) * theta > size (max diff) then
         let node_as_entity = node.as_entity();
@@ -112,7 +121,7 @@ impl Entity {
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
     /// self. Other can be either an entity or a node.
-    fn get_gravitational_acceleration(&self, oth: Either<&Entity, &Node>) -> (f64, f64, f64) {
+    fn get_gravitational_acceleration<T: AsEntity + Clone>(&self, oth: Either<&Entity, &Node<T>>) -> (f64, f64, f64) {
         // TODO get rid of this clone
         let other = match oth {
             Left(entity) => entity.clone(),
@@ -138,13 +147,13 @@ impl Entity {
     /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
     /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn get_entity_acceleration_from(&self, node: &Node) -> (f64, f64, f64) {
+    pub fn get_entity_acceleration_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
         let mut acceleration = (0f64, 0f64, 0f64);
         if let Some(node) = &node.left {
             if node.points.is_some() {
                 // same logic as above
                 for i in node.points.as_ref().expect("unexpected null node 2") {
-                    let tmp_accel = self.get_gravitational_acceleration(Left(i));
+                    let tmp_accel = self.get_gravitational_acceleration::<T>(Left(&i.as_entity()));
                     acceleration.0 += tmp_accel.0;
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
@@ -166,7 +175,7 @@ impl Entity {
             if node.points.is_some() {
                 // same logic as above
                 for i in node.points.as_ref().expect("unexpected null node 2") {
-                    let tmp_accel = self.get_gravitational_acceleration(Left(i));
+                    let tmp_accel = self.get_gravitational_acceleration::<T>(Left(&i.as_entity()));
                     acceleration.0 += tmp_accel.0;
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
