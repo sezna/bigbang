@@ -10,8 +10,7 @@ use node::AsEntity;
 
 const THETA: f64 = 0.2;
 const TIME_STEP: f64 = 0.2;
-#[derive(Clone, PartialEq)]
-
+#[derive(Clone, PartialEq, Default)]
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
@@ -28,8 +27,28 @@ pub struct Entity {
 }
 
 impl AsEntity for Entity {
-    fn as_entity(self) -> Entity {
-        return self;
+    fn as_entity(&self) -> Entity {
+        return self.clone();
+    }
+    /// Returns a new entity after gravity from a node has been applied to it.
+    /// Should be read as "apply gravity from node"
+    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> Entity {
+        let acceleration = self.get_entity_acceleration_from(node);
+        let (vx, vy, vz) = (
+            self.vx + acceleration.0 * TIME_STEP,
+            self.vy + acceleration.1 * TIME_STEP,
+            self.vz + acceleration.2 * TIME_STEP,
+        );
+        Entity {
+            vx,
+            vy,
+            vz,
+            x: self.x + (vx * TIME_STEP),
+            y: self.y + (vy * TIME_STEP),
+            z: self.z + (vz * TIME_STEP),
+            radius: self.radius,
+            mass: self.mass,
+        }
     }
 }
 
@@ -49,26 +68,7 @@ impl Entity {
         }
     }
 
-    /// Returns a new entity after gravity from a node has been applied to it.
-    /// Should be read as "apply gravity from node"
-    pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> Entity {
-        let acceleration = self.get_entity_acceleration_from(node);
-        let (vx, vy, vz) = (
-            self.vx + acceleration.0 * TIME_STEP,
-            self.vy + acceleration.1 * TIME_STEP,
-            self.vz + acceleration.2 * TIME_STEP,
-        );
-        Entity {
-            vx,
-            vy,
-            vz,
-            x: self.x + (vx * TIME_STEP),
-            y: self.y + (vy * TIME_STEP),
-            z: self.z + (vz * TIME_STEP),
-            radius: self.radius,
-            mass: self.mass,
-        }
-    }
+
 
     /// Returns the entity as a string with space separated values.
     pub fn as_string(&self) -> String {
@@ -110,7 +110,7 @@ impl Entity {
 
     /// Returns a boolean representing whether or node the node is within the theta range
     /// of the entity.
-    fn theta_exceeded<T: AsEntity + Clone>(&self, node: &Node<T>) -> bool {
+    fn theta_exceeded<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> bool {
         // 1) distance from entity to COM of that node
         // 2) if 1) * theta > size (max diff) then
         let node_as_entity = node.as_entity();
@@ -121,7 +121,7 @@ impl Entity {
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
     /// self. Other can be either an entity or a node.
-    fn get_gravitational_acceleration<T: AsEntity + Clone>(&self, oth: Either<&Entity, &Node<T>>) -> (f64, f64, f64) {
+    fn get_gravitational_acceleration<T: AsEntity + Clone + Default>(&self, oth: Either<&Entity, &Node<T>>) -> (f64, f64, f64) {
         // TODO get rid of this clone
         let other = match oth {
             Left(entity) => entity.clone(),
@@ -147,7 +147,7 @@ impl Entity {
     /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
     /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn get_entity_acceleration_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
+    pub fn get_entity_acceleration_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> (f64, f64, f64) {
         let mut acceleration = (0f64, 0f64, 0f64);
         if let Some(node) = &node.left {
             if node.points.is_some() {

@@ -5,14 +5,14 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
 #[derive(Clone, Default)]
-pub struct Node<T: AsEntity + Clone> {
+pub struct Node<T: AsEntity + Clone + Default > {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
     pub left: Option<Box<Node<T>>>,        // Left subtree.
     pub right: Option<Box<Node<T>>>,       // Right subtree.
     pub points: Option<Vec<T>>,    // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
-                                         * together. (x, y, z). */
+                                          * together. (x, y, z). */
     total_mass: f64, // Total mass of all entities under this node.
     r_max: f64,      // Maximum radius that is a child of this node.
     x_min: f64,
@@ -24,10 +24,12 @@ pub struct Node<T: AsEntity + Clone> {
 }
 
 pub trait AsEntity {
-    fn as_entity(self) -> Entity;
+    fn as_entity(&self) -> Entity;
+    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T> ) -> Self;
+
 }
 
-impl <T: AsEntity + Clone> Node<T> {
+impl <T: AsEntity + Clone + Default> Node<T> {
     pub fn new() -> Node<T> {
         Node::default()
     }
@@ -116,7 +118,8 @@ impl <T: AsEntity + Clone> Node<T> {
     pub fn new_root_node(pts: &mut [T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
-        let (xdistance, ydistance, zdistance) = xyz_distances(pts);
+        let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
+        let (xdistance, ydistance, zdistance) = xyz_distances(&entities);
         // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
         if length_of_points <= MAX_PTS {
             // then we convert it into a leaf node.
@@ -128,6 +131,7 @@ impl <T: AsEntity + Clone> Node<T> {
                 // making this iterator parallel negatively impacts performance, at least for
                 // bench_05 and bench_10
                 pts.iter().fold((0.0, 0.0, 0.0, 0.0, 0.0), |acc, pt| {
+                    let pt = pt.as_entity();
                     (
                         acc.0 + (pt.x * pt.mass),
                         acc.1 + (pt.y * pt.mass),
@@ -137,7 +141,7 @@ impl <T: AsEntity + Clone> Node<T> {
                     )
                 });
 
-            let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(pts);
+            let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(&entities);
             Node {
                 center_of_mass: (
                     x_total / total_mass as f64,
@@ -168,19 +172,19 @@ impl <T: AsEntity + Clone> Node<T> {
             let (split_dimension, split_value) = if zdistance > ydistance && zdistance > xdistance {
                 // "If the z distance is the greatest"
                 // split on Z
-                let (split_value, tmp) = find_median(Dimension::Z, pts);
+                let (split_value, tmp) = find_median(Dimension::Z, &mut entities);
                 split_index = tmp;
                 (Dimension::Z, split_value)
             } else if ydistance > xdistance && ydistance > zdistance {
                 // "If the y distance is the greatest"
                 // split on Y
-                let (split_value, tmp) = find_median(Dimension::Y, pts);
+                let (split_value, tmp) = find_median(Dimension::Y, &mut entities);
                 split_index = tmp;
                 (Dimension::Y, split_value)
             } else {
                 // "If the x distance is the greatest"
                 // split on X
-                let (split_value, tmp) = find_median(Dimension::X, pts);
+                let (split_value, tmp) = find_median(Dimension::X, &mut entities);
                 split_index = tmp;
                 (Dimension::X, split_value)
             };
