@@ -36,7 +36,7 @@ pub unsafe extern "C" fn new(array: *const Entity, length: c_int) -> *mut c_void
 
 #[no_mangle]
 pub unsafe extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
-    let gravtree: Box<GravTree> = Box::from_raw(gravtree_buf as *mut GravTree);
+    let gravtree: Box<GravTree<Entity>> = Box::from_raw(gravtree_buf as *mut GravTree<Entity>);
     // A seg fault happens in the below line.
     Box::into_raw(Box::new(gravtree.time_step())) as *mut c_void
 }
@@ -45,7 +45,7 @@ pub unsafe extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
 pub unsafe extern "C" fn from_data_file(file_path_buff: *const c_char) -> *mut c_void {
     let file_path = CStr::from_ptr(file_path_buff);
 
-    let gravtree = GravTree::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
+    let gravtree = GravTree::<Entity>::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
     Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 
@@ -54,7 +54,7 @@ pub unsafe extern "C" fn write_data_file(
     file_path_buff: *const c_char,
     gravtree_buf: *mut c_uchar,
 ) {
-    let gravtree: GravTree = transmute_copy(&gravtree_buf);
+    let gravtree: GravTree<Entity> = transmute_copy(&gravtree_buf);
     let file_path = CStr::from_ptr(file_path_buff);
     gravtree.write_data_file(String::from(file_path.to_str().unwrap()));
 }
@@ -146,7 +146,7 @@ fn test_tree() {
 /// This function is used for testing. It checks the number of nodes on each side, along the "edge" of the tree.
 /// left_nodes is how many nodes you expect to see along the left size, and right_nodes is how many you expect to
 ///  see along the right.
-fn go_to_edges(grav_tree: GravTree, left_nodes: usize, right_nodes: usize) {
+fn go_to_edges(grav_tree: GravTree<Entity>, left_nodes: usize, right_nodes: usize) {
     let mut count_of_nodes = 0;
     let mut node = grav_tree.root.left.expect("null root node\n");
     let mut node2 = node.clone();

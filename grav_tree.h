@@ -6,14 +6,14 @@
  * them around according to the gravity they exert on each other.
  */
 typedef struct Entity {
-  double vx;
-  double vy;
-  double vz;
-  double x;
-  double y;
-  double z;
-  double radius;
-  double mass;
+  float vx;
+  float vy;
+  float vz;
+  float x;
+  float y;
+  float z;
+  float radius;
+  float mass;
 } Entity;
 
 void *from_data_file(const char *file_path_buff);
