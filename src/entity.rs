@@ -27,8 +27,8 @@ pub struct Entity {
 }
 
 impl AsEntity for Entity {
-    fn as_entity(&self) -> Entity {
-        return self.clone();
+    fn as_entity(&self) -> &Entity {
+        return self;
     }
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"

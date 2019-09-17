@@ -24,7 +24,7 @@ pub struct Node<T: AsEntity + Clone + Default > {
 }
 
 pub trait AsEntity {
-    fn as_entity(&self) -> Entity;
+    fn as_entity(&self) -> &Entity;
     fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T> ) -> Self;
 
 }
@@ -118,8 +118,8 @@ impl <T: AsEntity + Clone + Default> Node<T> {
     pub fn new_root_node(pts: &mut [T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
-        let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
-        let (xdistance, ydistance, zdistance) = xyz_distances(&entities);
+        let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<&Entity>>();
+        let (xdistance, ydistance, zdistance) = xyz_distances(entities.as_slice());
         // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
         if length_of_points <= MAX_PTS {
             // then we convert it into a leaf node.

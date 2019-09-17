@@ -1,9 +1,10 @@
 use super::Dimension;
 use crate::entity::Entity;
+use node::AsEntity;
 use std::cmp::Ordering;
 /// Returns the absolute distance in every dimension (the range in every dimension)
 /// of an array slice of entities.
-pub fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
+pub fn xyz_distances(entities: &[&Entity]) -> (f64, f64, f64) {
     let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(entities);
     let x_distance = x_max - x_min;
     let y_distance = y_max - y_min;
@@ -13,7 +14,7 @@ pub fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
 
 /// Given an array slice of entities, returns the maximum and minimum x, y, and z values as
 /// a septuple.
-pub fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) {
+pub fn max_min_xyz<'a>(entities: &[&'a Entity]) -> (&'a f64, &'a f64, &'a f64, &'a f64, &'a f64, &'a f64) {
     let (x_max, x_min) = max_min(Dimension::X, entities);
     let (y_max, y_min) = max_min(Dimension::Y, entities);
     let (z_max, z_min) = max_min(Dimension::Z, entities);
@@ -26,12 +27,14 @@ fn bench_max_min(b: &mut test::Bencher) {
     for _ in 0..1000 {
         test_vec.push(Entity::random_entity());
     }
+
+    let ref_vec = test_vec.iter().map(|x| x.as_entity()).collect::<Vec<&Entity>>();
     // TODO make it do this with different vecs
-    b.iter(|| max_min_xyz(&test_vec));
+    b.iter(|| max_min_xyz(ref_vec.as_slice()));
 }
 
 /// Returns the maximum and minimum z values in a slice of entities.
-pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
+pub fn max_min<'a>(dim: Dimension, entities: &[&'a Entity]) -> (&'a f64, &'a f64) {
     (
         &entities
             .iter()
@@ -56,17 +59,17 @@ pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
 
 /// Finds the median value for a given dimension in a slice of entities.
 /// Making one that clones/uses immutability could be an interesting performance benchmark.
-pub fn find_median(dim: Dimension, pts: &mut [Entity]) -> (&f64, usize) {
+pub fn find_median<'a>(dim: Dimension, pts: &mut [&'a Entity]) -> (&'a f64, usize) {
     find_median_helper(dim, pts, 0, pts.len(), pts.len() / 2usize)
 }
 
-fn find_median_helper(
+fn find_median_helper<'a>(
     dim: Dimension,
-    pts: &mut [Entity],
+    pts: &mut [&'a Entity],
     start: usize,
     end: usize,
     mid: usize,
-) -> (&f64, usize) {
+) -> (&'a f64, usize) {
     let mut low = (start + 1) as usize;
     let mut high = (end - 1) as usize; //exclusive end
     while low <= high {
