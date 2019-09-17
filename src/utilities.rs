@@ -1,5 +1,6 @@
 use super::Dimension;
 use crate::entity::Entity;
+#[allow(unused_imports)]
 use node::AsEntity;
 use std::cmp::Ordering;
 /// Returns the absolute distance in every dimension (the range in every dimension)

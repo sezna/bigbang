@@ -23,6 +23,11 @@ pub struct Node<T: AsEntity + Clone + Default > {
     z_max: f64,
 }
 
+/// The trait that enables a struct to be used inside of this structure.
+/// It must be able to represent itself as an entity, i.e. provide positional and size information about itself,
+/// and it must be able to calculate gravity upon itself given another entity some distance away. In the future,
+/// I'd like to do that actual calculation in the tree and change this trait to just require that an entity
+/// can add some acceleration vector to itself.
 pub trait AsEntity {
     fn as_entity(&self) -> &Entity;
     fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T> ) -> Self;

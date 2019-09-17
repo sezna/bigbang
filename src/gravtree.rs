@@ -11,7 +11,7 @@ pub struct GravTree<T: AsEntity + Clone + Default> {
     number_of_entities: usize, // The number of entities in the tree.
 }
 
-impl <T: AsEntity + Clone + Default>GravTree<T> {
+impl <T: AsEntity + Clone + Default + Send + Sync>GravTree<T> {
     pub fn new(pts: &mut Vec<T>) -> GravTree<T> where T: AsEntity {
         let size_of_vec = pts.len();
         GravTree {
@@ -59,7 +59,7 @@ impl <T: AsEntity + Clone + Default>GravTree<T> {
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
        //TODO make this a par iter later         .par_iter()
-                .iter()
+                .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
         )
