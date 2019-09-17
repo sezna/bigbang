@@ -136,7 +136,7 @@ impl <T: AsEntity + Clone + Default>GravTree<T> {
     /// This is compatible with SwiftVis visualizations.
     pub fn write_data_file(self, file_path: String) {
         let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-        let mut to_write: Vec<Entity> = self.as_vec().iter().map(|x| x.as_entity()).collect();
+        let mut to_write: Vec<Entity> = self.as_vec().iter().map(|x| x.as_entity().clone()).collect();
         let mut to_write_string: String;
         to_write_string = to_write.pop().expect("").as_string().to_string();
         while !to_write.is_empty() {
@@ -147,8 +147,8 @@ impl <T: AsEntity + Clone + Default>GravTree<T> {
             );
         }
         to_write_string = format!("{}\n", to_write_string);
-        assert!(
-            file.write(to_write_string.as_bytes()).unwrap() == to_write_string.as_bytes().len()
+        assert_eq!(
+            file.write(to_write_string.as_bytes()).unwrap(), to_write_string.as_bytes().len()
         );
     }
 }
