@@ -10,6 +10,8 @@ use std::path::Path;
 /// entities.
 pub struct GravTree<T: AsEntity + Clone> {
     /// A GravTree consists of a root [[Node]]. A [[Node]] is a recursive binary tree data structure.
+    /// Tragically must be public for now for testing reasons. Perhaps could be replaced by various
+    /// getter methods later.
     pub root: Node<T>,
     /// This is just the number of entities in the tree. This is used in testing to verify that no
     /// entities are being dropped.
