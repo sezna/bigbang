@@ -76,5 +76,10 @@ In order to advance the simulation, call `grav_tree.time_step()`. Given enough p
 
 See the examples directory for a minimalist working example.
 
+## Saving output and loading from files
+
+`grav_tree` supports both saving to data files and loading from them. Be warned, when saving to a data file, it does not currently save out the `time_step` value. You must provide that again when you load from a file.
+
+The reason for this is because the output is compliant with visualization software like [SwiftViz](https://github.com/MarkCLewis/SwiftVis2).
 # C/C++ Interface
 If you are hoping to use this with C or C++, I have provided FFI functionality. I have tested it on a small scale. I would love to work with you to test it on a larger scale and help you set it up. Contact me at [alex@alex-hansen.com](mailto:alex@alex-hansen.com) if you'd like help setting this up in C/C++. 
