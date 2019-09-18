@@ -5,14 +5,14 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
 #[derive(Clone, Default)]
-pub struct Node<T: AsEntity + Clone + Default > {
+pub struct Node<T: AsEntity + Clone + Default> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
-    pub left: Option<Box<Node<T>>>,        // Left subtree.
-    pub right: Option<Box<Node<T>>>,       // Right subtree.
-    pub points: Option<Vec<T>>,    // Vector of the points if this node is a Leaf.
+    pub left: Option<Box<Node<T>>>,     // Left subtree.
+    pub right: Option<Box<Node<T>>>,    // Right subtree.
+    pub points: Option<Vec<T>>,         // Vector of the points if this node is a Leaf.
     pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
-                                          * together. (x, y, z). */
+                                         * together. (x, y, z). */
     total_mass: f64, // Total mass of all entities under this node.
     r_max: f64,      // Maximum radius that is a child of this node.
     x_min: f64,
@@ -30,11 +30,10 @@ pub struct Node<T: AsEntity + Clone + Default > {
 /// can add some acceleration vector to itself.
 pub trait AsEntity {
     fn as_entity(&self) -> &Entity;
-    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T> ) -> Self;
-
+    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> Self;
 }
 
-impl <T: AsEntity + Clone + Default> Node<T> {
+impl<T: AsEntity + Clone + Default> Node<T> {
     pub fn new() -> Node<T> {
         Node::default()
     }
