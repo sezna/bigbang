@@ -1,18 +1,21 @@
 use crate::entity::Entity;
+use crate::node::AsEntity;
 use crate::Node;
 use rayon::prelude::*;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use crate::node::AsEntity;
 pub struct GravTree<T: AsEntity + Clone + Default> {
-    pub root: Node<T>,            // The root Node.
+    pub root: Node<T>,         // The root Node.
     number_of_entities: usize, // The number of entities in the tree.
 }
 
-impl <T: AsEntity + Clone + Default + Send + Sync>GravTree<T> {
-    pub fn new(pts: &mut Vec<T>) -> GravTree<T> where T: AsEntity {
+impl<T: AsEntity + Clone + Default + Send + Sync> GravTree<T> {
+    pub fn new(pts: &mut Vec<T>) -> GravTree<T>
+    where
+        T: AsEntity,
+    {
         let size_of_vec = pts.len();
         GravTree {
             root: Node::<T>::new_root_node(&mut pts[..]),
@@ -58,7 +61,7 @@ impl <T: AsEntity + Clone + Default + Send + Sync>GravTree<T> {
         let post_gravity_entity_vec: Vec<T> = self.root.traverse_tree_helper();
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
-       //TODO make this a par iter later         .par_iter()
+                //TODO make this a par iter later         .par_iter()
                 .par_iter()
                 .map(|x| x.apply_gravity_from(&self.root))
                 .collect(),
@@ -136,7 +139,11 @@ impl <T: AsEntity + Clone + Default + Send + Sync>GravTree<T> {
     /// This is compatible with SwiftVis visualizations.
     pub fn write_data_file(self, file_path: String) {
         let mut file = File::create(file_path).unwrap(); //TODO unwraps are bad
-        let mut to_write: Vec<Entity> = self.as_vec().iter().map(|x| x.as_entity().clone()).collect();
+        let mut to_write: Vec<Entity> = self
+            .as_vec()
+            .iter()
+            .map(|x| x.as_entity().clone())
+            .collect();
         let mut to_write_string: String;
         to_write_string = to_write.pop().expect("").as_string().to_string();
         while !to_write.is_empty() {
@@ -148,7 +155,8 @@ impl <T: AsEntity + Clone + Default + Send + Sync>GravTree<T> {
         }
         to_write_string = format!("{}\n", to_write_string);
         assert_eq!(
-            file.write(to_write_string.as_bytes()).unwrap(), to_write_string.as_bytes().len()
+            file.write(to_write_string.as_bytes()).unwrap(),
+            to_write_string.as_bytes().len()
         );
     }
 }

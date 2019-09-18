@@ -13,7 +13,8 @@ pub mod gravtree;
 mod node;
 mod utilities;
 use dimension::Dimension;
-use gravtree::GravTree;
+pub use gravtree::GravTree;
+pub use node::AsEntity;
 use node::Node;
 use std::ffi::CStr;
 use std::mem::transmute_copy;
@@ -45,7 +46,8 @@ pub unsafe extern "C" fn time_step(gravtree_buf: *mut c_void) -> *mut c_void {
 pub unsafe extern "C" fn from_data_file(file_path_buff: *const c_char) -> *mut c_void {
     let file_path = CStr::from_ptr(file_path_buff);
 
-    let gravtree = GravTree::<Entity>::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
+    let gravtree =
+        GravTree::<Entity>::from_data_file(String::from(file_path.to_str().unwrap())).unwrap();
     Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 
@@ -201,6 +203,21 @@ fn bench_time_step_12(b: &mut test::Bencher) {
     for _ in 0..12 {
         for _ in 0..12 {
             for _ in 0..12 {
+                let entity = Entity::random_entity();
+                vec_that_wants_to_be_a_kdtree.push(entity);
+            }
+        }
+    }
+
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
+    b.iter(|| test_tree = test_tree.time_step())
+}
+#[bench]
+fn bench_time_step_15(b: &mut test::Bencher) {
+    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
+    for _ in 0..15 {
+        for _ in 0..15 {
+            for _ in 0..15 {
                 let entity = Entity::random_entity();
                 vec_that_wants_to_be_a_kdtree.push(entity);
             }

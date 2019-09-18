@@ -68,8 +68,6 @@ impl Entity {
         }
     }
 
-
-
     /// Returns the entity as a string with space separated values.
     pub fn as_string(&self) -> String {
         return format!(
@@ -121,7 +119,10 @@ impl Entity {
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
     /// self. Other can be either an entity or a node.
-    fn get_gravitational_acceleration<T: AsEntity + Clone + Default>(&self, oth: Either<&Entity, &Node<T>>) -> (f64, f64, f64) {
+    fn get_gravitational_acceleration<T: AsEntity + Clone + Default>(
+        &self,
+        oth: Either<&Entity, &Node<T>>,
+    ) -> (f64, f64, f64) {
         // TODO get rid of this clone
         let other = match oth {
             Left(entity) => entity.clone(),
@@ -147,7 +148,10 @@ impl Entity {
     /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
     /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn get_entity_acceleration_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> (f64, f64, f64) {
+    pub fn get_entity_acceleration_from<T: AsEntity + Clone + Default>(
+        &self,
+        node: &Node<T>,
+    ) -> (f64, f64, f64) {
         let mut acceleration = (0f64, 0f64, 0f64);
         if let Some(node) = &node.left {
             if node.points.is_some() {

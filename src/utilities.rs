@@ -15,7 +15,9 @@ pub fn xyz_distances(entities: &[&Entity]) -> (f64, f64, f64) {
 
 /// Given an array slice of entities, returns the maximum and minimum x, y, and z values as
 /// a septuple.
-pub fn max_min_xyz<'a>(entities: &[&'a Entity]) -> (&'a f64, &'a f64, &'a f64, &'a f64, &'a f64, &'a f64) {
+pub fn max_min_xyz<'a>(
+    entities: &[&'a Entity],
+) -> (&'a f64, &'a f64, &'a f64, &'a f64, &'a f64, &'a f64) {
     let (x_max, x_min) = max_min(Dimension::X, entities);
     let (y_max, y_min) = max_min(Dimension::Y, entities);
     let (z_max, z_min) = max_min(Dimension::Z, entities);
@@ -29,7 +31,10 @@ fn bench_max_min(b: &mut test::Bencher) {
         test_vec.push(Entity::random_entity());
     }
 
-    let ref_vec = test_vec.iter().map(|x| x.as_entity()).collect::<Vec<&Entity>>();
+    let ref_vec = test_vec
+        .iter()
+        .map(|x| x.as_entity())
+        .collect::<Vec<&Entity>>();
     // TODO make it do this with different vecs
     b.iter(|| max_min_xyz(ref_vec.as_slice()));
 }
