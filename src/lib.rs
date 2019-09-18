@@ -3,23 +3,20 @@ extern crate either;
 extern crate rand;
 extern crate rayon;
 extern crate test;
-// TODO list
-// speed check compare the mutated accel value vs the recursive addition
-// function that takes the acceleration on an entity and applies it
-// function that puts all of the new entities into a new GravTree
 mod dimension;
-pub mod entity;
-pub mod gravtree;
+mod entity;
+mod gravtree;
 mod node;
 mod utilities;
 use dimension::Dimension;
-pub use gravtree::GravTree;
 use node::Node;
 use std::ffi::CStr;
 use std::mem::transmute_copy;
 
-#[allow(unused_imports)] // this is used in the test
-use entity::Entity;
+/*  public-facing entry points */
+pub use gravtree::GravTree;
+pub use entity::{ Entity, AsEntity };
+
 /* FFI interface functions are all plopped right here. */
 
 use std::os::raw::{c_char, c_double, c_int, c_uchar, c_void};

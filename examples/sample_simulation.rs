@@ -1,6 +1,6 @@
-extern crate grav_tree;
-use grav_tree::entity::Entity;
-use grav_tree::GravTree;
+extern crate bigbang;
+use bigbang::Entity;
+use bigbang::GravTree;
 
 fn main() {
     let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();

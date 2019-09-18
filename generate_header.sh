@@ -1,1 +1,1 @@
- cbindgen --config cbindgen.toml --crate grav_tree --output grav_tree.h
+ cbindgen --config cbindgen.toml --crate bigbang --output bigbang.h

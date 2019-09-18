@@ -1,7 +1,14 @@
 [package]
-name = "grav_tree"
-version = "0.1.0"
+name = "bigbang"
+version = "0.0.1"
 authors = ["Alex <alex@alex-hansen.com>"]
+license = "MIT"
+description = "An optimized framework for n-body gravitational simulation"
+repository = "https://github.com/sezna/bigbang"
+keywords = ["nbody", "gravity", "simulation"]
+categories = ["simulation"]
+exclude = ["test_files/*"]
+
 [dependencies]
 rand = "0.7.0"
 either = "1.5"

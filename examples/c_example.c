@@ -1,4 +1,4 @@
-#include "../grav_tree.h"
+#include "../bigbang.h"
 
 // Run me with "make run" from the project root!
 
