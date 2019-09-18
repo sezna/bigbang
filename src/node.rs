@@ -1,11 +1,11 @@
 use crate::dimension::Dimension;
-use crate::entity::Entity;
+use entity::{ Entity, AsEntity };
 use utilities::{find_median, max_min_xyz, xyz_distances};
 /// The length of time that passes each step. This coefficient is multiplied by the velocity
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
-#[derive(Clone, Default)]
-pub struct Node<T: AsEntity + Clone + Default> {
+#[derive(Clone)]
+pub struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
     pub left: Option<Box<Node<T>>>,     // Left subtree.
@@ -23,19 +23,24 @@ pub struct Node<T: AsEntity + Clone + Default> {
     z_max: f64,
 }
 
-/// The trait that enables a struct to be used inside of this structure.
-/// It must be able to represent itself as an entity, i.e. provide positional and size information about itself,
-/// and it must be able to calculate gravity upon itself given another entity some distance away. In the future,
-/// I'd like to do that actual calculation in the tree and change this trait to just require that an entity
-/// can add some acceleration vector to itself.
-pub trait AsEntity {
-    fn as_entity(&self) -> &Entity;
-    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> Self;
-}
-
-impl<T: AsEntity + Clone + Default> Node<T> {
+impl<T: AsEntity + Clone> Node<T> {
     pub fn new() -> Node<T> {
-        Node::default()
+        Node {
+            split_dimension: None,
+            split_value: 0.0,
+            left: None,
+            right: None,
+            points: None,
+            center_of_mass: (0.0, 0.0, 0.0),
+            total_mass: 0.0,
+            r_max: 0.0,
+            x_min: 0.0,
+            x_max: 0.0,
+            y_min: 0.0,
+            y_max: 0.0,
+            z_min: 0.0,
+            z_max: 0.0,
+        }
     }
     /// Looks into its own children's maximum and minimum values, setting its own
     /// values accordingly.

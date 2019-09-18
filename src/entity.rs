@@ -2,14 +2,12 @@ extern crate rand;
 use super::Dimension;
 use crate::Node;
 use either::{Either, Left, Right};
-use node::AsEntity;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
 /// entity instead of recursing into it.
 
 const THETA: f64 = 0.2;
-const TIME_STEP: f64 = 0.2;
 #[derive(Clone, PartialEq, Default)]
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
@@ -26,26 +24,33 @@ pub struct Entity {
     pub mass: f64,
 }
 
+/// The trait that enables a struct to be used inside of a node.
+/// It must be able to represent itself as an entity, i.e. provide positional and size information about itself,
+/// and it must be able to calculate gravity upon itself given another entity some distance away. In the future,
+/// I'd like to do that actual calculation in the tree and change this trait to just require that an entity
+/// can add some acceleration vector to itself.
+pub trait AsEntity {
+    fn as_entity(&self) -> &Entity;
+    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;
+}
+
 impl AsEntity for Entity {
     fn as_entity(&self) -> &Entity {
         return self;
     }
-    /// Returns a new entity after gravity from a node has been applied to it.
-    /// Should be read as "apply gravity from node"
-    fn apply_gravity_from<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> Entity {
-        let acceleration = self.get_entity_acceleration_from(node);
+    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self {
         let (vx, vy, vz) = (
-            self.vx + acceleration.0 * TIME_STEP,
-            self.vy + acceleration.1 * TIME_STEP,
-            self.vz + acceleration.2 * TIME_STEP,
+            self.vx + acceleration.0 * time_step,
+            self.vy + acceleration.1 * time_step,
+            self.vz + acceleration.2 * time_step,
         );
         Entity {
             vx,
             vy,
             vz,
-            x: self.x + (vx * TIME_STEP),
-            y: self.y + (vy * TIME_STEP),
-            z: self.z + (vz * TIME_STEP),
+            x: self.x + (vx * time_step),
+            y: self.y + (vy * time_step),
+            z: self.z + (vz * time_step),
             radius: self.radius,
             mass: self.mass,
         }
@@ -66,6 +71,13 @@ impl Entity {
             radius: rand::random::<f64>(),
             mass: rand::random::<f64>(),
         }
+    }
+
+    /// Returns a new entity after gravity from a node has been applied to it.
+    /// Should be read as "apply gravity from node"
+    pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
+
+        return self.get_entity_acceleration_from(node);
     }
 
     /// Returns the entity as a string with space separated values.
@@ -108,7 +120,7 @@ impl Entity {
 
     /// Returns a boolean representing whether or node the node is within the theta range
     /// of the entity.
-    fn theta_exceeded<T: AsEntity + Clone + Default>(&self, node: &Node<T>) -> bool {
+    fn theta_exceeded<T: AsEntity + Clone>(&self, node: &Node<T>) -> bool {
         // 1) distance from entity to COM of that node
         // 2) if 1) * theta > size (max diff) then
         let node_as_entity = node.as_entity();
@@ -119,7 +131,7 @@ impl Entity {
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
     /// self. Other can be either an entity or a node.
-    fn get_gravitational_acceleration<T: AsEntity + Clone + Default>(
+    fn get_gravitational_acceleration<T: AsEntity + Clone>(
         &self,
         oth: Either<&Entity, &Node<T>>,
     ) -> (f64, f64, f64) {
@@ -148,7 +160,7 @@ impl Entity {
     /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
     /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn get_entity_acceleration_from<T: AsEntity + Clone + Default>(
+    pub fn get_entity_acceleration_from<T: AsEntity + Clone>(
         &self,
         node: &Node<T>,
     ) -> (f64, f64, f64) {

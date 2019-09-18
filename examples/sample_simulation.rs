@@ -9,7 +9,7 @@ fn main() {
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
 
     for i in 0..20 {
         println!("time step: {}", i);
