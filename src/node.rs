@@ -1,10 +1,18 @@
 use crate::dimension::Dimension;
 use entity::{ Entity, AsEntity };
 use utilities::{find_median, max_min_xyz, xyz_distances};
-/// The length of time that passes each step. This coefficient is multiplied by the velocity
-/// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
 #[derive(Clone)]
+
+/// This is internal to the tree and is not exposed to the consumer.
+///
+/// A [[Node]] is either a leaf or an internal node. If it is an internal node, it contains _no_ entities. Instead,
+/// it is purely structural and contains aggregate statistics of its children. An internal node will sometimes be treated
+/// as an [[Entity]] of its own via `as_entity()` (not to be confused with the trait [[AsEntity]] -- this is just a method on
+/// [[Node]].
+///
+/// If a [[Node]] is a leaf, then it contains up to `MAX_PTS` particles, as swell as the aggregate values of these particles.
+/// These aggregate values are the center of mass, the total mass, and max/min values for each dimension.
 pub struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.

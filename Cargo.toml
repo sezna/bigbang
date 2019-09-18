@@ -1,13 +1,15 @@
 [package]
 name = "bigbang"
-version = "0.0.1"
+version = "0.0.3"
 authors = ["Alex <alex@alex-hansen.com>"]
 license = "MIT"
-description = "An optimized framework for n-body gravitational simulation"
+description = "An optimized framework for n-(hard)-body gravitational simulation"
 repository = "https://github.com/sezna/bigbang"
 keywords = ["nbody", "gravity", "simulation"]
 categories = ["simulation"]
 exclude = ["test_files/*"]
+readme = "README.md"
+documentation = "https://docs.rs/bigbang"
 
 [dependencies]
 rand = "0.7.0"

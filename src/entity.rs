@@ -24,11 +24,14 @@ pub struct Entity {
     pub mass: f64,
 }
 
-/// The trait that enables a struct to be used inside of a node.
-/// It must be able to represent itself as an entity, i.e. provide positional and size information about itself,
-/// and it must be able to calculate gravity upon itself given another entity some distance away. In the future,
-/// I'd like to do that actual calculation in the tree and change this trait to just require that an entity
-/// can add some acceleration vector to itself.
+/// [[GravTree]] works with any type which implements [[AsEntity]]. In order to implement [[AsEntity]],
+/// a type must be able to represent itself as a gravitational spatial entity. This, simply, entails
+/// constructing an [[Entity]] from the type, and defining how to acceleration to the velocity of your type.
+///
+/// More generally, this entails that a type must contain, or be able to derive, its velocity, position,
+/// radius and mass, and it must be able to respond to acceleration impulses in the form of triples of `f64`s.
+///
+/// See `impl AsEntity for Entity' for an example of what this could look like.
 pub trait AsEntity {
     fn as_entity(&self) -> &Entity;
     fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;

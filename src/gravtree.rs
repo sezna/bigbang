@@ -6,9 +6,16 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+/// The main struct you will interact with. This is a k-d tree containing all of your gravitational
+/// entities.
 pub struct GravTree<T: AsEntity + Clone> {
-    pub root: Node<T>,         // The root Node.
-    number_of_entities: usize, // The number of entities in the tree.
+    /// A GravTree consists of a root [[Node]]. A [[Node]] is a recursive binary tree data structure.
+    pub root: Node<T>,
+    /// This is just the number of entities in the tree. This is used in testing to verify that no
+    /// entities are being dropped.
+    number_of_entities: usize,
+    /// This coefficient determines the granularity of the simulation, i.e. how much each frame of
+    /// the simulation actually moves the individual entities.
     time_step: f64, // the time coefficient; how large each simulation frame is time-wise.
 }
 
