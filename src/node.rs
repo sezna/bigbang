@@ -4,7 +4,7 @@ use utilities::{find_median, max_min_xyz, xyz_distances};
 /// The length of time that passes each step. This coefficient is multiplied by the velocity
 /// before the velocity is added to the position of the entities each step.
 const MAX_PTS: i32 = 3;
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
@@ -25,22 +25,22 @@ pub struct Node<T: AsEntity + Clone> {
 
 impl<T: AsEntity + Clone> Node<T> {
     pub fn new() -> Node<T> {
-                Node {
-                    split_dimension: None,
-                    split_value: 0.0,
-                    left: None,
-                    right: None,
-                    points: None,
-                    center_of_mass: (0.0, 0.0, 0.0),
-                    total_mass: 0.0,
-                    r_max: 0.0,
-                    x_min: 0.0,
-                    x_max: 0.0,
-                    y_min: 0.0,
-                    y_max: 0.0,
-                    z_min: 0.0,
-                    z_max: 0.0,
-                }
+        Node {
+            split_dimension: None,
+            split_value: 0.0,
+            left: None,
+            right: None,
+            points: None,
+            center_of_mass: (0.0, 0.0, 0.0),
+            total_mass: 0.0,
+            r_max: 0.0,
+            x_min: 0.0,
+            x_max: 0.0,
+            y_min: 0.0,
+            y_max: 0.0,
+            z_min: 0.0,
+            z_max: 0.0,
+        }
     }
     /// Looks into its own children's maximum and minimum values, setting its own
     /// values accordingly.

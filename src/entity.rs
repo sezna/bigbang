@@ -8,7 +8,6 @@ use either::{Either, Left, Right};
 /// entity instead of recursing into it.
 
 const THETA: f64 = 0.2;
-const TIME_STEP: f64 = 0.2;
 #[derive(Clone, PartialEq, Default)]
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
@@ -32,7 +31,7 @@ pub struct Entity {
 /// can add some acceleration vector to itself.
 pub trait AsEntity {
     fn as_entity(&self) -> &Entity;
-    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64 ) -> Self;
+    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;
 }
 
 impl AsEntity for Entity {
@@ -77,7 +76,8 @@ impl Entity {
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
     pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
-         return  self.get_entity_acceleration_from(node);
+
+        return self.get_entity_acceleration_from(node);
     }
 
     /// Returns the entity as a string with space separated values.

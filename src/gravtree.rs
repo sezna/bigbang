@@ -15,8 +15,8 @@ pub struct GravTree<T: AsEntity + Clone> {
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
     pub fn new(pts: &mut Vec<T>, time_step: f64) -> GravTree<T>
-        where
-            T: AsEntity,
+    where
+        T: AsEntity,
     {
         let size_of_vec = pts.len();
         GravTree {

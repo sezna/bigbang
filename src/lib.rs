@@ -56,7 +56,7 @@ pub unsafe extern "C" fn from_data_file(
         String::from(file_path.to_str().unwrap()),
         time_step as f64,
     )
-        .unwrap();
+    .unwrap();
     Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 
