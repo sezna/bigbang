@@ -1,6 +1,6 @@
 [package]
 name = "bigbang"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Alex <alex@alex-hansen.com>"]
 license = "MIT"
 description = "An optimized framework for n-(hard)-body gravitational simulation"

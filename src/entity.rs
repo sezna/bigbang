@@ -79,7 +79,7 @@ impl Entity {
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
     pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
-        return self.get_entity_acceleration_from(node);
+         self.get_entity_acceleration_from(node)
     }
 
     /// Returns the entity as a string with space separated values.
@@ -143,12 +143,16 @@ impl Entity {
             Right(node) => node.as_entity(),
         };
         let d_magnitude = self.distance(&other);
+        if d_magnitude == 0f64 {
+            return (0f64, 0f64, 0f64);
+        }
         let d_vector = self.distance_vector(&other);
         let d_over_d_cubed = (
             d_vector.0 / d_magnitude * d_magnitude,
             d_vector.1 / d_magnitude * d_magnitude,
             d_vector.2 / d_magnitude * d_magnitude,
         );
+
         (
             d_over_d_cubed.0 * other.mass,
             d_over_d_cubed.1 * other.mass,
@@ -169,6 +173,7 @@ impl Entity {
         let mut acceleration = (0f64, 0f64, 0f64);
         if let Some(node) = &node.left {
             if node.points.is_some() {
+                // if this node has some points, calculate their gravitational acceleration
                 // same logic as above
                 for i in node.points.as_ref().expect("unexpected null node 2") {
                     let tmp_accel = self.get_gravitational_acceleration::<T>(Left(&i.as_entity()));
@@ -177,12 +182,13 @@ impl Entity {
                     acceleration.2 += tmp_accel.2;
                 }
             } else if self.theta_exceeded(&node) {
-                // TODO
+                // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
                 let tmp_accel = self.get_gravitational_acceleration(Right(&node));
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
                 acceleration.2 += tmp_accel.2;
             } else {
+                // otherwise, theta has not been exceeded and this is not a leaf. recurse
                 let tmp_accel = self.get_entity_acceleration_from(&node);
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
@@ -211,7 +217,6 @@ impl Entity {
                 acceleration.2 += tmp_accel.2;
             }
         };
-
         (
             acceleration.0 + acceleration.0,
             acceleration.1 + acceleration.1,
