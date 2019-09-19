@@ -33,13 +33,13 @@ pub struct Entity {
 ///
 /// See `impl AsEntity for Entity' for an example of what this could look like.
 pub trait AsEntity {
-    fn as_entity(&self) -> &Entity;
+    fn as_entity(&self) -> Entity;
     fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;
 }
 
 impl AsEntity for Entity {
-    fn as_entity(&self) -> &Entity {
-        return self;
+    fn as_entity(&self) -> Entity {
+        return self.clone();
     }
     fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self {
         let (vx, vy, vz) = (
@@ -79,7 +79,6 @@ impl Entity {
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
     pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
-
         return self.get_entity_acceleration_from(node);
     }
 

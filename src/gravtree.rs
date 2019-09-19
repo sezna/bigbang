@@ -1,10 +1,10 @@
-use entity::{ Entity, AsEntity };
-use Node;
+use entity::{AsEntity, Entity};
 use rayon::prelude::*;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use Node;
 
 /// The main struct you will interact with. This is a k-d tree containing all of your gravitational
 /// entities.
@@ -23,8 +23,8 @@ pub struct GravTree<T: AsEntity + Clone> {
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
     pub fn new(pts: &mut Vec<T>, time_step: f64) -> GravTree<T>
-        where
-            T: AsEntity,
+    where
+        T: AsEntity,
     {
         let size_of_vec = pts.len();
         GravTree {

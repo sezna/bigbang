@@ -14,8 +14,8 @@ use std::ffi::CStr;
 use std::mem::transmute_copy;
 
 /*  public-facing entry points */
+pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
-pub use entity::{ Entity, AsEntity };
 
 /* FFI interface functions are all plopped right here. */
 
@@ -60,7 +60,7 @@ pub unsafe extern "C" fn from_data_file(
         String::from(file_path.to_str().unwrap()),
         time_step as f64,
     )
-        .unwrap();
+    .unwrap();
     Box::into_raw(Box::new(gravtree)) as *mut c_void
 }
 

@@ -19,7 +19,7 @@ In order to use your arbitrary type inside this tree, your struct must be `AsEnt
 The real meat and potatoes you must implement is the trait `AsEntity`. To do so, you must provide a way to represent your struct as a gravitational entity, and a way in which it responds to an acceleration force. This looks like:
 
 ```rust
-fn as_entity(&self) -> &Entity;
+fn as_entity(&self) -> Entity;
 fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;
 ```
 
@@ -44,8 +44,8 @@ Here is what those implementations look like for `Entity` itself:
 ```rust
 use bigbang::{ AsEntity, Entity };
 impl AsEntity for Entity {
-    fn as_entity(&self) -> &Entity {
-        return self;
+    fn as_entity(&self) -> Entity {
+        return self.clone();
     }
     fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self {
         let (vx, vy, vz) = (

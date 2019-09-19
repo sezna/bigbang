@@ -1,5 +1,5 @@
 use crate::dimension::Dimension;
-use entity::{ Entity, AsEntity };
+use entity::{AsEntity, Entity};
 use utilities::{find_median, max_min_xyz, xyz_distances};
 const MAX_PTS: i32 = 3;
 #[derive(Clone)]
@@ -135,7 +135,7 @@ impl<T: AsEntity + Clone> Node<T> {
     pub fn new_root_node(pts: &mut [T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
-        let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<&Entity>>();
+        let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
         let (xdistance, ydistance, zdistance) = xyz_distances(entities.as_slice());
         // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
         if length_of_points <= MAX_PTS {
