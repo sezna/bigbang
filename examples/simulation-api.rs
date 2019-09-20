@@ -89,8 +89,8 @@ impl Key for MyEntity {
 impl MyEntity {
     pub fn random_entity() -> MyEntity {
         MyEntity {
-            vx: rand::random::<f64>() * 20f64,
-            vy: rand::random::<f64>() * 20f64,
+            vx: 0f64,
+            vy: 0f64,
             x: rand::random::<f64>() * 20f64,
             y: rand::random::<f64>() * 20f64,
             radius: rand::random::<f64>(),
