@@ -29,7 +29,7 @@ extern crate staticfile;
 
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
-
+use staticfile::Static;
 use bigbang::{AsEntity, Entity};
 use router::Router;
 
@@ -38,6 +38,7 @@ use chrono::{DateTime, Utc};
 use iron::typemap::Key;
 use iron::{status, Request, Response};
 use persistent::State;
+use mount::Mount;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyEntity {
@@ -130,8 +131,17 @@ fn main() {
     let cors_middleware = CorsMiddleware::with_allow_any();
     chain.link_around(cors_middleware);
 
+    // Find the path of the JS visualization file to serve.
+    let project_directory = env!("CARGO_MANIFEST_DIR");
+    println!("project dir is {}", project_directory);
+    let files_path = format!("{}{}", project_directory, "/examples/visualize.html");
+    let mut mount = Mount::new();
+    mount
+        .mount("/api", chain)
+        .mount("/", Static::new(files_path));
+
     println!("Server running at port 3000");
-    Iron::new(chain)
+    Iron::new(mount)
         .http("localhost:3000")
         .expect("unable to mount server");
 }

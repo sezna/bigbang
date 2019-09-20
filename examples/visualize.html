@@ -1,0 +1,79 @@
+<!DOCTYPE html >
+<html >
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>3D Scatter Plot</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+  </head>
+  <body>
+    <canvas id="divPlot"></canvas>
+    <script>
+    Chart.defaults.scale.gridLines.display = false;
+
+      let canvas = document.getElementById("divPlot");
+      var ctx = canvas.getContext("2d");
+      setInterval(fetchDataAndUpdateChart, 10);
+
+  function fillCtxWithPoints(ctx, xy_data, radii) {
+      var myChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'entities',
+                data: xy_data,
+                backgroundColor: "red",
+                pointRadius: radii
+            }]
+        },
+        options: {
+          tooltips: {enabled: false},
+          hover: {mode: null},
+          animation: false,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 20
+                    }
+                }],
+                xAxes: [{
+                  ticks: { 
+                    min: 0,
+                    max: 20
+                  }
+                }]
+            }
+        }
+      })
+  }
+  function fetchDataAndUpdateChart() {
+    fetch("/api", { method: 'GET',
+        headers: { "Content-Type": "application/json; charset=utf-8" }
+      })
+        .then(res => res.json())
+        .then(data => {
+          let xy_data = [];
+          let radii = [];
+          for (let i = 0; i < data.length; i++) {
+            xy_data.push({x: data[i].x, y: data[i].y});
+            radii.push(data[i].radius * 5);
+          }
+          fillCtxWithPoints(ctx, xy_data, radii);
+        })
+        .catch(err => {
+          console.log("sorry, there are no results for your search", err);
+        });
+    }
+
+    </script>
+    <style>
+      #divPlot {
+          width: 1000px;
+          height: 1000px;
+      }
+
+    </style>
+  </body>
+</html>
