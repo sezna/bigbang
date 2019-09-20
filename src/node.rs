@@ -102,8 +102,7 @@ impl<T: AsEntity + Clone> Node<T> {
             radius: 0.0,
         }
     }
-    // Function that is not being used anymore. Returns a vector of the node and
-    // all of its subnodes.
+
     pub fn max_distance(&self) -> f64 {
         let x_distance = self.x_max - self.x_min;
         let y_distance = self.y_max - self.y_min;
@@ -111,7 +110,7 @@ impl<T: AsEntity + Clone> Node<T> {
         f64::max(x_distance, f64::max(y_distance, z_distance))
     }
 
-    // Traverses tree and returns first child found with points.
+    /// Traverses tree and returns first child found with points.
     pub fn traverse_tree_helper(&self) -> Vec<T> {
         let mut to_return: Vec<T> = Vec::new();
         if let Some(node) = &self.left {

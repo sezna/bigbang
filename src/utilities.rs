@@ -37,10 +37,10 @@ fn bench_max_min(b: &mut test::Bencher) {
     b.iter(|| max_min_xyz(ref_vec.as_slice()));
 }
 
-/// Returns the maximum and minimum z values in a slice of entities.
+/// Returns the maximum and minimum values in a slice of entities, given a dimension.
 pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
     (
-        &entities
+        entities
             .iter()
             .max_by(|a, b| {
                 a.get_dim(&dim)
@@ -48,8 +48,8 @@ pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
                     .unwrap_or_else(|| Ordering::Equal)
             })
             .unwrap_or_else(|| panic!("no max {} found", dim.as_string()))
-            .z,
-        &entities
+            .get_dim(&dim),
+        entities
             .iter()
             .min_by(|a, b| {
                 a.get_dim(&dim)
@@ -57,7 +57,7 @@ pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
                     .unwrap_or_else(|| Ordering::Equal)
             })
             .unwrap_or_else(|| panic!("no min {} found", dim.as_string()))
-            .z,
+            .get_dim(&dim),
     )
 }
 

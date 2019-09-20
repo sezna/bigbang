@@ -27,18 +27,20 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
+use bigbang::{AsEntity, Entity};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
-use staticfile::Static;
-use bigbang::{AsEntity, Entity};
 use router::Router;
+use staticfile::Static;
 
 use chrono::{DateTime, Utc};
 
 use iron::typemap::Key;
 use iron::{status, Request, Response};
-use persistent::State;
 use mount::Mount;
+use persistent::State;
+
+const TIME_STEP: f64 = 0.00002;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyEntity {
@@ -121,7 +123,7 @@ fn main() {
     };
     let store: State<SimulationState> = State::one(sim_state);
     println!("initializing simulation...");
-    let _gravtree = bigbang::GravTree::new(&mut starter_entities, 0.00002);
+    let _gravtree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP);
     let mut router = Router::new();
     router.get("/", move |r: &mut Request| simulation(r), "home");
 
@@ -140,9 +142,9 @@ fn main() {
         .mount("/api", chain)
         .mount("/", Static::new(files_path));
 
-    println!("Server running at port 3000");
+    println!("Server running at port 4001");
     Iron::new(mount)
-        .http("localhost:3000")
+        .http("localhost:4001")
         .expect("unable to mount server");
 }
 
@@ -161,17 +163,16 @@ fn simulation(r: &mut Request) -> IronResult<Response> {
         )));
     }
     let mut simulation_vec = state.read().unwrap().entities.clone();
-    let grav_tree = bigbang::GravTree::new(&mut simulation_vec, 0.00002);
+    let grav_tree = bigbang::GravTree::new(&mut simulation_vec, TIME_STEP);
 
     let mut new_vec = grav_tree.time_step().as_vec();
 
     // bounce off the walls if they're exceeding the boundaries
-
     for e in new_vec.iter_mut() {
-        if e.x < 0f64 || e.x > 20f64 {
+        if e.x <= 0.1f64 || e.x >= 19.9f64 {
             e.vx = e.vx * -1.0
         }
-        if e.y < 0f64 || e.y > 20f64 {
+        if e.y < 0.1f64 || e.y > 19.9f64 {
             e.vy = e.vy * -1.0
         }
     }

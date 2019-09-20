@@ -95,7 +95,7 @@ impl Entity {
         // (x2 - x1) + (y2 - y1) + (z2 - z1)
         // all dist variables  are squared
         let (x_dist, y_dist, z_dist) = self.distance_vector(other);
-        x_dist + y_dist + z_dist
+        x_dist.abs() + y_dist.abs() + z_dist.abs()
     }
     /// Returns the distance between the two entities
     fn distance(&self, other: &Entity) -> f64 {
