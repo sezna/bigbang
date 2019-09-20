@@ -9,44 +9,21 @@
   <body>
     <canvas id="divPlot"></canvas>
     <script>
-    Chart.defaults.scale.gridLines.display = false;
 
-      let canvas = document.getElementById("divPlot");
-      var ctx = canvas.getContext("2d");
-      setInterval(fetchDataAndUpdateChart, 10);
+  let canvas = document.getElementById("divPlot");
+  var ctx = canvas.getContext("2d");
+  setInterval(fetchDataAndUpdateChart, 10);
 
-  function fillCtxWithPoints(ctx, xy_data, radii) {
-      var myChart = new Chart(ctx, {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'entities',
-                data: xy_data,
-                backgroundColor: "red",
-                pointRadius: radii
-            }]
-        },
-        options: {
-          tooltips: {enabled: false},
-          hover: {mode: null},
-          animation: false,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        min: 0,
-                        max: 20
-                    }
-                }],
-                xAxes: [{
-                  ticks: { 
-                    min: 0,
-                    max: 20
-                  }
-                }]
-            }
-        }
-      })
+  function fillCtxWithPoints(ctx, xy_data) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < xy_data.length; i++) {
+      ctx.moveTo(xy_data[i].x, xy_data[i].y);
+      ctx.arc(xy_data[i].x * 50, xy_data[i].y * 50, xy_data[i].radius * 5, 0, Math.PI * 2);
+    }
+    ctx.fill();
   }
   function fetchDataAndUpdateChart() {
     fetch("/api", { method: 'GET',
@@ -55,12 +32,10 @@
         .then(res => res.json())
         .then(data => {
           let xy_data = [];
-          let radii = [];
           for (let i = 0; i < data.length; i++) {
-            xy_data.push({x: data[i].x, y: data[i].y});
-            radii.push(data[i].radius * 5);
+            xy_data.push({x: data[i].x, y: data[i].y, radius: data[i].radius});
           }
-          fillCtxWithPoints(ctx, xy_data, radii);
+          fillCtxWithPoints(ctx, xy_data);
         })
         .catch(err => {
           console.log("sorry, there are no results for your search", err);
@@ -72,6 +47,7 @@
       #divPlot {
           width: 1000px;
           height: 1000px;
+          background-color: "black";
       }
 
     </style>
