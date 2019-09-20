@@ -79,7 +79,7 @@ impl Entity {
     /// Returns a new entity after gravity from a node has been applied to it.
     /// Should be read as "apply gravity from node"
     pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
-         self.get_entity_acceleration_from(node)
+        self.get_entity_acceleration_from(node)
     }
 
     /// Returns the entity as a string with space separated values.
@@ -94,21 +94,19 @@ impl Entity {
     fn distance_squared(&self, other: &Entity) -> f64 {
         // (x2 - x1) + (y2 - y1) + (z2 - z1)
         // all dist variables  are squared
-        let x_dist = (other.x - self.x) * (other.x - self.x);
-        let y_dist = (other.y - self.y) * (other.y - self.y);
-        let z_dist = (other.z - self.z) * (other.z - self.z);
+        let (x_dist, y_dist, z_dist) = self.distance_vector(other);
         x_dist + y_dist + z_dist
     }
     /// Returns the distance between the two entities
     fn distance(&self, other: &Entity) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
-        f64::sqrt(self.distance_squared(other))
+        f64::sqrt(self.distance_squared(other).abs())
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
-        let x_dist = (other.x - self.x) * (other.x - self.x);
-        let y_dist = (other.y - self.y) * (other.y - self.y);
-        let z_dist = (other.z - self.z) * (other.z - self.z);
+        let x_dist = (other.x - self.x) * (other.x - self.x) * (other.x - self.x).signum();
+        let y_dist = (other.y - self.y) * (other.y - self.y) * (other.y - self.y).signum();
+        let z_dist = (other.z - self.z) * (other.z - self.z) * (other.z - self.z).signum();
         (x_dist, y_dist, z_dist)
     }
 
@@ -143,9 +141,11 @@ impl Entity {
             Right(node) => node.as_entity(),
         };
         let d_magnitude = self.distance(&other);
-        if d_magnitude == 0f64 {
+        if d_magnitude == 0.0 {
+            // sort of other use of THETA here
             return (0f64, 0f64, 0f64);
         }
+        // TODO d_magnitude is jumping...a lot
         let d_vector = self.distance_vector(&other);
         let d_over_d_cubed = (
             d_vector.0 / d_magnitude * d_magnitude,
