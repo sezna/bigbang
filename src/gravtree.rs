@@ -81,7 +81,6 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                         x.as_entity().interact_with(&self.root, self.time_step),
                         self.time_step,
                     )
-
                 })
                 .collect(),
             self.time_step,
@@ -146,6 +145,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                         vz: vz_val,
                         mass: mass_val,
                         radius: radius_val,
+                        is_colliding: false,
                     };
                     entities.push(tmp_part);
                     tmp.clear();

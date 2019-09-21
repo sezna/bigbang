@@ -15,14 +15,14 @@
       var ctx = canvas.getContext("2d");
       setInterval(fetchDataAndUpdateChart, 10);
 
-  function fillCtxWithPoints(ctx, xy_data, radii) {
+  function fillCtxWithPoints(ctx, xy_data, radii, backgroundColors) {
       var myChart = new Chart(ctx, {
         type: 'scatter',
         data: {
             datasets: [{
                 label: 'entities',
                 data: xy_data,
-                backgroundColor: "red",
+                pointBackgroundColor: backgroundColors,
                 pointRadius: radii
             }]
         },
@@ -56,11 +56,13 @@
         .then(data => {
           let xy_data = [];
           let radii = [];
+          let background_colors = [];
           for (let i = 0; i < data.length; i++) {
             xy_data.push({x: data[i].x, y: data[i].y});
-            radii.push(data[i].radius * 5);
+            radii.push(data[i].radius * 80);
+            background_colors.push(data[i].color);
           }
-          fillCtxWithPoints(ctx, xy_data, radii);
+          fillCtxWithPoints(ctx, xy_data, radii, background_colors);
         })
         .catch(err => {
           console.log("sorry, there are no results for your search", err);
