@@ -91,6 +91,15 @@ impl<T: AsEntity + Clone> Node<T> {
     /// Converts a node into an entity with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the entities it contains.
     pub fn as_entity(&self) -> Entity {
+        // Construct a "super radius" of the largest dimension / 2 + a radius.
+        let (range_x, range_y, range_z) = (
+            self.x_max - self.x_min,
+            self.y_max - self.y_min,
+            self.z_max - self.z_min,
+        );
+        let max_dimension_range = f64::max(range_x, f64::max(range_y, range_z));
+        let super_radius = max_dimension_range / 2f64 + self.r_max;
+        // Center of mass is NaN a lot
         Entity {
             x: self.center_of_mass.0,
             y: self.center_of_mass.1,
@@ -99,7 +108,8 @@ impl<T: AsEntity + Clone> Node<T> {
             vy: 0.0,
             vz: 0.0,
             mass: self.total_mass,
-            radius: self.r_max,
+            radius: super_radius,
+            is_colliding: false,
         }
     }
 
@@ -231,7 +241,11 @@ impl<T: AsEntity + Clone> Node<T> {
                 .as_ref()
                 .expect("unexpected null node #6")
                 .center_of_mass;
-            let total_mass = left_mass + right_mass;
+            // The mass here is zero when it shouldn't be, causing NaNs all over the place.
+            let mut total_mass = left_mass + right_mass;
+            if total_mass == 0f64 {
+                total_mass = std::f64::MIN;
+            }
             let (center_x, center_y, center_z) = (
                 ((left_mass * left_x) + (right_mass * right_x)) / total_mass,
                 ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
