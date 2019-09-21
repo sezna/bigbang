@@ -34,19 +34,15 @@ pub struct Entity {
 /// See `impl AsEntity for Entity' for an example of what this could look like.
 pub trait AsEntity {
     fn as_entity(&self) -> Entity;
-    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self;
+    fn apply_velocity(&self, velocity: (f64, f64, f64), time_step: f64) -> Self;
 }
 
 impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
-    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self {
-        let (vx, vy, vz) = (
-            self.vx + acceleration.0 * time_step,
-            self.vy + acceleration.1 * time_step,
-            self.vz + acceleration.2 * time_step,
-        );
+    fn apply_velocity(&self, velocity: (f64, f64, f64), time_step: f64) -> Self {
+        let (vx, vy, vz) = velocity;
         Entity {
             vx,
             vy,
@@ -68,18 +64,87 @@ impl Entity {
             vx: rand::random::<f64>(),
             vy: rand::random::<f64>(),
             vz: rand::random::<f64>(),
-            x: rand::random::<f64>(),
-            y: rand::random::<f64>(),
-            z: rand::random::<f64>(),
+            x:  rand::random::<f64>(),
+            y:  rand::random::<f64>(),
+            z:  rand::random::<f64>(),
             radius: rand::random::<f64>(),
             mass: rand::random::<f64>(),
         }
     }
 
-    /// Returns a new entity after gravity from a node has been applied to it.
-    /// Should be read as "apply gravity from node"
-    pub fn apply_gravity_from<T: AsEntity + Clone>(&self, node: &Node<T>) -> (f64, f64, f64) {
-        self.get_entity_acceleration_from(node)
+    /// Returns a velocity vector which represents the velocity of the particle after it has interacted
+    /// with the rest of the tree
+    pub fn interact_with<T: AsEntity + Clone>(&self, node: &Node<T>, time_step: f64) -> (f64, f64, f64) {
+        let v = self.collide(node);
+        // If there was a collision, use that velocity.
+        let (mut vx, mut vy, mut vz) = if let Some(v) = v {
+            v
+        // Otherwise, just use its own velocity.
+        } else {
+            (self.vx, self.vy, self.vz)
+        };
+
+        // Get the gravitational acceleration from the tree...
+        let acceleration = self.get_entity_acceleration_from(node);
+        // Apply the gravitational acceleration to the calculated velocity.
+        (vx + acceleration.0 * time_step,
+        vy + acceleration.1 * time_step,
+        vz + acceleration.2 * time_step)
+
+    }
+
+    /// Needs to be reworked to use min/max position values, but it naively checks
+    /// if two things collide right now.
+    fn did_collide_into(&self, other: &Entity) -> bool {
+        self.distance(other) < (self.radius + other.radius)
+    }
+
+    /// Returns Some velocity _if_ there was a collision. Returns None if there wasn't.
+    fn collide<T: AsEntity + Clone>(&self, node: &Node<T>) -> Option<(f64, f64, f64)> {
+        let (mut vx, mut vy, mut vz) = (self.vx, self.vy, self.vz);
+        // If the two entities are touching...
+        if  self.did_collide_into(&node.as_entity()) {
+            // ...then there is the potential for a collision.
+            // If this is a leaf node...
+            if let Some(points) = &node.points {
+                // Check every particle in the leaf to see if it collided.
+                for other_T in points.iter() {
+                    let other = other_T.as_entity();
+                    // if they collided...
+                    if self.did_collide_into(&other.as_entity()) {
+                        // do some math.
+                        let mass_coefficient_v1 = (self.mass - other.mass) / (self.mass + other.mass);
+                        let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
+                        vx = (mass_coefficient_v1 * self.vx) + (mass_coefficient_v2 * other.vx);
+                        vy = (mass_coefficient_v1 * self.vy) + (mass_coefficient_v2 * other.vy);
+                        vz = (mass_coefficient_v1 * self.vz) + (mass_coefficient_v2 * other.vz);
+                        // Since we currently only support calculating a single collision per simulation frame,
+                        // we return this new collided velocity early.
+                        return Some((vx, vy, vz));
+                    }
+                }
+            }
+            // Otherwise, this isn't a leaf, and we must...
+            else {
+                // Recurse!
+                // on both the left...
+                if let Some(left) = &node.left {
+                    // If there was a collision...
+                    if let Some(vel) = self.collide(&left) {
+                        // return the new velocity.
+                        return Some(vel);
+                    }
+                }
+                // and the right...
+                if let Some(right) = &node.right {
+                    if let Some(vel) = self.collide(&right) {
+                        return Some(vel);
+                    }
+                }   
+            }
+        }
+        // No collision occurred if we made it here, so we return None.
+        return None;
     }
 
     /// Returns the entity as a string with space separated values.

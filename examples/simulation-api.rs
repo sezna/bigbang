@@ -142,7 +142,7 @@ fn main() {
         .mount("/api", chain)
         .mount("/", Static::new(files_path));
 
-    println!("Server running at port 4001");
+    println!("Browse to http://localhost:4001 to heat up your computer.");
     Iron::new(mount)
         .http("localhost:4001")
         .expect("unable to mount server");

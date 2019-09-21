@@ -99,7 +99,7 @@ impl<T: AsEntity + Clone> Node<T> {
             vy: 0.0,
             vz: 0.0,
             mass: self.total_mass,
-            radius: 0.0,
+            radius: self.r_max,
         }
     }
 
