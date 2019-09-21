@@ -3,11 +3,15 @@ extern crate either;
 extern crate rand;
 extern crate rayon;
 extern crate test;
+
 mod dimension;
 mod entity;
 mod gravtree;
 mod node;
 mod utilities;
+#[cfg(feature = "ws_server")]
+mod ws_server;
+
 use dimension::Dimension;
 use node::Node;
 use std::ffi::CStr;
