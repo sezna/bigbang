@@ -3,11 +3,13 @@ extern crate either;
 extern crate rand;
 extern crate rayon;
 extern crate test;
+
 mod dimension;
 mod entity;
 mod gravtree;
 mod node;
 mod utilities;
+
 use dimension::Dimension;
 use node::Node;
 use std::ffi::CStr;

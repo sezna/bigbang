@@ -1,7 +1,7 @@
 extern crate rand;
 use super::Dimension;
+use crate::collision_result::CollisionResult;
 use crate::Node;
-use collision_result::CollisionResult;
 use either::{Either, Left, Right};
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
