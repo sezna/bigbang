@@ -10,14 +10,13 @@ use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::{Arc, Once, RwLock};
 use std::thread;
-use std::time::Duration;
 
 use futures::{
     compat::{Compat, Compat01As03, Compat01As03Sink, Future01CompatExt, Stream01CompatExt},
     future::FutureExt,
     prelude::*,
 };
-use futures_timer::Delay;
+
 use tokio::runtime::TaskExecutor;
 use websocket::message::OwnedMessage;
 use websocket::r#async::{Server, TcpStream};

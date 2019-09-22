@@ -5,7 +5,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use crate::collision_result::CollisionResult;
 
 /// The main struct you will interact with. This is a k-d tree containing all of your gravitational
 /// entities.
