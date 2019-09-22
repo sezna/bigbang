@@ -24,13 +24,13 @@ use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 1000;
-const TIME_STEP: f64 = 0.00002;
-const MAX_X: f64 = 100.;
-const MAX_Y: f64 = 100.;
-const MAX_Z: f64 = 100.;
-const MIN_X: f64 = -100.;
-const MIN_Y: f64 = -100.;
-const MIN_Z: f64 = -100.;
+const TIME_STEP: f64 = 0.000001;
+const MAX_X: f64 = 90.;
+const MAX_Y: f64 = 90.;
+const MAX_Z: f64 = 90.;
+const MIN_X: f64 = -90.;
+const MIN_Y: f64 = -90.;
+const MIN_Z: f64 = -90.;
 
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
@@ -230,7 +230,6 @@ async fn run(executor: TaskExecutor) {
 
     let mut i = 0;
     loop {
-        println!("time step: {}", i);
         test_tree = test_tree.time_step();
         let mut entities = test_tree.as_vec();
         // Update the state with data about all of the entities
