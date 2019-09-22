@@ -17,9 +17,9 @@ use std::mem::transmute_copy;
 mod collision_result;
 
 /*  public-facing entry points */
+pub use collision_result::CollisionResult;
 pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
-pub use collision_result::CollisionResult;
 
 /* FFI interface functions are all plopped right here. */
 
@@ -147,6 +147,7 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
+            is_colliding: false
         },
         Entity {
             vx: 0.0,
@@ -157,6 +158,7 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
+            is_colliding: false
         },
     ];
     let center_of_mass_test = GravTree::new(&mut vector, 0.2);
