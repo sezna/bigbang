@@ -50,7 +50,6 @@ struct MyEntity {
     vy: f64,
     radius: f64,
     color: String,
-    is_colliding: bool,
 }
 
 impl AsEntity for MyEntity {
@@ -64,26 +63,19 @@ impl AsEntity for MyEntity {
             vz: 0.0,
             radius: self.radius,
             mass: self.radius,
-            is_colliding: self.is_colliding,
         };
     }
 
     fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
         let (vx, vy, _vz) = collision_result.velocity;
         let (x, y, _z) = collision_result.position;
-        let is_colliding = collision_result.collided;
         MyEntity {
             vx,
             vy,
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: if is_colliding {
-                String::from("red")
-            } else {
-                String::from("blue")
-            },
-            is_colliding,
+            color: String::from("red")
         }
     }
 
@@ -110,7 +102,6 @@ impl MyEntity {
             y: rand::random::<f64>() * 20f64,
             radius: rand::random::<f64>() / 10f64,
             color: String::from("blue"),
-            is_colliding: false,
         }
     }
 }

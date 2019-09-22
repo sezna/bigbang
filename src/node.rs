@@ -109,7 +109,6 @@ impl<T: AsEntity + Clone> Node<T> {
             vz: 0.0,
             mass: self.total_mass,
             radius: super_radius,
-            is_colliding: false,
         }
     }
 
