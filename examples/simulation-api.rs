@@ -62,7 +62,7 @@ impl AsEntity for MyEntity {
             vy: self.vy,
             vz: 0.0,
             radius: self.radius,
-            mass: self.radius,
+            mass: if self.radius < 1. { 0.5 } else { 105. },
         };
     }
 

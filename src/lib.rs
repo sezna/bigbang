@@ -1,5 +1,4 @@
 extern crate either;
-extern crate rand;
 extern crate rayon;
 mod dimension;
 mod entity;

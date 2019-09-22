@@ -14,9 +14,10 @@ documentation = "https://docs.rs/bigbang"
 
 
 [dependencies]
-rand = "0.7.0"
 either = "1.5"
 rayon = "1.2.0"
+rand = "0.7.0"
+
 
 [dev-dependencies]
 iron = "0.6.0"
