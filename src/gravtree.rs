@@ -146,7 +146,6 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                         vz: vz_val,
                         mass: mass_val,
                         radius: radius_val,
-                        is_colliding: false,
                     };
                     entities.push(tmp_part);
                     tmp.clear();
