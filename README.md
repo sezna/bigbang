@@ -83,7 +83,7 @@ struct MyEntity { ... }
 impl AsEntity for MyEntity { ...}
 
 let mut my_fun_vec:Vec<MyEntity> = vec![entity1, entity2, entity3];
-let grav_tree = GravTree::new(&mut my_fun_vec, 0.2);
+let grav_tree = GravTree::new(&my_fun_vec, 0.2);
 
 ```
 

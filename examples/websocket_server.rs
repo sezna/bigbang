@@ -275,9 +275,7 @@ async fn run(executor: TaskExecutor) {
         // Send a message for all connected clients + one for the main sink
 
         match tx.send(()).await {
-            Ok(_) => {
-                debug!("Successfully sent tick notification message to all connected clients",)
-            }
+            Ok(_) => debug!("Successfully sent tick notification message to all connected clients",),
             Err(err) => error!("Error sending notification message to clients: {:?}", err),
         }
 

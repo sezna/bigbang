@@ -22,13 +22,13 @@ pub struct GravTree<T: AsEntity + Clone> {
 }
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
-    pub fn new(pts: &mut Vec<T>, time_step: f64) -> GravTree<T>
+    pub fn new(pts: &Vec<T>, time_step: f64) -> GravTree<T>
     where
         T: AsEntity,
     {
         let size_of_vec = pts.len();
         GravTree {
-            root: Node::<T>::new_root_node(&mut pts[..]),
+            root: Node::<T>::new_root_node(&pts[..]),
             number_of_entities: size_of_vec,
             time_step,
         }
