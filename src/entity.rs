@@ -1,8 +1,8 @@
 extern crate rand;
 use super::Dimension;
 use crate::Node;
-use either::{Either, Left, Right};
 use collision_result::CollisionResult;
+use either::{Either, Left, Right};
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -115,13 +115,11 @@ impl Entity {
         let (mut vx, mut vy, mut vz) = if collided & !self.is_colliding {
             result.velocity
         // Otherwise, just use its own velocity.
-        } else {  // TODO
-            result.velocity
-        };
+        } else {
+            result.velocity // (self.vx, self.vy, self.vz)
+        }; // TODO eliminate this entirely?
 
         // Set the position of all the entities so that nothing is overlapping
-
-
 
         // Get the gravitational acceleration from the tree...
         let acceleration = self.get_entity_acceleration_from(node);
@@ -133,7 +131,8 @@ impl Entity {
                 vz + acceleration.2 * time_step,
             ),
             collided,
-            collided_entities: result.collided_entities
+            collided_entities: result.collided_entities,
+            position: result.position,
         }
     }
 
@@ -157,7 +156,8 @@ impl Entity {
         } else {
             (self.vx, self.vy, self.vz)
         };
-        let mut collided_entities:Vec<Entity> = Vec::new();
+        let (mut x, mut y, mut z) = (self.x, self.y, self.z);
+        let mut collided_entities: Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
@@ -172,6 +172,17 @@ impl Entity {
                         let mass_coefficient_v1 =
                             (self.mass - other.mass) / (self.mass + other.mass);
                         let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
+                        let mut dist_vec = other.distance_vector(self);
+                        let mut dist_scalar = other.distance(self);
+                        let arbitrary_number = 1.001 * (self.radius + other.radius) / dist_scalar;
+                        dist_vec = (
+                            dist_vec.0 * arbitrary_number,
+                            dist_vec.1 * arbitrary_number,
+                            dist_vec.2 * arbitrary_number,
+                        );
+                        x = other.x + dist_vec.0;
+                        y = other.y + dist_vec.1;
+                        z = other.z + dist_vec.2;
                         vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
                         vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
                         vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
@@ -192,6 +203,9 @@ impl Entity {
                         vx = result.velocity.0;
                         vy = result.velocity.1;
                         vz = result.velocity.2;
+                        x = result.position.0;
+                        y = result.position.1;
+                        z = result.position.2;
                         collided_entities.append(&mut result.collided_entities);
                     }
                 }
@@ -204,6 +218,9 @@ impl Entity {
                         vx = result.velocity.0;
                         vy = result.velocity.1;
                         vz = result.velocity.2;
+                        x = result.position.0;
+                        y = result.position.1;
+                        z = result.position.2;
                         collided_entities.append(&mut result.collided_entities);
                     }
                 }
@@ -212,8 +229,9 @@ impl Entity {
         return CollisionResult {
             collided,
             velocity: (vx, vy, vz),
-            collided_entities
-        }
+            position: (x, y, z),
+            collided_entities,
+        };
     }
 
     /// Returns the entity as a string with space separated values.
@@ -230,7 +248,7 @@ impl Entity {
         // all dist variables  are squared
         // This is being called from somewhere where `other` has NaN values
         let (x_dist, y_dist, z_dist) = self.distance_vector(other);
-        x_dist.abs() + y_dist.abs() + z_dist.abs()
+        x_dist * x_dist + y_dist * y_dist + z_dist * z_dist
     }
     /// Returns the distance between the two entities
     fn distance(&self, other: &Entity) -> f64 {
@@ -239,9 +257,9 @@ impl Entity {
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
-        let x_dist = (other.x - self.x) * (other.x - self.x) * (other.x - self.x).signum();
-        let y_dist = (other.y - self.y) * (other.y - self.y) * (other.y - self.y).signum();
-        let z_dist = (other.z - self.z) * (other.z - self.z) * (other.z - self.z).signum();
+        let x_dist = (other.x - self.x);
+        let y_dist = (other.y - self.y);
+        let z_dist = (other.z - self.z);
         (x_dist, y_dist, z_dist)
     }
 

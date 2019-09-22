@@ -27,7 +27,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, Entity, CollisionResult};
+use bigbang::{AsEntity, CollisionResult, Entity};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -50,7 +50,7 @@ struct MyEntity {
     vy: f64,
     radius: f64,
     color: String,
-    is_colliding: bool
+    is_colliding: bool,
 }
 
 impl AsEntity for MyEntity {
@@ -64,21 +64,26 @@ impl AsEntity for MyEntity {
             vz: 0.0,
             radius: self.radius,
             mass: self.radius,
-            is_colliding: self.is_colliding
+            is_colliding: self.is_colliding,
         };
     }
 
     fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
         let (vx, vy, vz) = collision_result.velocity;
-        let is_colliding = collision_result.collided;;
+        let (x, y, z) = collision_result.position;
+        let is_colliding = collision_result.collided;
         MyEntity {
             vx,
             vy,
-            x: self.x + (vx * time_step),
-            y: self.y + (vy * time_step),
+            x: x + (vx * time_step),
+            y: y + (vy * time_step),
             radius: self.radius,
-            color: if is_colliding { String::from("red") } else { String::from("blue") },
-            is_colliding
+            color: if is_colliding {
+                String::from("red")
+            } else {
+                String::from("blue")
+            },
+            is_colliding,
         }
     }
 
@@ -103,9 +108,9 @@ impl MyEntity {
             vy: 0f64,
             x: rand::random::<f64>() * 20f64,
             y: rand::random::<f64>() * 20f64,
-            radius: rand::random::<f64>() / 2f64,
+            radius: rand::random::<f64>() / 10f64,
             color: String::from("blue"),
-            is_colliding: false
+            is_colliding: false,
         }
     }
 }
@@ -121,12 +126,19 @@ impl Key for SimulationState {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..40).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = (0..200).map(|_| MyEntity::random_entity()).collect();
+    let mut big_boi = MyEntity::random_entity();
+    big_boi.x = 10f64;
+    big_boi.y = 10f64;
+    big_boi.radius = 1f64;
+    starter_entities.push(big_boi);
+
     let sim_state = SimulationState {
         entities: starter_entities.clone(),
         last_time_ran: Utc::now(),
         last_response: String::from("initializing"),
     };
+
     let store: State<SimulationState> = State::one(sim_state);
     println!("initializing simulation...");
     let _gravtree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP);
@@ -178,19 +190,15 @@ fn simulation(r: &mut Request) -> IronResult<Response> {
         if e.x - e.radius <= 0.1f64 {
             e.vx = e.vx * -1.0;
             e.x = 0.1f64 + e.radius;
-        }
-        else if e.x + e.radius >= 19.9f64 {
+        } else if e.x + e.radius >= 19.9f64 {
             e.vx = e.vx * -1.0;
             e.x = 19.9f64 - e.radius;
         }
 
-
-        if e.y - e.radius < 0.01f64
-        {
+        if e.y - e.radius < 0.01f64 {
             e.vy = e.vy * -1.0;
             e.y = 0.01f64 + e.radius;
-        }
-        else if e.y + e.radius > 19.9f64 {
+        } else if e.y + e.radius > 19.9f64 {
             e.vy = e.vy * -1.0;
             e.y = 19.9f64 - e.radius;
         }

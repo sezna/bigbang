@@ -59,7 +59,7 @@
           let background_colors = [];
           for (let i = 0; i < data.length; i++) {
             xy_data.push({x: data[i].x, y: data[i].y});
-            radii.push(data[i].radius * 80);
+            radii.push(data[i].radius * 75);
             background_colors.push(data[i].color);
           }
           fillCtxWithPoints(ctx, xy_data, radii, background_colors);
