@@ -14,9 +14,9 @@ use std::mem::transmute_copy;
 mod collision_result;
 
 /*  public-facing entry points */
+pub use collision_result::CollisionResult;
 pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
-pub use collision_result::CollisionResult;
 
 /* FFI interface functions are all plopped right here. */
 
