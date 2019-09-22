@@ -1,5 +1,6 @@
 use crate::entity::{AsEntity, Entity};
 use crate::Node;
+use crate::collision_result::CollisionResult;
 use rayon::prelude::*;
 use std::error::Error;
 use std::fs::File;
@@ -69,13 +70,16 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
     pub fn time_step(&self) -> GravTree<T> {
         // TODO currently there is a time when the entities are stored twice.
         // Store only accelerations perhaps?
+        // First, we extract the entities out into a vector
         let post_gravity_entity_vec: Vec<T> = self.root.traverse_tree_helper();
+        // Then, we construct a new grav tree after the gravitational acceleration for each
+        // entity has been calculated.
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
                 .par_iter()
                 .map(|x| {
-                    x.apply_acceleration(
-                        x.as_entity().apply_gravity_from(&self.root),
+                    x.apply_velocity(
+                        x.as_entity().interact_with(&self.root, self.time_step),
                         self.time_step,
                     )
                 })
@@ -142,6 +146,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                         vz: vz_val,
                         mass: mass_val,
                         radius: radius_val,
+                        is_colliding: false,
                     };
                     entities.push(tmp_part);
                     tmp.clear();

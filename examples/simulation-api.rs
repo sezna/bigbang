@@ -27,7 +27,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, Entity};
+use bigbang::{AsEntity, Entity, CollisionResult};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -40,7 +40,7 @@ use iron::{status, Request, Response};
 use mount::Mount;
 use persistent::State;
 
-const TIME_STEP: f64 = 0.00002;
+const TIME_STEP: f64 = 0.0002;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyEntity {
@@ -50,6 +50,7 @@ struct MyEntity {
     vy: f64,
     radius: f64,
     color: String,
+    is_colliding: bool
 }
 
 impl AsEntity for MyEntity {
@@ -63,21 +64,30 @@ impl AsEntity for MyEntity {
             vz: 0.0,
             radius: self.radius,
             mass: self.radius,
+            is_colliding: self.is_colliding
         };
     }
 
-    fn apply_acceleration(&self, acceleration: (f64, f64, f64), time_step: f64) -> Self {
-        let (vx, vy) = (
-            self.vx + acceleration.0 * time_step,
-            self.vy + acceleration.1 * time_step,
-        );
+    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
+        let (vx, vy, vz) = collision_result.velocity;
+        let is_colliding = collision_result.collided;;
         MyEntity {
             vx,
             vy,
             x: self.x + (vx * time_step),
             y: self.y + (vy * time_step),
             radius: self.radius,
-            color: self.color.clone(),
+            color: if is_colliding { String::from("red") } else { String::from("blue") },
+            is_colliding
+        }
+    }
+
+    fn set_position(&self, position: (f64, f64, f64)) -> Self {
+        let (x, y, _z) = position;
+        MyEntity {
+            x,
+            y,
+            ..self.clone()
         }
     }
 }
@@ -93,8 +103,9 @@ impl MyEntity {
             vy: 0f64,
             x: rand::random::<f64>() * 20f64,
             y: rand::random::<f64>() * 20f64,
-            radius: rand::random::<f64>(),
-            color: String::from("red"),
+            radius: rand::random::<f64>() / 2f64,
+            color: String::from("blue"),
+            is_colliding: false
         }
     }
 }
@@ -110,12 +121,7 @@ impl Key for SimulationState {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..400).map(|_| MyEntity::random_entity()).collect();
-    let mut big_boi = MyEntity::random_entity();
-    big_boi.x = 10f64;
-    big_boi.y = 10f64;
-    big_boi.radius = 8f64;
-    starter_entities.push(big_boi);
+    let mut starter_entities: Vec<MyEntity> = (0..40).map(|_| MyEntity::random_entity()).collect();
     let sim_state = SimulationState {
         entities: starter_entities.clone(),
         last_time_ran: Utc::now(),
@@ -142,7 +148,7 @@ fn main() {
         .mount("/api", chain)
         .mount("/", Static::new(files_path));
 
-    println!("Server running at port 4001");
+    println!("Browse to http://localhost:4001 to heat up your computer.");
     Iron::new(mount)
         .http("localhost:4001")
         .expect("unable to mount server");
@@ -169,11 +175,24 @@ fn simulation(r: &mut Request) -> IronResult<Response> {
 
     // bounce off the walls if they're exceeding the boundaries
     for e in new_vec.iter_mut() {
-        if e.x <= 0.1f64 || e.x >= 19.9f64 {
-            e.vx = e.vx * -1.0
+        if e.x - e.radius <= 0.1f64 {
+            e.vx = e.vx * -1.0;
+            e.x = 0.1f64 + e.radius;
         }
-        if e.y < 0.1f64 || e.y > 19.9f64 {
-            e.vy = e.vy * -1.0
+        else if e.x + e.radius >= 19.9f64 {
+            e.vx = e.vx * -1.0;
+            e.x = 19.9f64 - e.radius;
+        }
+
+
+        if e.y - e.radius < 0.01f64
+        {
+            e.vy = e.vy * -1.0;
+            e.y = 0.01f64 + e.radius;
+        }
+        else if e.y + e.radius > 19.9f64 {
+            e.vy = e.vy * -1.0;
+            e.y = 19.9f64 - e.radius;
         }
     }
 
