@@ -1,9 +1,7 @@
-extern crate rand;
 use super::Dimension;
 use crate::collision_result::CollisionResult;
 use crate::Node;
 use either::{Either, Left, Right};
-use rand::Rng;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -84,21 +82,6 @@ impl PartialEq for Entity {
 }
 
 impl Entity {
-    /// Convenience function for testing.
-    /// Generates an entity with random properties.
-    pub fn random_entity() -> Entity {
-        Entity {
-            vx: 0.0, //rand::thread_rng().gen_range(-190., 90.),
-            vy: 0.0, //rand::thread_rng().gen_range(-190., 90.),
-            vz: 0.0, //rand::thread_rng().gen_range(-190., 90.),
-            x: rand::thread_rng().gen_range(-190., 90.),
-            y: rand::thread_rng().gen_range(-190., 90.),
-            z: rand::thread_rng().gen_range(-190., 90.),
-            radius: rand::random::<f64>(),
-            mass: rand::random::<f64>(),
-        }
-    }
-
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
     /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
     /// TODO make this a struct???

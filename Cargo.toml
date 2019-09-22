@@ -16,7 +16,6 @@ documentation = "https://docs.rs/bigbang"
 [dependencies]
 either = "1.5"
 rayon = "1.2.0"
-rand = "0.7.0"
 
 
 [dev-dependencies]
@@ -41,6 +40,7 @@ fern = "0.5.8"
 bincode = "1.1.4"
 chrono = "0.4.9"
 futures-timer = "0.3"
+rand = "0.7.0"
 
 [features]
 nightly = []

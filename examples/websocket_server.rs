@@ -2,6 +2,7 @@
 //! to all connected clients.
 
 extern crate bigbang;
+extern crate rand;
 use bigbang::{Entity, GravTree};
 #[macro_use]
 extern crate log;
@@ -21,9 +22,10 @@ use tokio::runtime::TaskExecutor;
 use websocket::message::OwnedMessage;
 use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
+use rand::prelude::*;
 
 const ENTITY_COUNT: usize = 1000;
-const TIME_STEP: f64 = 0.000001;
+const TIME_STEP: f64 = 0.005;
 const MAX_X: f64 = 190.;
 const MAX_Y: f64 = 190.;
 const MAX_Z: f64 = 190.;
@@ -208,18 +210,18 @@ async fn run(executor: TaskExecutor) {
 
     let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
     for _ in 0..ENTITY_COUNT {
-        let entity = Entity::random_entity();
+        let entity = Entity {
+            vx: 0.0, //rand::thread_rng().gen_range(-190., 90.),
+            vy: 0.0, //rand::thread_rng().gen_range(-190., 90.),
+            vz: 0.0, //rand::thread_rng().gen_range(-190., 90.),
+            x: rand::thread_rng().gen_range(-190., 90.),
+            y: rand::thread_rng().gen_range(-190., 90.),
+            z: rand::thread_rng().gen_range(-190., 90.),
+            radius: rand::random::<f64>(),
+            mass: rand::random::<f64>(),
+        };
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
-    // vec_that_wants_to_be_a_kdtree.push(Entity {
-    //     vx: 0.,
-    //     vy: 0.,
-    //     vz: 0.,
-    //     x: 0.,
-    //     y: 0.,
-    //     z: 0.,
-    //     radius:
-    // });
 
     // create one large entity in the middle
     vec_that_wants_to_be_a_kdtree.push(Entity {
@@ -229,8 +231,8 @@ async fn run(executor: TaskExecutor) {
         x: 0.,
         y: 0.,
         z: 0.,
-        radius: 0.9,
-        mass: 0.9,
+        radius: 10.,
+        mass: 100.,
     });
 
     let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, TIME_STEP);

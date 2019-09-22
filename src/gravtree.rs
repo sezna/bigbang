@@ -186,17 +186,26 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
 fn test_input() {
     let test_tree =
         GravTree::<Entity>::from_data_file("test_files/test_input.txt".to_string(), 0.2);
-    assert!(test_tree.unwrap().as_vec().len() == 3601);
+    assert_eq!(test_tree.unwrap().as_vec().len(), 3601);
 }
 #[test]
 fn test_output() {
     let mut test_vec: Vec<Entity> = Vec::new();
-    for _ in 0..1000 {
-        test_vec.push(Entity::random_entity());
+    for i in 0..1000 {
+        test_vec.push(Entity {
+            x: i as f64,
+            y: i as f64,
+            z: i as f64,
+            vx: i as f64,
+            vy: i as f64,
+            vz: i as f64,
+            mass: 5.,
+            radius: 5.,
+        });
     }
     let kd = GravTree::new(&mut test_vec, 0.2);
     GravTree::write_data_file(kd, "test_files/test_output.txt".to_string());
     let test_tree =
         GravTree::<Entity>::from_data_file("test_files/test_output.txt".to_string(), 0.2);
-    assert!(test_vec.len() == test_tree.unwrap().as_vec().len());
+    assert_eq!(test_vec.len(), test_tree.unwrap().as_vec().len());
 }
