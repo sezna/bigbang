@@ -2,6 +2,7 @@ extern crate rand;
 use super::Dimension;
 use crate::Node;
 use either::{Either, Left, Right};
+use collision_result::CollisionResult;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -34,16 +35,22 @@ pub struct Entity {
 ///
 /// See `impl AsEntity for Entity' for an example of what this could look like.
 pub trait AsEntity {
+    /// Return an [[Entity]] representation of your struct.
     fn as_entity(&self) -> Entity;
-    fn apply_velocity(&self, simulation_results: ((f64, f64, f64), bool), time_step: f64) -> Self;
+    /// Given the velocity calculated by the simulation, exert this velocity on your struct.
+    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self;
+    /// Given a position, set the position of your struct to this. This is used to prevent two entities
+    /// from overlapping in a simulation.
+    fn set_position(&self, position: (f64, f64, f64)) -> Self;
 }
 
 impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
-    fn apply_velocity(&self, simulation_results: ((f64, f64, f64), bool), time_step: f64) -> Self {
-        let ((vx, vy, vz), colliding) = simulation_results;
+    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
+        let (vx, vy, vz) = collision_result.velocity;
+        let colliding = collision_result.collided;
         Entity {
             vx,
             vy,
@@ -54,6 +61,15 @@ impl AsEntity for Entity {
             radius: self.radius,
             mass: self.mass,
             is_colliding: colliding,
+        }
+    }
+    fn set_position(&self, position: (f64, f64, f64)) -> Self {
+        let (x, y, z) = position;
+        Entity {
+            x,
+            y,
+            z,
+            ..self.clone()
         }
     }
 }
@@ -92,27 +108,33 @@ impl Entity {
         &self,
         node: &Node<T>,
         time_step: f64,
-    ) -> ((f64, f64, f64), bool) {
-        let (v, collided) = self.collide(node, None);
+    ) -> CollisionResult {
+        let result = self.collide(node, None);
+        let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
         let (mut vx, mut vy, mut vz) = if collided & !self.is_colliding {
-            v
+            result.velocity
         // Otherwise, just use its own velocity.
-        } else {
-            (self.vx, self.vy, self.vz)
+        } else {  // TODO
+            result.velocity
         };
+
+        // Set the position of all the entities so that nothing is overlapping
+
+
 
         // Get the gravitational acceleration from the tree...
         let acceleration = self.get_entity_acceleration_from(node);
         // Apply the gravitational acceleration to the calculated velocity.
-        (
-            (
+        CollisionResult {
+            velocity: (
                 vx + acceleration.0 * time_step,
                 vy + acceleration.1 * time_step,
                 vz + acceleration.2 * time_step,
             ),
             collided,
-        )
+            collided_entities: result.collided_entities
+        }
     }
 
     /// Needs to be reworked to use min/max position values, but it naively checks
@@ -128,13 +150,14 @@ impl Entity {
         &self,
         node: &Node<T>,
         starter_velocities: Option<(f64, f64, f64)>,
-    ) -> ((f64, f64, f64), bool) {
+    ) -> CollisionResult {
         let mut collided = false;
         let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
             v
         } else {
             (self.vx, self.vy, self.vz)
         };
+        let mut collided_entities:Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
@@ -152,6 +175,7 @@ impl Entity {
                         vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
                         vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
                         vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
+                        collided_entities.push(other);
                         collided = true;
                     }
                 }
@@ -162,28 +186,34 @@ impl Entity {
                 // on both the left...
                 if let Some(left) = &node.left {
                     // If there was a collision...
-                    let ((l_vx, l_vy, l_vz), l_collided) = self.collide(&left, Some((vx, vy, vz)));
-                    if (l_collided) {
-                        // return the new velocity.
-                        vx = l_vx;
-                        vy = l_vy;
-                        vz = l_vz;
-                        collided = true;
+                    let mut result = self.collide(&left, Some((vx, vy, vz)));
+                    if result.collided {
+                        collided = result.collided;
+                        vx = result.velocity.0;
+                        vy = result.velocity.1;
+                        vz = result.velocity.2;
+                        collided_entities.append(&mut result.collided_entities);
+                    }
+                }
+                // and the right...
+                if let Some(right) = &node.right {
+                    // If there was a collision...
+                    let mut result = self.collide(&right, Some((vx, vy, vz)));
+                    if result.collided {
+                        collided = result.collided;
+                        vx = result.velocity.0;
+                        vy = result.velocity.1;
+                        vz = result.velocity.2;
+                        collided_entities.append(&mut result.collided_entities);
                     }
                 }
             }
-            // and the right...
-            if let Some(right) = &node.right {
-                let ((r_vx, r_vy, r_vz), r_collided) = self.collide(&right, Some((vx, vy, vz)));
-                if (r_collided) {
-                    vx = r_vx;
-                    vy = r_vy;
-                    vz = r_vz;
-                    collided = true;
-                }
-            }
         }
-        return ((vx, vy, vz), collided);
+        return CollisionResult {
+            collided,
+            velocity: (vx, vy, vz),
+            collided_entities
+        }
     }
 
     /// Returns the entity as a string with space separated values.
