@@ -87,9 +87,10 @@ async fn handle_connection(
         trace!("Reading state buffer...");
         let msg = {
             let state_inner = &*state.read().unwrap();
-            let binary_state =
-                bincode::serialize(state_inner).expect("Failed to binary encode simulation state");
-            OwnedMessage::Binary(binary_state)
+            let mut state_clone: Vec<u8> = unsafe { std::mem::transmute(state_inner.clone()) };
+            unsafe { state_clone.set_len(state_inner.len() * std::mem::size_of::<f64>()) };
+
+            OwnedMessage::Binary(state_clone)
         };
         trace!("Releasing read lock on state buffer.");
         trace!("Sending update message to client {}", socket_addr);
