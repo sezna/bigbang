@@ -112,18 +112,13 @@ impl Entity {
         let result = self.collide(node, None);
         let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
-        let (mut vx, mut vy, mut vz) = if collided & !self.is_colliding {
+        let (vx, vy, vz) = if collided & !self.is_colliding {
             result.velocity
         // Otherwise, just use its own velocity.
         } else {
-<<<<<<< HEAD
-            result.velocity // (self.vx, self.vy, self.vz)
-        }; // TODO eliminate this entirely?
-=======
             // TODO
             result.velocity
         };
->>>>>>> Fix dynamic rendering
 
         // Set the position of all the entities so that nothing is overlapping
 
@@ -138,10 +133,7 @@ impl Entity {
             ),
             collided,
             collided_entities: result.collided_entities,
-<<<<<<< HEAD
             position: result.position,
-=======
->>>>>>> Fix dynamic rendering
         }
     }
 
@@ -165,10 +157,7 @@ impl Entity {
         } else {
             (self.vx, self.vy, self.vz)
         };
-<<<<<<< HEAD
         let (mut x, mut y, mut z) = (self.x, self.y, self.z);
-=======
->>>>>>> Fix dynamic rendering
         let mut collided_entities: Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
@@ -185,7 +174,7 @@ impl Entity {
                             (self.mass - other.mass) / (self.mass + other.mass);
                         let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
                         let mut dist_vec = other.distance_vector(self);
-                        let mut dist_scalar = other.distance(self);
+                        let dist_scalar = other.distance(self);
                         let arbitrary_number = 1.001 * (self.radius + other.radius) / dist_scalar;
                         dist_vec = (
                             dist_vec.0 * arbitrary_number,
@@ -241,10 +230,7 @@ impl Entity {
         return CollisionResult {
             collided,
             velocity: (vx, vy, vz),
-<<<<<<< HEAD
             position: (x, y, z),
-=======
->>>>>>> Fix dynamic rendering
             collided_entities,
         };
     }
@@ -272,9 +258,9 @@ impl Entity {
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
-        let x_dist = (other.x - self.x);
-        let y_dist = (other.y - self.y);
-        let z_dist = (other.z - self.z);
+        let x_dist = other.x - self.x;
+        let y_dist = other.y - self.y;
+        let z_dist = other.z - self.z;
         (x_dist, y_dist, z_dist)
     }
 
