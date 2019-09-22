@@ -75,7 +75,7 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: String::from("red")
+            color: String::from("red"),
         }
     }
 
