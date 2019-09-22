@@ -1,8 +1,8 @@
 extern crate rand;
 use super::Dimension;
+use crate::collision_result::CollisionResult;
 use crate::Node;
 use either::{Either, Left, Right};
-use collision_result::CollisionResult;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -115,13 +115,12 @@ impl Entity {
         let (mut vx, mut vy, mut vz) = if collided & !self.is_colliding {
             result.velocity
         // Otherwise, just use its own velocity.
-        } else {  // TODO
+        } else {
+            // TODO
             result.velocity
         };
 
         // Set the position of all the entities so that nothing is overlapping
-
-
 
         // Get the gravitational acceleration from the tree...
         let acceleration = self.get_entity_acceleration_from(node);
@@ -133,7 +132,7 @@ impl Entity {
                 vz + acceleration.2 * time_step,
             ),
             collided,
-            collided_entities: result.collided_entities
+            collided_entities: result.collided_entities,
         }
     }
 
@@ -157,7 +156,7 @@ impl Entity {
         } else {
             (self.vx, self.vy, self.vz)
         };
-        let mut collided_entities:Vec<Entity> = Vec::new();
+        let mut collided_entities: Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
@@ -212,8 +211,8 @@ impl Entity {
         return CollisionResult {
             collided,
             velocity: (vx, vy, vz),
-            collided_entities
-        }
+            collided_entities,
+        };
     }
 
     /// Returns the entity as a string with space separated values.
