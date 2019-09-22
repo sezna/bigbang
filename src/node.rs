@@ -254,8 +254,11 @@ fn test() {
             x: i as f64,
             y: (10 - i) as f64,
             z: i as f64,
+            vx: i as f64,
+            vy: i as f64,
+            vz: i as f64,
             mass: i as f64,
-            ..Entity::random_entity()
+            radius: i as f64,
         });
     }
 
