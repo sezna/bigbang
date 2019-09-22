@@ -1,4 +1,4 @@
-use collision_result::CollisionResult;
+
 use entity::{AsEntity, Entity};
 use rayon::prelude::*;
 use std::error::Error;

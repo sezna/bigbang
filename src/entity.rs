@@ -112,7 +112,7 @@ impl Entity {
         let result = self.collide(node, None);
         let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
-        let (mut vx, mut vy, mut vz) = if collided & !self.is_colliding {
+        let (vx, vy, vz) = if collided & !self.is_colliding {
             result.velocity
         // Otherwise, just use its own velocity.
         } else {
@@ -173,7 +173,7 @@ impl Entity {
                             (self.mass - other.mass) / (self.mass + other.mass);
                         let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
                         let mut dist_vec = other.distance_vector(self);
-                        let mut dist_scalar = other.distance(self);
+                        let dist_scalar = other.distance(self);
                         let arbitrary_number = 1.001 * (self.radius + other.radius) / dist_scalar;
                         dist_vec = (
                             dist_vec.0 * arbitrary_number,
@@ -257,9 +257,9 @@ impl Entity {
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
-        let x_dist = (other.x - self.x);
-        let y_dist = (other.y - self.y);
-        let z_dist = (other.z - self.z);
+        let x_dist = other.x - self.x;
+        let y_dist = other.y - self.y;
+        let z_dist = other.z - self.z;
         (x_dist, y_dist, z_dist)
     }
 

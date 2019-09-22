@@ -69,8 +69,8 @@ impl AsEntity for MyEntity {
     }
 
     fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
-        let (vx, vy, vz) = collision_result.velocity;
-        let (x, y, z) = collision_result.position;
+        let (vx, vy, _vz) = collision_result.velocity;
+        let (x, y, _z) = collision_result.position;
         let is_colliding = collision_result.collided;
         MyEntity {
             vx,
