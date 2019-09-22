@@ -1,7 +1,7 @@
+
 use crate::collision_result::CollisionResult;
 use crate::entity::{AsEntity, Entity};
 use crate::Node;
-
 use rayon::prelude::*;
 use std::error::Error;
 use std::fs::File;
