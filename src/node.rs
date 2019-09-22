@@ -140,7 +140,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &mut [T]) -> Node<T> {
+    pub fn new_root_node(pts: &[T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
@@ -215,11 +215,11 @@ impl<T: AsEntity + Clone> Node<T> {
             };
             root_node.split_dimension = Some(split_dimension);
             root_node.split_value = *split_value;
-            let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
+            let (below_split, above_split) = pts.split_at(split_index);
 
             // Now we construct the left and right children based on this split into lower and upper halves.
-            let left = Node::new_root_node(&mut lower_vec);
-            let right = Node::new_root_node(&mut upper_vec);
+            let left = Node::new_root_node(&below_split);
+            let right = Node::new_root_node(&above_split);
             // The center of mass is a recursive definition. This finds the average COM for
             // each node.
             let left_mass = left.total_mass;
@@ -263,7 +263,7 @@ fn test() {
     }
 
     let check_vec = test_vec.clone();
-    let tree = crate::GravTree::new(&mut test_vec, 0.2);
+    let tree = crate::GravTree::new(&test_vec, 0.2);
     let root_node = tree.root.clone();
 
     let mut nodes: Vec<Node<Entity>> = Vec::new();

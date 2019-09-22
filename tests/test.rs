@@ -76,7 +76,7 @@ fn test_traversal() {
         vec.push(entity);
     }
     let vec_clone = vec.clone();
-    let tree = GravTree::new(&mut vec, 0.2);
+    let tree = GravTree::new(&vec, 0.2);
     let traversed_vec = tree.as_vec();
     let mut all_found = true;
     for i in vec_clone {
@@ -96,7 +96,7 @@ fn test_time_step() {
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
 
-    let test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2);
     let after_time_step = test_tree.time_step();
     assert_eq!(after_time_step.as_vec().len(), 1000);
 }
@@ -112,7 +112,7 @@ fn test_tree() {
             }
         }
     }
-    let kdtree_test = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
+    let kdtree_test = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2);
     assert!(kdtree_test.get_number_of_entities() == 100_000);
     // kdtree_test.display_tree();
     go_to_edges(kdtree_test, 14usize, 15usize);
@@ -144,7 +144,7 @@ fn test_tree() {
             radius: 1.0,
         },
     ];
-    let center_of_mass_test = GravTree::new(&mut vector, 0.2);
+    let center_of_mass_test = GravTree::new(&vector, 0.2);
     assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
 }
 /// This function is used for testing. It checks the number of nodes on each side, along the "edge" of the tree.
