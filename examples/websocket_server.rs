@@ -25,13 +25,12 @@ use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 1000;
 const TIME_STEP: f64 = 0.000001;
-const MAX_X: f64 = 90.;
-const MAX_Y: f64 = 90.;
-const MAX_Z: f64 = 90.;
-const MIN_X: f64 = -90.;
-const MIN_Y: f64 = -90.;
-const MIN_Z: f64 = -90.;
-
+const MAX_X: f64 = 190.;
+const MAX_Y: f64 = 190.;
+const MAX_Z: f64 = 190.;
+const MIN_X: f64 = -190.;
+const MIN_Y: f64 = -190.;
+const MIN_Z: f64 = -190.;
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
 where
@@ -213,6 +212,15 @@ async fn run(executor: TaskExecutor) {
         let entity = Entity::random_entity();
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
+    // vec_that_wants_to_be_a_kdtree.push(Entity {
+    //     vx: 0.,
+    //     vy: 0.,
+    //     vz: 0.,
+    //     x: 0.,
+    //     y: 0.,
+    //     z: 0.,
+    //     radius:
+    // });
 
     // create one large entity in the middle
     vec_that_wants_to_be_a_kdtree.push(Entity {
@@ -228,7 +236,6 @@ async fn run(executor: TaskExecutor) {
 
     let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, TIME_STEP);
 
-    let mut i = 0;
     loop {
         test_tree = test_tree.time_step();
         let mut entities = test_tree.as_vec();
@@ -239,28 +246,16 @@ async fn run(executor: TaskExecutor) {
             // TODO this needs to be made into a proper iter later, instead of a vec and reconstruction
             for e in entities.iter_mut() {
                 // bounce off the walls if they're exceeding the boundaries
-                if e.x - e.radius <= MIN_X {
+                if e.x - e.radius <= MIN_X || e.x + e.radius >= MAX_X {
                     e.vx = e.vx * -1.0;
-                    e.x = 0.1f64 + e.radius;
-                } else if e.x + e.radius >= MAX_X {
-                    e.vx = e.vx * -1.0;
-                    e.x = 19.9f64 - e.radius;
                 }
 
-                if e.y - e.radius <= MIN_Y {
+                if e.y - e.radius <= MIN_Y || e.y + e.radius >= MAX_Y {
                     e.vy = e.vy * -1.0;
-                    e.y = 0.01f64 + e.radius;
-                } else if e.y + e.radius >= MAX_Y {
-                    e.vy = e.vy * -1.0;
-                    e.y = 19.9f64 - e.radius;
                 }
 
-                if e.z - e.radius <= MIN_Z {
+                if e.z - e.radius <= MIN_Z || e.z + e.radius >= MAX_Z {
                     e.vz = e.vz * -1.0;
-                    e.vz = 0.01f64 + e.radius;
-                } else if e.z + e.radius >= MAX_Z {
-                    e.vz = e.vz * -1.0;
-                    e.vz = 19.9f64 - e.radius;
                 }
 
                 state_inner.push(e.x);
@@ -278,13 +273,13 @@ async fn run(executor: TaskExecutor) {
         // Send a message for all connected clients + one for the main sink
 
         match tx.send(()).await {
-            Ok(_) => debug!("Successfully sent tick notification message to all connected clients",),
+            Ok(_) => {
+                debug!("Successfully sent tick notification message to all connected clients",)
+            }
             Err(err) => error!("Error sending notification message to clients: {:?}", err),
         }
 
         // Delay::new(Duration::from_millis(30)).await.unwrap();
-
-        i += 1;
     }
 }
 
