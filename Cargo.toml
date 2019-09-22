@@ -39,6 +39,7 @@ log = "0.4.8"
 fern = "0.5.8"
 bincode = "1.1.4"
 chrono = "0.4.9"
+futures-timer = "0.3"
 
 [features]
 nightly = []

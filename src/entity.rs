@@ -1,8 +1,8 @@
 extern crate rand;
 use super::Dimension;
+use crate::collision_result::CollisionResult;
 use crate::Node;
 use either::{Either, Left, Right};
-use crate::collision_result::CollisionResult;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -116,8 +116,14 @@ impl Entity {
             result.velocity
         // Otherwise, just use its own velocity.
         } else {
+<<<<<<< HEAD
             result.velocity // (self.vx, self.vy, self.vz)
         }; // TODO eliminate this entirely?
+=======
+            // TODO
+            result.velocity
+        };
+>>>>>>> Fix dynamic rendering
 
         // Set the position of all the entities so that nothing is overlapping
 
@@ -132,7 +138,10 @@ impl Entity {
             ),
             collided,
             collided_entities: result.collided_entities,
+<<<<<<< HEAD
             position: result.position,
+=======
+>>>>>>> Fix dynamic rendering
         }
     }
 
@@ -156,7 +165,10 @@ impl Entity {
         } else {
             (self.vx, self.vy, self.vz)
         };
+<<<<<<< HEAD
         let (mut x, mut y, mut z) = (self.x, self.y, self.z);
+=======
+>>>>>>> Fix dynamic rendering
         let mut collided_entities: Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
@@ -229,7 +241,10 @@ impl Entity {
         return CollisionResult {
             collided,
             velocity: (vx, vy, vz),
+<<<<<<< HEAD
             position: (x, y, z),
+=======
+>>>>>>> Fix dynamic rendering
             collided_entities,
         };
     }

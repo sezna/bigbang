@@ -13,19 +13,21 @@ function buildGeometry(bigbangPositions) {
 
   var color = new THREE.Color();
   for (let i = 0, l = bigbangPositions.length / 4; i < l; i += 4) {
-    positions[i * 3 + 0] = bigbangPositions[i * 4 + 0];
-    positions[i * 3 + 1] = bigbangPositions[i * 4 + 1];
-    positions[i * 3 + 2] = bigbangPositions[i * 4 + 2];
+    positions[i * 3 + 0] = bigbangPositions[i * 4 + 0] / 1;
+    positions[i * 3 + 1] = bigbangPositions[i * 4 + 1] / 1;
+    positions[i * 3 + 2] = bigbangPositions[i * 4 + 2] / 1;
 
     color.setHSL(0.01 + 0.1 * (i / l), 1.0, 0.5);
     color.toArray(colors, i * 3);
-    sizes[i] = PARTICLE_SIZE * 0.5;
+    sizes[i] = bigbangPositions[i * 4 + 3] * PARTICLE_SIZE;
   }
 
   var geometry = new THREE.BufferGeometry();
   geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.addAttribute('customColor', new THREE.BufferAttribute(colors, 3));
   geometry.addAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  return geometry;
 }
 
 function init(bigbangPositions) {
@@ -35,6 +37,7 @@ function init(bigbangPositions) {
   camera.position.z = 250;
 
   const geometry = buildGeometry(bigbangPositions);
+  console.log(geometry);
 
   var material = new THREE.ShaderMaterial({
     uniforms: {
@@ -65,13 +68,18 @@ function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function render() {
+function render(bigbangPositions) {
   particles.rotation.x += 0.0005;
   particles.rotation.y += 0.001;
 
   var geometry = particles.geometry;
   var attributes = geometry.attributes;
-  // console.log(attributes);
+
+  const newGeometry = buildGeometry(bigbangPositions);
+  attributes.position.array = newGeometry.attributes.position.array;
+  attributes.position.needsUpdate = true;
+  attributes.size.array = newGeometry.attributes.size.array;
+  attributes.size.needsUpdate = true;
 
   renderer.render(scene, camera);
 }
@@ -79,31 +87,21 @@ function render() {
 const handleMessage = async msg => {
   if (iters === 0) {
     iters += 1;
-    // welcome message
+    // ignore welcome message
     console.log(msg.data);
     return;
   }
 
   const data = new Float64Array(await msg.data.arrayBuffer());
 
-  for (let i = 0; i < data.length; i += 4) {
-    const x = data[i * 4 + 0];
-    const y = data[i * 4 + 1];
-    const z = data[i * 4 + 2];
-    const radius = data[i * 4 + 3];
-    if (iters === 1) {
-      console.log(`x: ${x}, y: ${y}, z: ${z}, radius: ${radius}`);
-    }
-  }
-
   iters += 1;
 
   if (!isInitialized) {
     isInitialized = true;
     init(data);
+  } else {
+    render(data);
   }
-
-  render();
 };
 
 window.onload = () => {
