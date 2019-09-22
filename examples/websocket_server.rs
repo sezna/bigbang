@@ -10,12 +10,14 @@ use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::{Arc, Once, RwLock};
 use std::thread;
+use std::time::Duration;
 
 use futures::{
     compat::{Compat, Compat01As03, Compat01As03Sink, Future01CompatExt, Stream01CompatExt},
     future::FutureExt,
     prelude::*,
 };
+use futures_timer::Delay;
 use tokio::runtime::TaskExecutor;
 use websocket::message::OwnedMessage;
 use websocket::r#async::{Server, TcpStream};
@@ -204,7 +206,20 @@ async fn run(executor: TaskExecutor) {
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
+    // create one large entity in the middle
+    vec_that_wants_to_be_a_kdtree.push(Entity {
+        vx: 0.,
+        vy: 0.,
+        vz: 0.,
+        x: 0.,
+        y: 0.,
+        z: 0.,
+        radius: 0.9,
+        mass: 0.9,
+        is_colliding: false,
+    });
+
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.0002);
 
     let mut i = 0;
     loop {
@@ -234,6 +249,8 @@ async fn run(executor: TaskExecutor) {
             }
             Err(err) => error!("Error sending notification message to clients: {:?}", err),
         }
+
+        // Delay::new(Duration::from_millis(30)).await.unwrap();
 
         i += 1;
     }
