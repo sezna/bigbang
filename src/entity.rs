@@ -130,9 +130,6 @@ impl Entity {
     /// Needs to be reworked to use min/max position values, but it naively checks
     /// if two things collide right now.
     fn did_collide_into(&self, other: &Entity) -> bool {
-        if other.radius > 1f64 {
-            return true;
-        }
         self != other && self.distance(other) <= (self.radius + other.radius)
     }
 
@@ -166,7 +163,7 @@ impl Entity {
                             // If this entity is smaller than the other one, nudge it.
                             let mut dist_vec = other.distance_vector(self);
                             let dist_scalar = other.distance(self);
-                            let buffer_space = 1.001 * (self.radius + other.radius) / dist_scalar;
+                            let buffer_space = 1.01 * (self.radius + other.radius) / dist_scalar;
                             dist_vec = (
                                 dist_vec.0 * buffer_space,
                                 dist_vec.1 * buffer_space,
@@ -242,7 +239,7 @@ impl Entity {
     /// Returns the distance between the two entities
     fn distance(&self, other: &Entity) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
-        f64::sqrt(self.distance_squared(other).abs())
+        f64::sqrt(self.distance_squared(other))
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
@@ -284,15 +281,16 @@ impl Entity {
             Right(node) => node.as_entity(),
         };
         let d_magnitude = self.distance(&other);
-        if d_magnitude == 0.0 {
+        if d_magnitude == 0. {
             // sort of other use of THETA here
-            return (0f64, 0f64, 0f64);
+            return (0., 0., 0.);
         }
         let d_vector = self.distance_vector(&other);
+        let d_mag_cubed = (d_magnitude * d_magnitude); // TODO cube this
         let d_over_d_cubed = (
-            d_vector.0 / d_magnitude * d_magnitude,
-            d_vector.1 / d_magnitude * d_magnitude,
-            d_vector.2 / d_magnitude * d_magnitude,
+            d_vector.0 / d_mag_cubed,
+            d_vector.1 / d_mag_cubed,
+            d_vector.2 / d_mag_cubed,
         );
         (
             d_over_d_cubed.0 * other.mass,
