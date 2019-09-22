@@ -27,7 +27,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, Entity};
+use bigbang::{AsEntity, Entity, CollisionResult};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -40,7 +40,7 @@ use iron::{status, Request, Response};
 use mount::Mount;
 use persistent::State;
 
-const TIME_STEP: f64 = 0.001;
+const TIME_STEP: f64 = 0.0002;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct MyEntity {
@@ -68,8 +68,9 @@ impl AsEntity for MyEntity {
         };
     }
 
-    fn apply_velocity(&self, simulation_results: ((f64, f64, f64), bool), time_step: f64) -> Self {
-        let ((vx, vy, _vz), is_colliding) = simulation_results;
+    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
+        let (vx, vy, vz) = collision_result.velocity;
+        let is_colliding = collision_result.collided;;
         MyEntity {
             vx,
             vy,
@@ -78,6 +79,15 @@ impl AsEntity for MyEntity {
             radius: self.radius,
             color: if is_colliding { String::from("red") } else { String::from("blue") },
             is_colliding
+        }
+    }
+
+    fn set_position(&self, position: (f64, f64, f64)) -> Self {
+        let (x, y, _z) = position;
+        MyEntity {
+            x,
+            y,
+            ..self.clone()
         }
     }
 }
@@ -93,7 +103,7 @@ impl MyEntity {
             vy: 0f64,
             x: rand::random::<f64>() * 20f64,
             y: rand::random::<f64>() * 20f64,
-            radius: rand::random::<f64>(),
+            radius: rand::random::<f64>() / 2f64,
             color: String::from("blue"),
             is_colliding: false
         }
@@ -111,26 +121,7 @@ impl Key for SimulationState {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..4).map(|_| MyEntity::random_entity()).collect();
-    let mut big_boi = MyEntity::random_entity();
-    big_boi.x = 2f64;
-    big_boi.y = 10f64;
-    big_boi.radius = 0.8f64;
-    big_boi.vx = 2f64;
-    starter_entities.push(big_boi);
-    let mut big_boi_2 = MyEntity::random_entity();
-    big_boi_2.x = 18f64;
-    big_boi_2.vx = -2f64;
-    big_boi_2.y = 10f64;
-    big_boi_2.radius = 0.2f64;
-    starter_entities.push(big_boi_2);
-    let mut big_boi_3 = MyEntity::random_entity();
-    big_boi_3.x = 4f64;
-    big_boi_3.vx = 2f64;
-    big_boi_3.y = 2f64;
-    big_boi_3.vy = 1f64;
-    big_boi_3.radius = 0.3f64;
-    starter_entities.push(big_boi_3);
+    let mut starter_entities: Vec<MyEntity> = (0..40).map(|_| MyEntity::random_entity()).collect();
     let sim_state = SimulationState {
         entities: starter_entities.clone(),
         last_time_ran: Utc::now(),
