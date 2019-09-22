@@ -78,10 +78,12 @@ function render() {
 
 const handleMessage = async msg => {
   if (iters === 0) {
-    // console.log(msg.data);
     iters += 1;
+    // welcome message
+    console.log(msg.data);
     return;
   }
+
   const data = new Float64Array(await msg.data.arrayBuffer());
 
   for (let i = 0; i < data.length; i += 4) {
