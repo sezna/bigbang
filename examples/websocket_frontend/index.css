@@ -8,3 +8,12 @@ body {
 body {
   background-color: #111;
 }
+
+#viz-controls {
+  margin-right: 11px;
+  display: inline-block;
+  z-index: 30;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
