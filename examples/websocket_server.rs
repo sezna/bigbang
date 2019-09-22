@@ -24,6 +24,14 @@ use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 1000;
+const TIME_STEP: f64 = 0.00002;
+const MAX_X: f64 = 100.;
+const MAX_Y: f64 = 100.;
+const MAX_Z: f64 = 100.;
+const MIN_X: f64 = -100.;
+const MIN_Y: f64 = -100.;
+const MIN_Z: f64 = -100.;
+
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
 where
@@ -166,7 +174,7 @@ fn init_logging() -> Result<(), Box<dyn Error>> {
 fn start_ws_server(
     executor: TaskExecutor,
 ) -> Result<(Arc<RwLock<Vec<f64>>>, multiqueue::BroadcastFutSender<()>), Box<dyn Error>> {
-    INIT.call_once(|| init_logging().expect("Failed to initialize logger"));
+    //INIT.call_once(|| init_logging().expect("Failed to initialize logger"));
 
     let (tx, rx) = multiqueue::broadcast_fut_queue(1);
 
@@ -216,27 +224,54 @@ async fn run(executor: TaskExecutor) {
         z: 0.,
         radius: 0.9,
         mass: 0.9,
-        is_colliding: false,
     });
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.0002);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, TIME_STEP);
 
     let mut i = 0;
     loop {
         println!("time step: {}", i);
         test_tree = test_tree.time_step();
-
+        let mut entities = test_tree.as_vec();
         // Update the state with data about all of the entities
         {
             let mut state_inner = state.write().unwrap();
             state_inner.clear();
-            for entity in test_tree.as_vec() {
-                state_inner.push(entity.x);
-                state_inner.push(entity.y);
-                state_inner.push(entity.z);
-                state_inner.push(entity.radius);
+            // TODO this needs to be made into a proper iter later, instead of a vec and reconstruction
+            for e in entities.iter_mut() {
+                // bounce off the walls if they're exceeding the boundaries
+                if e.x - e.radius <= MIN_X {
+                    e.vx = e.vx * -1.0;
+                    e.x = 0.1f64 + e.radius;
+                } else if e.x + e.radius >= MAX_X {
+                    e.vx = e.vx * -1.0;
+                    e.x = 19.9f64 - e.radius;
+                }
+
+                if e.y - e.radius <= MIN_Y {
+                    e.vy = e.vy * -1.0;
+                    e.y = 0.01f64 + e.radius;
+                } else if e.y + e.radius >= MAX_Y {
+                    e.vy = e.vy * -1.0;
+                    e.y = 19.9f64 - e.radius;
+                }
+
+                if e.z - e.radius <= MIN_Z {
+                    e.vz = e.vz * -1.0;
+                    e.vz = 0.01f64 + e.radius;
+                } else if e.z + e.radius >= MAX_Z {
+                    e.vz = e.vz * -1.0;
+                    e.vz = 19.9f64 - e.radius;
+                }
+
+                state_inner.push(e.x);
+                state_inner.push(e.y);
+                state_inner.push(e.z);
+                state_inner.push(e.radius);
             }
         }
+        test_tree = GravTree::new(&mut entities, TIME_STEP);
+
         trace!("Buffer state updated");
 
         // Notify all connected WS clients that a new update is available
@@ -244,9 +279,7 @@ async fn run(executor: TaskExecutor) {
         // Send a message for all connected clients + one for the main sink
 
         match tx.send(()).await {
-            Ok(_) => {
-                debug!("Successfully sent tick notification message to all connected clients",)
-            }
+            Ok(_) => debug!("Successfully sent tick notification message to all connected clients",),
             Err(err) => error!("Error sending notification message to clients: {:?}", err),
         }
 
