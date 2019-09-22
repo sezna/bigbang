@@ -1,6 +1,5 @@
 #![feature(test)]
 extern crate either;
-extern crate rand;
 extern crate rayon;
 extern crate test;
 
