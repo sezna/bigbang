@@ -50,7 +50,7 @@ impl AsEntity for Entity {
     }
     fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
         let (vx, vy, vz) = collision_result.velocity;
-        let colliding = collision_result.collided;
+        let _colliding = collision_result.collided;
         Entity {
             vx,
             vy,
@@ -151,8 +151,8 @@ impl Entity {
             // If this is a leaf node...
             if let Some(points) = &node.points {
                 // Check every particle in the leaf to see if it collided.
-                for other_T in points.iter() {
-                    let other = other_T.as_entity();
+                for other_t in points.iter() {
+                    let other = other_t.as_entity();
                     // if they collided...
                     if self.did_collide_into(&other) {
                         // do some math.
@@ -186,7 +186,7 @@ impl Entity {
                 // on both the left...
                 if let Some(left) = &node.left {
                     // If there was a collision...
-                    let mut result = self.collide(&left, Some((vx, vy, vz)));
+                    let result = self.collide(&left, Some((vx, vy, vz)));
                     if result.collided {
                         collided = result.collided;
                         vx = result.velocity.0;
@@ -200,7 +200,7 @@ impl Entity {
                 // and the right...
                 if let Some(right) = &node.right {
                     // If there was a collision...
-                    let mut result = self.collide(&right, Some((vx, vy, vz)));
+                    let result = self.collide(&right, Some((vx, vy, vz)));
                     if result.collided {
                         collided = result.collided;
                         vx = result.velocity.0;
@@ -286,7 +286,7 @@ impl Entity {
             return (0., 0., 0.);
         }
         let d_vector = self.distance_vector(&other);
-        let d_mag_cubed = (d_magnitude * d_magnitude); // TODO cube this
+        let d_mag_cubed = d_magnitude * d_magnitude; // TODO cube this
         let d_over_d_cubed = (
             d_vector.0 / d_mag_cubed,
             d_vector.1 / d_mag_cubed,
