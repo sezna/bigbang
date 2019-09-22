@@ -216,43 +216,80 @@ impl<T: AsEntity + Clone> Node<T> {
             root_node.split_dimension = Some(split_dimension);
             root_node.split_value = *split_value;
             let (mut lower_vec, mut upper_vec) = pts.split_at_mut(split_index);
-            root_node.left = Some(Box::new(Node::new_root_node(&mut lower_vec)));
-            root_node.right = Some(Box::new(Node::new_root_node(&mut upper_vec)));
+
+            // Now we construct the left and right children based on this split into lower and upper halves.
+            let left = Node::new_root_node(&mut lower_vec);
+            let right = Node::new_root_node(&mut upper_vec);
             // The center of mass is a recursive definition. This finds the average COM for
             // each node.
-            let left_mass = root_node
-                .left
-                .as_ref()
-                .expect("unexpected null node #3")
-                .total_mass;
-            let right_mass = root_node
-                .right
-                .as_ref()
-                .expect("unexpected null node #4")
-                .total_mass;
-            let (left_x, left_y, left_z) = root_node
-                .left
-                .as_ref()
-                .expect("unexpected null node #5")
-                .center_of_mass;
-            let (right_x, right_y, right_z) = root_node
-                .right
-                .as_ref()
-                .expect("unexpected null node #6")
-                .center_of_mass;
-            // The mass here is zero when it shouldn't be, causing NaNs all over the place.
+            let left_mass = left.total_mass;
+            let right_mass = right.total_mass;
+            let (left_x, left_y, left_z) = left.center_of_mass;
+            let (right_x, right_y, right_z) = right.center_of_mass;
             let mut total_mass = left_mass + right_mass;
-            if total_mass == 0f64 {
-                total_mass = std::f64::MIN;
-            }
+            assert!(total_mass != 0., "invalid mass of 0");
+
             let (center_x, center_y, center_z) = (
                 ((left_mass * left_x) + (right_mass * right_x)) / total_mass,
                 ((left_mass * left_y) + (right_mass * right_y)) / total_mass,
                 ((left_mass * left_z) + (right_mass * right_z)) / total_mass,
             );
+            root_node.left = Some(Box::new(left));
+            root_node.right = Some(Box::new(right));
             root_node.center_of_mass = (center_x, center_y, center_z);
             root_node.set_max_mins();
+            root_node.total_mass = total_mass;
             root_node
         }
     }
+}
+
+#[test]
+fn test() {
+    let mut test_vec: Vec<Entity> = Vec::new();
+    for i in 0..10 {
+        test_vec.push(Entity {
+            x: i as f64,
+            y: (10 - i) as f64,
+            z: i as f64,
+            mass: i as f64,
+            ..Entity::random_entity()
+        });
+    }
+
+    let check_vec = test_vec.clone();
+    let tree = crate::GravTree::new(&mut test_vec, 0.2);
+    let root_node = tree.root.clone();
+
+    let mut nodes: Vec<Node<Entity>> = Vec::new();
+    let mut traversal_stack: Vec<Option<Box<Node<Entity>>>> = Vec::new();
+    let mut rover = Some(Box::new(root_node));
+    while !traversal_stack.is_empty() || rover.is_some() {
+        if rover.is_some() {
+            traversal_stack.push(rover.clone());
+            nodes.push(*rover.clone().unwrap());
+            rover = rover.unwrap().left;
+        } else {
+            rover = traversal_stack.pop().unwrap();
+            rover = rover.unwrap().right;
+        }
+    }
+
+    let post_tree_vec = tree.as_vec();
+    // The tree should contain all of the elements we put into it.
+    for i in check_vec.iter() {
+        assert!(post_tree_vec.contains(i));
+    }
+
+    // In this example, there should be exactly 7 nodes.
+    assert_eq!(7, nodes.len());
+
+    // No node should have zero mass.
+    for node in nodes {
+        assert!(node.total_mass > 0.);
+    }
+
+    // The total mass of the root node should be the sum of all of their masses.
+    let total_mass = check_vec.iter().fold(0., |acc, x| acc + x.mass);
+    assert_eq!(total_mass, tree.root.total_mass);
 }
