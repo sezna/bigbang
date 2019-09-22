@@ -226,7 +226,7 @@ impl<T: AsEntity + Clone> Node<T> {
             let right_mass = right.total_mass;
             let (left_x, left_y, left_z) = left.center_of_mass;
             let (right_x, right_y, right_z) = right.center_of_mass;
-            let mut total_mass = left_mass + right_mass;
+            let total_mass = left_mass + right_mass;
             assert!(total_mass != 0., "invalid mass of 0");
 
             let (center_x, center_y, center_z) = (
@@ -244,6 +244,8 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 }
 
+/// This tests the recursive node construction used to create a new gravtree. It tests some private
+/// fields so it is located within the same module as the node itself.
 #[test]
 fn test() {
     let mut test_vec: Vec<Entity> = Vec::new();

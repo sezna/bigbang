@@ -21,43 +21,6 @@ pub fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) 
     (x_max, x_min, y_max, y_min, z_max, z_min)
 }
 
-#[bench]
-fn bench_max_min(b: &mut test::Bencher) {
-    let mut test_vec: Vec<Entity> = Vec::new();
-    for _ in 0..1000 {
-        test_vec.push(Entity::random_entity());
-    }
-
-    let ref_vec = test_vec
-        .iter()
-        .map(|x| x.as_entity())
-        .collect::<Vec<Entity>>();
-    // TODO make it do this with different vecs
-    b.iter(|| max_min_xyz(ref_vec.as_slice()));
-}
-
-#[test]
-fn test_max_min() {
-    let mut test_vec: Vec<Entity> = Vec::new();
-    for _ in 0..1000 {
-        test_vec.push(Entity::random_entity());
-    }
-    test_vec[100].x = std::f64::MAX;
-    test_vec[101].y = std::f64::MAX;
-    test_vec[2].z = std::f64::MAX;
-    test_vec[888].x = std::f64::MIN;
-    test_vec[541].y = std::f64::MIN;
-    test_vec[111].z = std::f64::MIN;
-
-    let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(&test_vec);
-    assert_eq!(std::f64::MAX, *x_max);
-    assert_eq!(std::f64::MAX, *y_max);
-    assert_eq!(std::f64::MAX, *z_max);
-    assert_eq!(std::f64::MIN, *x_min);
-    assert_eq!(std::f64::MIN, *y_min);
-    assert_eq!(std::f64::MIN, *z_min);
-}
-
 /// Returns the maximum and minimum values in a slice of entities, given a dimension.
 pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
     (
