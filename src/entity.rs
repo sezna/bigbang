@@ -23,7 +23,6 @@ pub struct Entity {
     pub z: f64,
     pub radius: f64,
     pub mass: f64,
-    pub is_colliding: bool,
 }
 
 /// [[GravTree]] works with any type which implements [[AsEntity]]. In order to implement [[AsEntity]],
@@ -60,7 +59,6 @@ impl AsEntity for Entity {
             z: self.z + (vz * time_step),
             radius: self.radius,
             mass: self.mass,
-            is_colliding: colliding,
         }
     }
     fn set_position(&self, position: (f64, f64, f64)) -> Self {
@@ -97,7 +95,6 @@ impl Entity {
             z: rand::random::<f64>(),
             radius: rand::random::<f64>(),
             mass: rand::random::<f64>(),
-            is_colliding: false,
         }
     }
 
@@ -112,14 +109,7 @@ impl Entity {
         let result = self.collide(node, None);
         let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
-        let (vx, vy, vz) = if collided & !self.is_colliding {
-            result.velocity
-        // Otherwise, just use its own velocity.
-        } else {
-            // TODO
-            result.velocity
-        };
-
+        let (vx, vy, vz) = result.velocity;
         // Set the position of all the entities so that nothing is overlapping
 
         // Get the gravitational acceleration from the tree...
@@ -132,7 +122,6 @@ impl Entity {
                 vz + acceleration.2 * time_step,
             ),
             collided,
-            collided_entities: result.collided_entities,
             position: result.position,
         }
     }
@@ -158,7 +147,6 @@ impl Entity {
             (self.vx, self.vy, self.vz)
         };
         let (mut x, mut y, mut z) = (self.x, self.y, self.z);
-        let mut collided_entities: Vec<Entity> = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
@@ -173,21 +161,23 @@ impl Entity {
                         let mass_coefficient_v1 =
                             (self.mass - other.mass) / (self.mass + other.mass);
                         let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
-                        let mut dist_vec = other.distance_vector(self);
-                        let dist_scalar = other.distance(self);
-                        let arbitrary_number = 1.001 * (self.radius + other.radius) / dist_scalar;
-                        dist_vec = (
-                            dist_vec.0 * arbitrary_number,
-                            dist_vec.1 * arbitrary_number,
-                            dist_vec.2 * arbitrary_number,
-                        );
-                        x = other.x + dist_vec.0;
-                        y = other.y + dist_vec.1;
-                        z = other.z + dist_vec.2;
+                        if self.mass < other.mass {
+                            // If this entity is smaller than the other one, nudge it.
+                            let mut dist_vec = other.distance_vector(self);
+                            let dist_scalar = other.distance(self);
+                            let buffer_space = 1.001 * (self.radius + other.radius) / dist_scalar;
+                            dist_vec = (
+                                dist_vec.0 * buffer_space,
+                                dist_vec.1 * buffer_space,
+                                dist_vec.2 * buffer_space,
+                            );
+                            x = other.x + dist_vec.0;
+                            y = other.y + dist_vec.1;
+                            z = other.z + dist_vec.2;
+                        }
                         vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
                         vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
                         vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
-                        collided_entities.push(other);
                         collided = true;
                     }
                 }
@@ -207,7 +197,6 @@ impl Entity {
                         x = result.position.0;
                         y = result.position.1;
                         z = result.position.2;
-                        collided_entities.append(&mut result.collided_entities);
                     }
                 }
                 // and the right...
@@ -222,7 +211,6 @@ impl Entity {
                         x = result.position.0;
                         y = result.position.1;
                         z = result.position.2;
-                        collided_entities.append(&mut result.collided_entities);
                     }
                 }
             }
@@ -231,7 +219,6 @@ impl Entity {
             collided,
             velocity: (vx, vy, vz),
             position: (x, y, z),
-            collided_entities,
         };
     }
 

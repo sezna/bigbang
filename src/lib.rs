@@ -144,7 +144,6 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
-            is_colliding: false
         },
         Entity {
             vx: 0.0,
@@ -155,7 +154,6 @@ fn test_tree() {
             z: 3.0,
             mass: 2.0,
             radius: 1.0,
-            is_colliding: false
         },
     ];
     let center_of_mass_test = GravTree::new(&mut vector, 0.2);
