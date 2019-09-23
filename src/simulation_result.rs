@@ -2,5 +2,5 @@
 pub struct SimulationResult {
     pub velocity: (f64, f64, f64),
     pub position: (f64, f64, f64),
-    pub collided: bool
+    pub collided: bool,
 }

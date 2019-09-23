@@ -58,8 +58,7 @@ impl AsEntity for Entity {
             radius: self.radius,
             mass: self.mass,
         }
-
-     }
+    }
 }
 
 impl PartialEq for Entity {
