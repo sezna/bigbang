@@ -247,27 +247,12 @@ async fn run(executor: TaskExecutor) {
             state_inner.clear();
             // TODO this needs to be made into a proper iter later, instead of a vec and reconstruction
             for e in entities.iter_mut() {
-                // bounce off the walls if they're exceeding the boundaries
-                // if e.x - e.radius <= MIN_X || e.x + e.radius >= MAX_X {
-                //     e.vx = e.vx * -0.8;
-                // }
-
-                // if e.y - e.radius <= MIN_Y || e.y + e.radius >= MAX_Y {
-                //     e.vy = e.vy * -0.8;
-                // }
-
-                // if e.z - e.radius <= MIN_Z || e.z + e.radius >= MAX_Z {
-                //     e.vz = e.vz * -0.8;
-                // }
-
                 state_inner.push(e.x);
                 state_inner.push(e.y);
                 state_inner.push(e.z);
                 state_inner.push(e.radius);
             }
         }
-        test_tree = GravTree::new(&mut entities, TIME_STEP);
-
         trace!("Buffer state updated");
 
         // Notify all connected WS clients that a new update is available

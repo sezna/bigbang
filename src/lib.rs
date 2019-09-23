@@ -13,9 +13,9 @@ use std::mem::transmute_copy;
 mod simulation_result;
 
 /*  public-facing entry points */
-pub use simulation_result::SimulationResult;
 pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
+pub use simulation_result::SimulationResult;
 
 /* FFI interface functions are all plopped right here. */
 

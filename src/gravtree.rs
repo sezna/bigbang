@@ -27,6 +27,15 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         T: AsEntity,
     {
         let size_of_vec = pts.len();
+        // Handle the case where a grav tree is initialized without any points...
+        if size_of_vec == 0 {
+            return GravTree {
+                root: Node::new(),
+                number_of_entities: size_of_vec,
+                time_step
+            }
+        }
+
         GravTree {
             root: Node::<T>::new_root_node(&pts[..]),
             number_of_entities: size_of_vec,
