@@ -1,5 +1,5 @@
 use super::Dimension;
-use crate::collision_result::CollisionResult;
+use crate::simulation_result::SimulationResult;
 use crate::Node;
 use either::{Either, Left, Right};
 
@@ -35,40 +35,31 @@ pub struct Entity {
 pub trait AsEntity {
     /// Return an [[Entity]] representation of your struct.
     fn as_entity(&self) -> Entity;
-    /// Given the velocity calculated by the simulation, exert this velocity on your struct.
-    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self;
-    /// Given a position, set the position of your struct to this. This is used to prevent two entities
-    /// from overlapping in a simulation.
-    fn set_position(&self, position: (f64, f64, f64)) -> Self;
+    /// Respond to the forces that bigbang has calculated are acting upon the entity.
+    /// It is recommended to at least set the position to where the simulation says
+    /// it should be and add the velocity to the position. See the docs for an example.
+    fn respond(&self, collision_result: SimulationResult, time_step: f64) -> Self;
 }
 
 impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
-    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
-        let (vx, vy, vz) = collision_result.velocity;
-        let _colliding = collision_result.collided;
+    fn respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+        let (vx, vy, vz) = simulation_result.velocity;
+        let (x, y, z) = simulation_result.position;
         Entity {
             vx,
             vy,
             vz,
-            x: self.x + (vx * time_step),
-            y: self.y + (vy * time_step),
-            z: self.z + (vz * time_step),
+            x: x + (vx * time_step),
+            y: y + (vy * time_step),
+            z: z + (vz * time_step),
             radius: self.radius,
             mass: self.mass,
         }
-    }
-    fn set_position(&self, position: (f64, f64, f64)) -> Self {
-        let (x, y, z) = position;
-        Entity {
-            x,
-            y,
-            z,
-            ..self.clone()
-        }
-    }
+
+     }
 }
 
 impl PartialEq for Entity {
@@ -89,7 +80,7 @@ impl Entity {
         &self,
         node: &Node<T>,
         time_step: f64,
-    ) -> CollisionResult {
+    ) -> SimulationResult {
         let result = self.collide(node, None);
         let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
@@ -99,7 +90,7 @@ impl Entity {
         // Get the gravitational acceleration from the tree...
         let acceleration = self.get_entity_acceleration_from(node);
         // Apply the gravitational acceleration to the calculated velocity.
-        CollisionResult {
+        SimulationResult {
             velocity: (
                 vx + acceleration.0 * time_step,
                 vy + acceleration.1 * time_step,
@@ -120,7 +111,7 @@ impl Entity {
         &self,
         node: &Node<T>,
         starter_velocities: Option<(f64, f64, f64)>,
-    ) -> CollisionResult {
+    ) -> SimulationResult {
         let mut collided = false;
         let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
             v
@@ -196,7 +187,7 @@ impl Entity {
                 }
             }
         }
-        return CollisionResult {
+        return SimulationResult {
             collided,
             velocity: (vx, vy, vz),
             position: (x, y, z),

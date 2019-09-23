@@ -77,7 +77,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
             &mut post_gravity_entity_vec
                 .par_iter()
                 .map(|x| {
-                    x.apply_velocity(
+                    x.respond(
                         x.as_entity().interact_with(&self.root, self.time_step),
                         self.time_step,
                     )
