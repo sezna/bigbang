@@ -27,7 +27,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, CollisionResult, Entity};
+use bigbang::{AsEntity, SimulationResult, Entity};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -51,40 +51,30 @@ struct MyEntity {
     radius: f64,
     color: String,
 }
-
 impl AsEntity for MyEntity {
     fn as_entity(&self) -> Entity {
         return Entity {
             x: self.x,
             y: self.y,
-            z: 0.0,
+            z: 0.,
             vx: self.vx,
             vy: self.vy,
-            vz: 0.0,
+            vz: 0.,
             radius: self.radius,
             mass: if self.radius < 1. { 0.5 } else { 105. },
         };
     }
 
-    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
-        let (vx, vy, _vz) = collision_result.velocity;
-        let (x, y, _z) = collision_result.position;
+    fn  respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+        let (vx, vy, _vz) = simulation_result.velocity;
+        let (x, y, _z) = simulation_result.position;
         MyEntity {
             vx,
             vy,
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: String::from("red"),
-        }
-    }
-
-    fn set_position(&self, position: (f64, f64, f64)) -> Self {
-        let (x, y, _z) = position;
-        MyEntity {
-            x,
-            y,
-            ..self.clone()
+            color: String::from("blue")
         }
     }
 }

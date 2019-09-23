@@ -1,6 +1,6 @@
 #![feature(test)]
 extern crate test;
-use bigbang::{AsEntity, CollisionResult, Entity, GravTree};
+use bigbang::{AsEntity, SimulationResult, Entity, GravTree};
 
 #[derive(Clone)]
 struct MyEntity {
@@ -12,7 +12,6 @@ struct MyEntity {
     vz: f64,
     radius: f64,
 }
-
 impl AsEntity for MyEntity {
     fn as_entity(&self) -> Entity {
         return Entity {
@@ -27,9 +26,9 @@ impl AsEntity for MyEntity {
         };
     }
 
-    fn apply_velocity(&self, collision_result: CollisionResult, time_step: f64) -> Self {
-        let (vx, vy, vz) = collision_result.velocity;
-        let (x, y, z) = collision_result.position;
+    fn  respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+        let (vx, vy, vz) = simulation_result.velocity;
+        let (x, y, z) = simulation_result.position;
         MyEntity {
             vx,
             vy,
@@ -37,19 +36,6 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             z: z + (vz * time_step),
-            radius: self.radius,
-        }
-    }
-
-    fn set_position(&self, position: (f64, f64, f64)) -> Self {
-        let (x, y, z) = position;
-        MyEntity {
-            x,
-            y,
-            z,
-            vx: self.vx,
-            vy: self.vy,
-            vz: self.vz,
             radius: self.radius,
         }
     }

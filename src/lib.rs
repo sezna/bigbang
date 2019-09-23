@@ -10,10 +10,10 @@ use dimension::Dimension;
 use node::Node;
 use std::ffi::CStr;
 use std::mem::transmute_copy;
-mod collision_result;
+mod simulation_result;
 
 /*  public-facing entry points */
-pub use collision_result::CollisionResult;
+pub use simulation_result::SimulationResult;
 pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
 
