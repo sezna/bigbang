@@ -90,17 +90,17 @@ impl AsEntity for MyEntity {
         let (mut vx, mut vy, _vz) = simulation_result.velocity;
         let (mut x, mut y, _z) = simulation_result.position;
         if x - self.radius <= 0.1f64 {
-            vx = vx * -1.0;
+            vx = vx * -0.3;
             x = 0.1f64 + self.radius;
         } else if x + self.radius >= 19.9f64 {
-            vx = vx * -1.0;
+            vx = vx * -0.3;
             x = 19.9f64 - self.radius;
         }
         if y - self.radius < 0.01f64 {
-            vy = vy * -1.0;
+            vy = vy * -0.3;
             y = 0.01f64 + self.radius;
         } else if y + self.radius > 19.9f64 {
-            vy = vy * -1.0;
+            vy = vy * -0.3;
             y = 19.9f64 - self.radius;
         }
 
