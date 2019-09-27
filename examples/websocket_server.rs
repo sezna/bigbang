@@ -25,7 +25,7 @@ use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 2000;
-const TIME_STEP: f64 = 0.005;
+const TIME_STEP: f64 = 0.0005;
 const MAX_X: f64 = 190.;
 const MAX_Y: f64 = 190.;
 const MAX_Z: f64 = 190.;

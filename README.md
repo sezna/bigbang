@@ -10,6 +10,10 @@ _Have you used this project in your work? I'd love to hear about it and work wit
 # About the project
 This is a project in re-implementing a c++ particle simulation in Rust for speed comparison purposes. I originally created this tree at Trinity University with Dr. Mark Lewis around 2015. Rust changed a lot in the following years, and so I re-wrote it in 2019. The second time I wrote it, I actually read the Rust book and attempted best practices :)
 
+
+![example in 3d](./3d_example.gif)
+_3d websocket-based simulation is available in the examples directory and was provided by [Casey Primozic](https://cprimozic.net/)._
+
 # What exactly does it do?
 It constructs a k-d tree of 3 dimensions and optimally calculates the gravitational force all of the entities are exerting on each other. It then calls `apply_acceleration()` on each individual entity with the acceleration value it calculated.
 
