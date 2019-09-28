@@ -22,21 +22,6 @@ pub fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) 
     (x_max, x_min, y_max, y_min, z_max, z_min)
 }
 
-#[bench]
-fn bench_max_min(b: &mut test::Bencher) {
-    let mut test_vec: Vec<Entity> = Vec::new();
-    for _ in 0..1000 {
-        test_vec.push(Entity::random_entity());
-    }
-
-    let ref_vec = test_vec
-        .iter()
-        .map(|x| x.as_entity())
-        .collect::<Vec<Entity>>();
-    // TODO make it do this with different vecs
-    b.iter(|| max_min_xyz(ref_vec.as_slice()));
-}
-
 /// Returns the maximum and minimum values in a slice of entities, given a dimension.
 pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
     (

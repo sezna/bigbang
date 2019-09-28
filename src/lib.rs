@@ -1,8 +1,6 @@
-#![feature(test)]
 extern crate either;
 extern crate rand;
 extern crate rayon;
-extern crate test;
 mod dimension;
 mod entity;
 mod gravtree;
@@ -16,6 +14,7 @@ use std::mem::transmute_copy;
 /*  public-facing entry points */
 pub use entity::{AsEntity, Entity};
 pub use gravtree::GravTree;
+pub use utilities::max_min_xyz;
 
 /* FFI interface functions are all plopped right here. */
 
@@ -177,67 +176,4 @@ fn go_to_edges(grav_tree: GravTree<Entity>, left_nodes: usize, right_nodes: usiz
         node2 = node2.right.expect("unexpected null node #2\n");
     }
     assert!(count_of_nodes == right_nodes);
-}
-
-#[bench]
-fn bench_time_step_05(b: &mut test::Bencher) {
-    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for _ in 0..5 {
-        for _ in 0..5 {
-            for _ in 0..5 {
-                let entity = Entity::random_entity();
-                vec_that_wants_to_be_a_kdtree.push(entity);
-            }
-        }
-    }
-
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
-    b.iter(|| test_tree = test_tree.time_step())
-}
-
-#[bench]
-fn bench_time_step_10(b: &mut test::Bencher) {
-    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for _ in 0..10 {
-        for _ in 0..10 {
-            for _ in 0..10 {
-                let entity = Entity::random_entity();
-                vec_that_wants_to_be_a_kdtree.push(entity);
-            }
-        }
-    }
-
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
-    b.iter(|| test_tree = test_tree.time_step())
-}
-
-#[bench]
-fn bench_time_step_12(b: &mut test::Bencher) {
-    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for _ in 0..12 {
-        for _ in 0..12 {
-            for _ in 0..12 {
-                let entity = Entity::random_entity();
-                vec_that_wants_to_be_a_kdtree.push(entity);
-            }
-        }
-    }
-
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
-    b.iter(|| test_tree = test_tree.time_step())
-}
-#[bench]
-fn bench_time_step_15(b: &mut test::Bencher) {
-    let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for _ in 0..15 {
-        for _ in 0..15 {
-            for _ in 0..15 {
-                let entity = Entity::random_entity();
-                vec_that_wants_to_be_a_kdtree.push(entity);
-            }
-        }
-    }
-
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2);
-    b.iter(|| test_tree = test_tree.time_step())
 }
