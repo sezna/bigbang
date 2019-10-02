@@ -3,6 +3,10 @@
 [![Build Status](https://travis-ci.org/sezna/gravitational-kd-tree.svg?branch=master)](https://travis-ci.org/sezna/gravitational-kd-tree)
 _Have you used this project in your work? I'd love to hear about it and work with you. Email me at [alex@alex-hansen.com](mailto:alex@alex-hansen.com)._
 
+
+## This project is under major construction -- check out the "collisions" branch for my progress. It is being converted into a much more physically accurate soft-body simulation with efficient collision calculation.
+
+
 # About the project
 This is a project in re-implementing a c++ particle simulation in Rust for speed comparison purposes. I originally created this tree at Trinity University with Dr. Mark Lewis around 2015. Rust changed a lot in the following years, and so I re-wrote it in 2019. The second time I wrote it, I actually read the Rust book and attempted best practices :)
 
