@@ -1,6 +1,6 @@
 ![docs.rs](https://docs.rs/bigbang/badge.svg)
 ![crates.io](https://img.shields.io/crates/v/bigbang.svg)
-[![Build Status](https://travis-ci.org/sezna/gravitational-kd-tree.svg?branch=master)](https://travis-ci.org/sezna/gravitational-kd-tree)
+[![Build Status](https://travis-ci.org/sezna/bigbang.svg?branch=master)](https://travis-ci.org/sezna/bigbang)
 _Have you used this project in your work? I'd love to hear about it and work with you. Email me at [alex@alex-hansen.com](mailto:alex@alex-hansen.com)._
 
 
