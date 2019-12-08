@@ -96,10 +96,7 @@ impl Entity {
     /// Iterates through nodes which potentially collided and adds them to the collisions result.
     /// Eventually this should be done in the same iteration that gravitational acceleration is
     /// calculated in.
-    fn find_collisions<'a, T: AsEntity + Clone>(
-        &'a self,
-        node: &'a Node<T>,
-    ) -> Vec<&'a T> {
+    fn find_collisions<'a, T: AsEntity + Clone>(&'a self, node: &'a Node<T>) -> Vec<&'a T> {
         let mut collisions = Vec::new();
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
@@ -132,7 +129,7 @@ impl Entity {
                 }
             }
         }
-         collisions
+        collisions
     }
 
     /// Returns the entity as a string with space separated values.
