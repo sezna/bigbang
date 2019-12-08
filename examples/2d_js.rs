@@ -86,7 +86,7 @@ impl AsEntity for MyEntity {
         };
     }
 
-    fn respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+    fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (mut vx, mut vy, _vz) = simulation_result.velocity;
         let (mut x, mut y, _z) = simulation_result.position;
         if x - self.radius <= 0.1f64 {
@@ -110,7 +110,7 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: String::from("blue"),
+            color: if simulation_result.collided.len() > 0 { "blue" } else { "red" }.to_string(),
         }
     }
 }
@@ -139,6 +139,11 @@ fn main() {
     big_boi.y = 10f64;
     big_boi.radius = 1f64;
     starter_entities.push(big_boi);
+    let mut big_boi_2 = MyEntity::random_entity();
+    big_boi_2.x = 7f64;
+    big_boi_2.y = 7f64;
+    big_boi_2.radius = 1f64;
+    starter_entities.push(big_boi_2);
     let grav_tree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP);
 
     println!("initializing simulation...");
