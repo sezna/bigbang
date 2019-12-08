@@ -86,45 +86,6 @@ impl Entity {
         self != other && self.distance(other) <= (self.radius + other.radius)
     }
 
-    /// Iterates through nodes which potentially collided and adds them to the collisions result.
-    /// Eventually this should be done in the same iteration that gravitational acceleration is
-    /// calculated in.
-    fn find_collisions<'a, T: AsEntity + Clone>(&'a self, node: &'a Node<T>) -> Vec<&'a T> {
-        let mut collisions = Vec::new();
-        // If the two entities are touching...
-        if self.did_collide_into(&node.as_entity()) {
-            // ...then there is the potential for a collision.
-            // If this is a leaf node...
-            if let Some(points) = &node.points {
-                // Check every particle in the leaf to see if it collision.
-                for other_t in points.iter() {
-                    let other = other_t.as_entity();
-                    // if they collided...
-                    if self.did_collide_into(&other) {
-                        collisions.push(other_t);
-                    }
-                }
-            }
-            // Otherwise, this isn't a leaf, and we must...
-            else {
-                // Recurse!
-                // on both the left...
-                if let Some(left) = &node.left {
-                    // If there was a collision...
-                    let mut result = self.find_collisions(&left);
-                    collisions.append(&mut result);
-                }
-                // and the right...
-                if let Some(right) = &node.right {
-                    // If there was a collision...
-                    let mut result = self.find_collisions(&right);
-                    collisions.append(&mut result);
-                }
-            }
-        }
-        collisions
-    }
-
     /// Returns the entity as a string with space separated values.
     pub fn as_string(&self) -> String {
         return format!(
