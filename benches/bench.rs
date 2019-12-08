@@ -1,6 +1,6 @@
 #![feature(test)]
 extern crate test;
-use bigbang::{AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{AsEntity, Entity, GravTree, SimulationResult, collisions::soft_body};
 
 #[derive(Clone)]
 struct MyEntity {
@@ -27,28 +27,26 @@ impl AsEntity for MyEntity {
     }
 
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (ax, ay, az) = simulation_result.gravitational_acceleration;
+        let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
         let (x, y, z) = (self.x, self.y, self.z);
         let (mut vx, mut vy, mut vz) = (self.vx, self.vy, self.vz);
-        let self_mass = if self.radius < 1. { 0.5 } else { 105. };
-        // calculate the collisions
-        for other in simulation_result.collisions.clone() {
-            let other_mass = if other.radius < 1. { 0.5 } else { 105. };
-            let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
-            let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
-            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
-            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
-            vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
+         // calculate the collisions
+        for other in &simulation_result.collisions {
+            let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 20f64);
+            ax += collision_ax;
+            ay += collision_ay;
+            az += collision_az;
         }
         vx += ax * time_step;
         vy += ay * time_step;
+        vz += az * time_step;
         MyEntity {
             vx,
             vy,
             vz,
-            x: x + (vx * time_step),
-            y: y + (vy * time_step),
-            z: z + (vz * time_step),
+            x: x + vx,
+            y: y + vy,
+            z: z + vz,
             radius: self.radius,
         }
     }
