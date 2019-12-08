@@ -2,6 +2,7 @@ use super::Dimension;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
 use either::{Either, Left, Right};
+use crate::as_entity::AsEntity;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -23,29 +24,11 @@ pub struct Entity {
     pub radius: f64,
     pub mass: f64,
 }
-
-/// [[GravTree]] works with any type which implements [[AsEntity]]. In order to implement [[AsEntity]],
-/// a type must be able to represent itself as a gravitational spatial entity. This, simply, entails
-/// constructing an [[Entity]] from the type, and defining how to acceleration to the velocity of your type.
-///
-/// More generally, this entails that a type must contain, or be able to derive, its velocity, position,
-/// radius and mass, and it must be able to respond to acceleration impulses in the form of triples of `f64`s.
-///
-/// See `impl AsEntity for Entity' for an example of what this could look like.
-pub trait AsEntity {
-    /// Return an [[Entity]] representation of your struct.
-    fn as_entity(&self) -> Entity;
-    /// Respond to the forces that bigbang has calculated are acting upon the entity.
-    /// It is recommended to at least set the position to where the simulation says
-    /// it should be and add the velocity to the position. See the docs for an example.
-    fn respond(&self, collision_result: SimulationResult, time_step: f64) -> Self;
-}
-
 impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
-    fn respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+    fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
         let (vx, vy, vz) = simulation_result.velocity;
         let (x, y, z) = simulation_result.position;
         Entity {
@@ -75,11 +58,11 @@ impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
     /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
     /// TODO make this a struct???
-    pub fn interact_with<T: AsEntity + Clone>(
-        &self,
-        node: &Node<T>,
+    pub fn interact_with<'a, T: AsEntity + Clone>(
+        &'a self,
+        node: &'a Node<T>,
         time_step: f64,
-    ) -> SimulationResult {
+    ) -> SimulationResult<'a, T> {
         let result = self.collide(node, None);
         let collided = result.collided;
         // If there was a collision and we were not already colliding, use that velocity.
@@ -106,12 +89,12 @@ impl Entity {
         self != other && self.distance(other) <= (self.radius + other.radius)
     }
 
-    fn collide<T: AsEntity + Clone>(
-        &self,
-        node: &Node<T>,
+    fn collide<'a, T: AsEntity + Clone>(
+        &'a self,
+        node: &'a Node<T>,
         starter_velocities: Option<(f64, f64, f64)>,
-    ) -> SimulationResult {
-        let mut collided = false;
+    ) -> SimulationResult<'a, T> {
+        let mut collided = Vec::new();
         let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
             v
         } else {
@@ -132,24 +115,11 @@ impl Entity {
                         let mass_coefficient_v1 =
                             (self.mass - other.mass) / (self.mass + other.mass);
                         let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
-                        if self.mass < other.mass {
-                            // If this entity is smaller than the other one, nudge it.
-                            let mut dist_vec = other.distance_vector(self);
-                            let dist_scalar = other.distance(self);
-                            let buffer_space = 1.01 * (self.radius + other.radius) / dist_scalar;
-                            dist_vec = (
-                                dist_vec.0 * buffer_space,
-                                dist_vec.1 * buffer_space,
-                                dist_vec.2 * buffer_space,
-                            );
-                            x = other.x + dist_vec.0;
-                            y = other.y + dist_vec.1;
-                            z = other.z + dist_vec.2;
-                        }
                         vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
                         vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
                         vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
-                        collided = true;
+                        // TODO move the above velocity calculations outside of this function
+                        collided.push(other_t); 
                     }
                 }
             }
@@ -159,7 +129,9 @@ impl Entity {
                 // on both the left...
                 if let Some(left) = &node.left {
                     // If there was a collision...
-                    let result = self.collide(&left, Some((vx, vy, vz)));
+                    let mut result = self.collide(&left, Some((vx, vy, vz)));
+                    collided.append(&mut result.collided);
+                    /*
                     if result.collided {
                         collided = result.collided;
                         vx = result.velocity.0;
@@ -169,11 +141,14 @@ impl Entity {
                         y = result.position.1;
                         z = result.position.2;
                     }
+                    */
                 }
                 // and the right...
                 if let Some(right) = &node.right {
                     // If there was a collision...
-                    let result = self.collide(&right, Some((vx, vy, vz)));
+                    let mut result = self.collide(&right, Some((vx, vy, vz)));
+                    collided.append(&mut result.collided);
+                    /*
                     if result.collided {
                         collided = result.collided;
                         vx = result.velocity.0;
@@ -183,6 +158,7 @@ impl Entity {
                         y = result.position.1;
                         z = result.position.2;
                     }
+                    */
                 }
             }
         }

@@ -1,4 +1,5 @@
-use crate::entity::{AsEntity, Entity};
+use crate::entity::Entity;
+use crate::as_entity::AsEntity;
 use crate::Node;
 use rayon::prelude::*;
 use std::error::Error;
