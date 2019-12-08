@@ -89,8 +89,8 @@ impl AsEntity for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (mut vx, mut vy, _vz) = simulation_result.collision.velocity;
         let (ax, ay, _az) = simulation_result.acceleration;
-        vx += (ax * time_step);
-        vy += (ay * time_step);;
+        vx += ax * time_step;
+        vy += ay * time_step;
         let (mut x, mut y) = (self.x, self.y);
         if x - self.radius <= 0.1f64 {
             vx = vx * -0.3;
