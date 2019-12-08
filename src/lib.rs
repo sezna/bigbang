@@ -1,13 +1,13 @@
 extern crate either;
 extern crate rayon;
+mod as_entity;
+mod collision_result;
 mod dimension;
 mod entity;
 mod grav_tree;
 mod node;
-mod utilities;
-mod collision_result;
-mod as_entity;
 mod simulation_result;
+mod utilities;
 
 use dimension::Dimension;
 use node::Node;
@@ -15,10 +15,10 @@ use std::ffi::CStr;
 use std::mem::transmute_copy;
 
 /*  public-facing entry points */
-pub use entity::Entity;
 pub use as_entity::AsEntity;
-pub use grav_tree::GravTree;
 pub use collision_result::CollisionResult;
+pub use entity::Entity;
+pub use grav_tree::GravTree;
 pub use simulation_result::SimulationResult;
 
 /* FFI interface functions are all plopped right here. */
@@ -78,4 +78,3 @@ pub unsafe extern "C" fn write_data_file(
     let file_path = CStr::from_ptr(file_path_buff);
     grav_tree.write_data_file(String::from(file_path.to_str().unwrap()));
 }
-

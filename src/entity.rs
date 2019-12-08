@@ -1,10 +1,10 @@
 use either::{Either, Left, Right};
 
 use super::Dimension;
-use crate::collision_result::CollisionResult;
-use crate::Node;
 use crate::as_entity::AsEntity;
+use crate::collision_result::CollisionResult;
 use crate::simulation_result::SimulationResult;
+use crate::Node;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -30,8 +30,21 @@ impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
+    // TODO this should probably mutate self instead of returning a new one..? bench it
     fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
-        let (vx, vy, vz) = simulation_result.collision.velocity;
+        // TODO change this to hook's -Kx formula for soft body collision
+        //
+        let mut vx = self.vx;
+        let mut vy = self.vy;
+        let mut vz = self.vz;
+
+        for other in simulation_result.collision_result.collisions {
+            let mass_coefficient_v1 = (self.mass - other.mass) / (self.mass + other.mass);
+            let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
+            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
+            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
+            vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
+        }
         Entity {
             vx,
             vy,
@@ -63,15 +76,15 @@ impl Entity {
         node: &'a Node<T>,
         _time_step: f64,
     ) -> SimulationResult<'a, T> {
-        let collision = self.collide(node, None);
+        let collision_result = self.find_collisions(node, None);
         // If there was a collision and we were not already colliding, use that velocity.
 
         // Get the gravitational acceleration from the tree...
-        let acceleration = self.get_entity_acceleration_from(node);
+        let gravitational_acceleration = self.get_entity_acceleration_from(node);
         // Apply the gravitational acceleration to the calculated velocity.
         SimulationResult {
-            collision,
-            acceleration
+            collision_result,
+            gravitational_acceleration,
         }
     }
 
@@ -81,12 +94,15 @@ impl Entity {
         self != other && self.distance(other) <= (self.radius + other.radius)
     }
 
-    fn collide<'a, T: AsEntity + Clone>(
+    /// Iterates through nodes which potentially collided and adds them to the collisions result.
+    /// Eventually this should be done in the same iteration that gravitational acceleration is
+    /// calculated in.
+    fn find_collisions<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
         starter_velocities: Option<(f64, f64, f64)>,
     ) -> CollisionResult<'a, T> {
-        let mut collided = Vec::new();
+        let mut collisions = Vec::new();
         let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
             v
         } else {
@@ -98,20 +114,12 @@ impl Entity {
             // ...then there is the potential for a collision.
             // If this is a leaf node...
             if let Some(points) = &node.points {
-                // Check every particle in the leaf to see if it collided.
+                // Check every particle in the leaf to see if it collision.
                 for other_t in points.iter() {
                     let other = other_t.as_entity();
                     // if they collided...
                     if self.did_collide_into(&other) {
-                        // do some math.
-                        let mass_coefficient_v1 =
-                            (self.mass - other.mass) / (self.mass + other.mass);
-                        let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
-                        vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
-                        vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
-                        vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
-                        // TODO move the above velocity calculations outside of this function
-                        collided.push(other_t); 
+                        collisions.push(other_t);
                     }
                 }
             }
@@ -121,43 +129,18 @@ impl Entity {
                 // on both the left...
                 if let Some(left) = &node.left {
                     // If there was a collision...
-                    let mut result = self.collide(&left, Some((vx, vy, vz)));
-                    collided.append(&mut result.collided);
-                    /*
-                    if result.collided {
-                        collided = result.collided;
-                        vx = result.velocity.0;
-                        vy = result.velocity.1;
-                        vz = result.velocity.2;
-                        x = result.position.0;
-                        y = result.position.1;
-                        z = result.position.2;
-                    }
-                    */
+                    let mut result = self.find_collisions(&left, Some((vx, vy, vz)));
+                    collisions.append(&mut result.collisions);
                 }
                 // and the right...
                 if let Some(right) = &node.right {
                     // If there was a collision...
-                    let mut result = self.collide(&right, Some((vx, vy, vz)));
-                    collided.append(&mut result.collided);
-                    /*
-                    if result.collided {
-                        collided = result.collided;
-                        vx = result.velocity.0;
-                        vy = result.velocity.1;
-                        vz = result.velocity.2;
-                        x = result.position.0;
-                        y = result.position.1;
-                        z = result.position.2;
-                    }
-                    */
+                    let mut result = self.find_collisions(&right, Some((vx, vy, vz)));
+                    collisions.append(&mut result.collisions);
                 }
             }
         }
-        return CollisionResult {
-            collided,
-            velocity: (vx, vy, vz),
-        };
+        return CollisionResult { collisions };
     }
 
     /// Returns the entity as a string with space separated values.

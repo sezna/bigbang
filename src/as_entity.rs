@@ -16,7 +16,6 @@ pub trait AsEntity {
     /// It is recommended to at least set the position to where the simulation says
     /// it should be and add the velocity to the position. See the docs for an example.
     fn respond(&self, collision_result: SimulationResult<Self>, time_step: f64) -> Self
-        where Self: std::marker::Sized;
-
+    where
+        Self: std::marker::Sized;
 }
-
