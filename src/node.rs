@@ -1,5 +1,6 @@
 use crate::dimension::Dimension;
-use crate::entity::{AsEntity, Entity};
+use crate::entity::Entity;
+use crate::as_entity::AsEntity;
 use crate::utilities::{find_median, max_min_xyz, xyz_distances};
 const MAX_PTS: i32 = 3;
 #[derive(Clone)]
