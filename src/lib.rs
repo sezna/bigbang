@@ -1,3 +1,6 @@
+
+//! For more details on usage, see [the README](https://github.com/sezna/blob/master/README.md).
+
 extern crate either;
 extern crate rayon;
 mod as_entity;
