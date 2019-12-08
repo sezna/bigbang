@@ -28,7 +28,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -41,7 +41,7 @@ use iron::{status, Request, Response};
 use mount::Mount;
 use std::sync::RwLock;
 
-const TIME_STEP: f64 = 0.0002;
+const TIME_STEP: f64 = 0.000002;
 
 struct State {
     state: SimulationState,
@@ -87,16 +87,16 @@ impl AsEntity for MyEntity {
     }
 
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (ax, ay, _az) = simulation_result.gravitational_acceleration;
+        let (mut ax, mut ay, _az) = simulation_result.gravitational_acceleration;
         let (mut vx, mut vy) = (self.vx, self.vy);
         let self_mass = if self.radius < 1. { 0.5 } else { 105. };
-        // calculate the collisions
+        // use soft body collision to calculate the post-collision velocity
+
         for other in &simulation_result.collisions {
-            let other_mass = if other.radius < 1. { 0.5 } else { 105. };
-            let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
-            let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
-            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
-            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
+            let (collision_ax, collision_ay, _az) = soft_body(self, other, 20f64);
+            println!("collision!");
+            ax += collision_ax;
+            ay += collision_ay;
         }
         vx += ax * time_step;
         vy += ay * time_step;
@@ -119,15 +119,10 @@ impl AsEntity for MyEntity {
         MyEntity {
             vx,
             vy,
-            x: x + (vx * time_step),
-            y: y + (vy * time_step),
+            x: x + vx,
+            y: y + vy,
             radius: self.radius,
-            color: if simulation_result.collisions.len() > 0 {
-                "blue"
-            } else {
-                "red"
-            }
-            .to_string(),
+            color: self.color.clone(),
         }
     }
 }
@@ -150,7 +145,7 @@ impl MyEntity {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..200).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = (0..20).map(|_| MyEntity::random_entity()).collect();
     let mut big_boi = MyEntity::random_entity();
     big_boi.x = 10f64;
     big_boi.y = 10f64;
@@ -160,6 +155,7 @@ fn main() {
     big_boi_2.x = 7f64;
     big_boi_2.y = 7f64;
     big_boi_2.radius = 1f64;
+    big_boi_2.color = "green".to_string();
     starter_entities.push(big_boi_2);
     let grav_tree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP);
 

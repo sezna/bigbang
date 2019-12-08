@@ -1,6 +1,7 @@
 extern crate either;
 extern crate rayon;
 mod as_entity;
+pub mod collisions;
 mod dimension;
 mod entity;
 mod grav_tree;

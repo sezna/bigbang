@@ -73,7 +73,6 @@ impl Entity {
     pub fn interact_with<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
-        _time_step: f64,
     ) -> SimulationResult<'a, T> {
         // If there was a collision and we were not already colliding, use that velocity.
 
@@ -103,12 +102,12 @@ impl Entity {
         x_dist * x_dist + y_dist * y_dist + z_dist * z_dist
     }
     /// Returns the distance between the two entities
-    fn distance(&self, other: &Entity) -> f64 {
+    pub(crate) fn distance(&self, other: &Entity) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         f64::sqrt(self.distance_squared(other))
     }
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
-    fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
+    pub(crate) fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
         let x_dist = other.x - self.x;
         let y_dist = other.y - self.y;
         let z_dist = other.z - self.z;
