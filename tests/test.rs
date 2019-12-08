@@ -26,7 +26,7 @@ impl AsEntity for MyEntity {
         };
     }
 
-    fn respond(&self, simulation_result: SimulationResult, time_step: f64) -> Self {
+    fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (vx, vy, vz) = simulation_result.velocity;
         let (x, y, z) = simulation_result.position;
         MyEntity {
