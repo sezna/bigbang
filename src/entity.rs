@@ -3,6 +3,7 @@ use either::{Either, Left, Right};
 use super::Dimension;
 use crate::as_entity::AsEntity;
 use crate::simulation_result::SimulationResult;
+use crate::collisions::soft_body;
 use crate::Node;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
@@ -29,21 +30,21 @@ impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();
     }
-    // TODO this should probably mutate self instead of returning a new one..? bench it
     fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
-        // TODO change this to hook's -Kx formula for soft body collision
-        //
         let mut vx = self.vx;
         let mut vy = self.vy;
         let mut vz = self.vz;
-
-        for other in simulation_result.collisions {
-            let mass_coefficient_v1 = (self.mass - other.mass) / (self.mass + other.mass);
-            let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
-            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
-            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
-            vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
+        let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
+        for other in &simulation_result.collisions {
+            let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 50f64);
+            ax += collision_ax;
+            ay += collision_ay;
+            az += collision_az;
         }
+        vx += ax * time_step;
+        vy += ay * time_step;
+        vz += az * time_step;
+
         Entity {
             vx,
             vy,
