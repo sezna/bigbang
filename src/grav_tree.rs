@@ -1,5 +1,5 @@
-use crate::entity::Entity;
 use crate::as_entity::AsEntity;
+use crate::entity::Entity;
 use crate::Node;
 use rayon::prelude::*;
 use std::error::Error;
@@ -33,8 +33,8 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
             return GravTree {
                 root: Node::new(),
                 number_of_entities: size_of_vec,
-                time_step
-            }
+                time_step,
+            };
         }
 
         GravTree {

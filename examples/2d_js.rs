@@ -28,7 +28,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{AsEntity, Entity, SimulationResult, GravTree};
+use bigbang::{AsEntity, Entity, GravTree, SimulationResult};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -87,8 +87,17 @@ impl AsEntity for MyEntity {
     }
 
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (mut vx, mut vy, _vz) = simulation_result.collision.velocity;
-        let (ax, ay, _az) = simulation_result.acceleration;
+        let (ax, ay, _az) = simulation_result.gravitational_acceleration;
+        let (mut vx, mut vy) = (self.vx, self.vy);
+        let self_mass = if self.radius < 1. { 0.5 } else { 105. };
+        // calculate the collisions
+        for other in simulation_result.collision_result.collisions.clone() {
+            let other_mass = if other.radius < 1. { 0.5 } else { 105. };
+            let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
+            let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
+            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
+            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
+        }
         vx += ax * time_step;
         vy += ay * time_step;
         let (mut x, mut y) = (self.x, self.y);
@@ -113,7 +122,12 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: if simulation_result.collision.collided.len() > 0 { "blue" } else { "red" }.to_string(),
+            color: if simulation_result.collision_result.collisions.len() > 0 {
+                "blue"
+            } else {
+                "red"
+            }
+            .to_string(),
         }
     }
 }
