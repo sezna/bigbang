@@ -87,8 +87,11 @@ impl AsEntity for MyEntity {
     }
 
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (mut vx, mut vy, _vz) = simulation_result.velocity;
-        let (mut x, mut y, _z) = simulation_result.position;
+        let (mut vx, mut vy, _vz) = simulation_result.collision.velocity;
+        let (ax, ay, _az) = simulation_result.acceleration;
+        vx += (ax * time_step);
+        vy += (ay * time_step);;
+        let (mut x, mut y) = (self.x, self.y);
         if x - self.radius <= 0.1f64 {
             vx = vx * -0.3;
             x = 0.1f64 + self.radius;
@@ -110,7 +113,7 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: if simulation_result.collided.len() > 0 { "blue" } else { "red" }.to_string(),
+            color: if simulation_result.collision.collided.len() > 0 { "blue" } else { "red" }.to_string(),
         }
     }
 }

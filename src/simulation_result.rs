@@ -1,6 +1,6 @@
-/// Contains the forces that bigbang has calculated are being exerted on an entity.
+use crate::collision_result::CollisionResult;
+
 pub struct SimulationResult<'a, T> {
-    pub velocity: (f64, f64, f64),
-    pub position: (f64, f64, f64),
-    pub collided: Vec<&'a T>,
+    pub collision: CollisionResult<'a, T>,
+    pub acceleration: (f64, f64, f64),
 }
