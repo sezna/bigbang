@@ -1,8 +1,10 @@
-use super::Dimension;
-use crate::simulation_result::SimulationResult;
-use crate::Node;
 use either::{Either, Left, Right};
+
+use super::Dimension;
+use crate::collision_result::CollisionResult;
+use crate::Node;
 use crate::as_entity::AsEntity;
+use crate::simulation_result::SimulationResult;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
 /// If the distance is beyond this threshold, we treat the entire node as one giant
@@ -29,15 +31,14 @@ impl AsEntity for Entity {
         return self.clone();
     }
     fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
-        let (vx, vy, vz) = simulation_result.velocity;
-        let (x, y, z) = simulation_result.position;
+        let (vx, vy, vz) = simulation_result.collision.velocity;
         Entity {
             vx,
             vy,
             vz,
-            x: x + (vx * time_step),
-            y: y + (vy * time_step),
-            z: z + (vz * time_step),
+            x: self.x + (vx * time_step),
+            y: self.y + (vy * time_step),
+            z: self.z + (vz * time_step),
             radius: self.radius,
             mass: self.mass,
         }
@@ -57,29 +58,20 @@ impl PartialEq for Entity {
 impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
     /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
-    /// TODO make this a struct???
     pub fn interact_with<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
         time_step: f64,
     ) -> SimulationResult<'a, T> {
-        let result = self.collide(node, None);
-        let collided = result.collided;
+        let collision = self.collide(node, None);
         // If there was a collision and we were not already colliding, use that velocity.
-        let (vx, vy, vz) = result.velocity;
-        // Set the position of all the entities so that nothing is overlapping
 
         // Get the gravitational acceleration from the tree...
         let acceleration = self.get_entity_acceleration_from(node);
         // Apply the gravitational acceleration to the calculated velocity.
         SimulationResult {
-            velocity: (
-                vx + acceleration.0 * time_step,
-                vy + acceleration.1 * time_step,
-                vz + acceleration.2 * time_step,
-            ),
-            collided,
-            position: result.position,
+            collision,
+            acceleration
         }
     }
 
@@ -93,7 +85,7 @@ impl Entity {
         &'a self,
         node: &'a Node<T>,
         starter_velocities: Option<(f64, f64, f64)>,
-    ) -> SimulationResult<'a, T> {
+    ) -> CollisionResult<'a, T> {
         let mut collided = Vec::new();
         let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
             v
@@ -162,10 +154,9 @@ impl Entity {
                 }
             }
         }
-        return SimulationResult {
+        return CollisionResult {
             collided,
             velocity: (vx, vy, vz),
-            position: (x, y, z),
         };
     }
 
