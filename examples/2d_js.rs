@@ -91,7 +91,7 @@ impl AsEntity for MyEntity {
         let (mut vx, mut vy) = (self.vx, self.vy);
         let self_mass = if self.radius < 1. { 0.5 } else { 105. };
         // calculate the collisions
-        for other in simulation_result.collision_result.collisions.clone() {
+        for other in &simulation_result.collisions {
             let other_mass = if other.radius < 1. { 0.5 } else { 105. };
             let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
             let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
@@ -122,7 +122,7 @@ impl AsEntity for MyEntity {
             x: x + (vx * time_step),
             y: y + (vy * time_step),
             radius: self.radius,
-            color: if simulation_result.collision_result.collisions.len() > 0 {
+            color: if simulation_result.collisions.len() > 0 {
                 "blue"
             } else {
                 "red"

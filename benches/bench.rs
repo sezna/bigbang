@@ -27,8 +27,21 @@ impl AsEntity for MyEntity {
     }
 
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (vx, vy, vz) = simulation_result.velocity;
-        let (x, y, z) = simulation_result.position;
+        let (ax, ay, az) = simulation_result.gravitational_acceleration;
+        let (x, y, z) = (self.x, self.y, self.z);
+        let (mut vx, mut vy, mut vz) = (self.vx, self.vy, self.vz);
+        let self_mass = if self.radius < 1. { 0.5 } else { 105. };
+        // calculate the collisions
+        for other in simulation_result.collisions.clone() {
+            let other_mass = if other.radius < 1. { 0.5 } else { 105. };
+            let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
+            let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
+            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
+            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
+            vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
+        }
+        vx += ax * time_step;
+        vy += ay * time_step;
         MyEntity {
             vx,
             vy,
