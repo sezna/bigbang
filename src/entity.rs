@@ -2,7 +2,6 @@ use either::{Either, Left, Right};
 
 use super::Dimension;
 use crate::as_entity::AsEntity;
-use crate::collision_result::CollisionResult;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
 
@@ -38,7 +37,7 @@ impl AsEntity for Entity {
         let mut vy = self.vy;
         let mut vz = self.vz;
 
-        for other in simulation_result.collision_result.collisions {
+        for other in simulation_result.collisions {
             let mass_coefficient_v1 = (self.mass - other.mass) / (self.mass + other.mass);
             let mass_coefficient_v2 = (2f64 * other.mass) / (self.mass + other.mass);
             vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
@@ -76,14 +75,14 @@ impl Entity {
         node: &'a Node<T>,
         _time_step: f64,
     ) -> SimulationResult<'a, T> {
-        let collision_result = self.find_collisions(node, None);
+        let collisions = self.find_collisions(node);
         // If there was a collision and we were not already colliding, use that velocity.
 
         // Get the gravitational acceleration from the tree...
         let gravitational_acceleration = self.get_entity_acceleration_from(node);
         // Apply the gravitational acceleration to the calculated velocity.
         SimulationResult {
-            collision_result,
+            collisions,
             gravitational_acceleration,
         }
     }
@@ -100,15 +99,8 @@ impl Entity {
     fn find_collisions<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
-        starter_velocities: Option<(f64, f64, f64)>,
-    ) -> CollisionResult<'a, T> {
+    ) -> Vec<&'a T> {
         let mut collisions = Vec::new();
-        let (mut vx, mut vy, mut vz) = if let Some(v) = starter_velocities {
-            v
-        } else {
-            (self.vx, self.vy, self.vz)
-        };
-        let (_x, _y, _z) = (self.x, self.y, self.z);
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
@@ -129,18 +121,18 @@ impl Entity {
                 // on both the left...
                 if let Some(left) = &node.left {
                     // If there was a collision...
-                    let mut result = self.find_collisions(&left, Some((vx, vy, vz)));
-                    collisions.append(&mut result.collisions);
+                    let mut result = self.find_collisions(&left);
+                    collisions.append(&mut result);
                 }
                 // and the right...
                 if let Some(right) = &node.right {
                     // If there was a collision...
-                    let mut result = self.find_collisions(&right, Some((vx, vy, vz)));
-                    collisions.append(&mut result.collisions);
+                    let mut result = self.find_collisions(&right);
+                    collisions.append(&mut result);
                 }
             }
         }
-        return CollisionResult { collisions };
+         collisions
     }
 
     /// Returns the entity as a string with space separated values.

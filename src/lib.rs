@@ -1,7 +1,6 @@
 extern crate either;
 extern crate rayon;
 mod as_entity;
-mod collision_result;
 mod dimension;
 mod entity;
 mod grav_tree;
@@ -16,7 +15,6 @@ use std::mem::transmute_copy;
 
 /*  public-facing entry points */
 pub use as_entity::AsEntity;
-pub use collision_result::CollisionResult;
 pub use entity::Entity;
 pub use grav_tree::GravTree;
 pub use simulation_result::SimulationResult;
