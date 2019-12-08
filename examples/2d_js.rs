@@ -89,12 +89,10 @@ impl AsEntity for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (mut ax, mut ay, _az) = simulation_result.gravitational_acceleration;
         let (mut vx, mut vy) = (self.vx, self.vy);
-        let self_mass = if self.radius < 1. { 0.5 } else { 105. };
         // use soft body collision to calculate the post-collision velocity
 
         for other in &simulation_result.collisions {
             let (collision_ax, collision_ay, _az) = soft_body(self, other, 20f64);
-            println!("collision!");
             ax += collision_ax;
             ay += collision_ay;
         }
