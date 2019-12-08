@@ -61,7 +61,7 @@ impl Entity {
     pub fn interact_with<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
-        time_step: f64,
+        _time_step: f64,
     ) -> SimulationResult<'a, T> {
         let collision = self.collide(node, None);
         // If there was a collision and we were not already colliding, use that velocity.
@@ -92,7 +92,7 @@ impl Entity {
         } else {
             (self.vx, self.vy, self.vz)
         };
-        let (mut x, mut y, mut z) = (self.x, self.y, self.z);
+        let (_x, _y, _z) = (self.x, self.y, self.z);
         // If the two entities are touching...
         if self.did_collide_into(&node.as_entity()) {
             // ...then there is the potential for a collision.
