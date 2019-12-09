@@ -53,7 +53,6 @@ impl AsEntity for MyEntity { ...}
 
 let mut my_fun_vec:Vec<MyEntity> = vec![entity1, entity2, entity3];
 let grav_tree = GravTree::new(&my_fun_vec, 0.2);
-
 ```
 
 The _time\_step_ coefficient is later passed into `respond()`. It can be used to effectively control the granularity of the simulation, i.e. how much each simulation frame actually impacts the movement of the entities. A smaller _time\_step_ will result in a more granular, more precise simulation. You'll probably have to play around with the constants a little bit to find something ideal for your use case.In order to advance the simulation, call `grav_tree.time_step()`. Given enough particles, this will probably heat up your computer. It will also eat all of your threads. 
