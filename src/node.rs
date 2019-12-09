@@ -14,7 +14,7 @@ const MAX_PTS: i32 = 3;
 ///
 /// If a [[Node]] is a leaf, then it contains up to `MAX_PTS` particles, as swell as the aggregate values of these particles.
 /// These aggregate values are the center of mass, the total mass, and max/min values for each dimension.
-pub struct Node<T: AsEntity + Clone> {
+pub(crate) struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
     pub left: Option<Box<Node<T>>>,     // Left subtree.
@@ -33,7 +33,7 @@ pub struct Node<T: AsEntity + Clone> {
 }
 
 impl<T: AsEntity + Clone> Node<T> {
-    pub fn new() -> Node<T> {
+    pub(crate) fn new() -> Node<T> {
         Node {
             split_dimension: None,
             split_value: 0.0,
@@ -53,7 +53,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
     /// Looks into its own children's maximum and minimum values, setting its own
     /// values accordingly.
-    pub fn set_max_mins(&mut self) {
+    pub(crate) fn set_max_mins(&mut self) {
         let xmin = f64::min(
             self.left.as_ref().unwrap().x_min,
             self.right.as_ref().unwrap().x_min,
@@ -91,7 +91,7 @@ impl<T: AsEntity + Clone> Node<T> {
     // Used when treating a node as the sum of its parts in gravity calculations.
     /// Converts a node into an entity with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the entities it contains.
-    pub fn as_entity(&self) -> Entity {
+    pub(crate) fn as_entity(&self) -> Entity {
         // Construct a "super radius" of the largest dimension / 2 + a radius.
         let (range_x, range_y, range_z) = (
             self.x_max - self.x_min,
@@ -113,7 +113,7 @@ impl<T: AsEntity + Clone> Node<T> {
         }
     }
 
-    pub fn max_distance(&self) -> f64 {
+    pub(crate) fn max_distance(&self) -> f64 {
         let x_distance = self.x_max - self.x_min;
         let y_distance = self.y_max - self.y_min;
         let z_distance = self.z_max - self.z_min;
@@ -121,7 +121,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Traverses tree and returns first child found with points.
-    pub fn traverse_tree_helper(&self) -> Vec<T> {
+    pub(crate) fn traverse_tree_helper(&self) -> Vec<T> {
         let mut to_return: Vec<T> = Vec::new();
         if let Some(node) = &self.left {
             to_return.append(&mut node.traverse_tree_helper());
@@ -141,7 +141,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &[T]) -> Node<T> {
+    pub(crate) fn new_root_node(pts: &[T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
@@ -243,59 +243,4 @@ impl<T: AsEntity + Clone> Node<T> {
             root_node
         }
     }
-}
-
-/// This tests the recursive node construction used to create a new gravtree. It tests some private
-/// fields so it is located within the same module as the node itself.
-#[test]
-fn test() {
-    let mut test_vec: Vec<Entity> = Vec::new();
-    for i in 0..10 {
-        test_vec.push(Entity {
-            x: i as f64,
-            y: (10 - i) as f64,
-            z: i as f64,
-            vx: i as f64,
-            vy: i as f64,
-            vz: i as f64,
-            mass: i as f64,
-            radius: i as f64,
-        });
-    }
-
-    let check_vec = test_vec.clone();
-    let tree = crate::GravTree::new(&test_vec, 0.2);
-    let root_node = tree.root.clone();
-
-    let mut nodes: Vec<Node<Entity>> = Vec::new();
-    let mut traversal_stack: Vec<Option<Box<Node<Entity>>>> = Vec::new();
-    let mut rover = Some(Box::new(root_node));
-    while !traversal_stack.is_empty() || rover.is_some() {
-        if rover.is_some() {
-            traversal_stack.push(rover.clone());
-            nodes.push(*rover.clone().unwrap());
-            rover = rover.unwrap().left;
-        } else {
-            rover = traversal_stack.pop().unwrap();
-            rover = rover.unwrap().right;
-        }
-    }
-
-    let post_tree_vec = tree.as_vec();
-    // The tree should contain all of the elements we put into it.
-    for i in check_vec.iter() {
-        assert!(post_tree_vec.contains(i));
-    }
-
-    // In this example, there should be exactly 7 nodes.
-    assert_eq!(7, nodes.len());
-
-    // No node should have zero mass.
-    for node in nodes {
-        assert!(node.total_mass > 0.);
-    }
-
-    // The total mass of the root node should be the sum of all of their masses.
-    let total_mass = check_vec.iter().fold(0., |acc, x| acc + x.mass);
-    assert_eq!(total_mass, tree.root.total_mass);
 }

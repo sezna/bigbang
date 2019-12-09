@@ -1,6 +1,6 @@
 #![feature(test)]
 extern crate test;
-use bigbang::{AsEntity, Entity, GravTree, SimulationResult, collisions::soft_body};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
 
 #[derive(Clone)]
 struct MyEntity {
@@ -30,7 +30,7 @@ impl AsEntity for MyEntity {
         let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
         let (x, y, z) = (self.x, self.y, self.z);
         let (mut vx, mut vy, mut vz) = (self.vx, self.vy, self.vz);
-         // calculate the collisions
+        // calculate the collisions
         for other in &simulation_result.collisions {
             let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 20f64);
             ax += collision_ax;

@@ -4,7 +4,7 @@ use crate::entity::Entity;
 use std::cmp::Ordering;
 /// Returns the absolute distance in every dimension (the range in every dimension)
 /// of an array slice of entities.
-pub fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
+pub(crate) fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
     let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(entities);
     let x_distance = x_max - x_min;
     let y_distance = y_max - y_min;
@@ -14,7 +14,7 @@ pub fn xyz_distances(entities: &[Entity]) -> (f64, f64, f64) {
 
 /// Given an array slice of entities, returns the maximum and minimum x, y, and z values as
 /// a septuple.
-pub fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) {
+pub(crate) fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) {
     let (x_max, x_min) = max_min(Dimension::X, entities);
     let (y_max, y_min) = max_min(Dimension::Y, entities);
     let (z_max, z_min) = max_min(Dimension::Z, entities);
@@ -22,7 +22,7 @@ pub fn max_min_xyz(entities: &[Entity]) -> (&f64, &f64, &f64, &f64, &f64, &f64) 
 }
 
 /// Returns the maximum and minimum values in a slice of entities, given a dimension.
-pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
+pub(crate) fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
     (
         entities
             .iter()
@@ -47,7 +47,7 @@ pub fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
 
 /// Finds the median value for a given dimension in a slice of entities.
 /// Making one that clones/uses immutability could be an interesting performance benchmark.
-pub fn find_median(dim: Dimension, pts: &mut [Entity]) -> (&f64, usize) {
+pub(crate) fn find_median(dim: Dimension, pts: &mut [Entity]) -> (&f64, usize) {
     find_median_helper(dim, pts, 0, pts.len(), pts.len() / 2usize)
 }
 
