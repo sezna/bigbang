@@ -1,9 +1,9 @@
 [package]
 edition = "2018"
 name = "bigbang"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["Alex <alex@alex-hansen.com>"]
-license = "MIT"
+license-file = "LICENSE.md"
 description = "An optimized framework for n-(hard)-body gravitational simulation"
 repository = "https://github.com/sezna/bigbang"
 keywords = ["nbody", "gravity", "simulation"]
