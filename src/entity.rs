@@ -2,8 +2,8 @@ use either::{Either, Left, Right};
 
 use super::Dimension;
 use crate::as_entity::AsEntity;
-use crate::simulation_result::SimulationResult;
 use crate::collisions::soft_body;
+use crate::simulation_result::SimulationResult;
 use crate::Node;
 
 /// The tolerance for the distance from an entity to the center of mass of an entity
