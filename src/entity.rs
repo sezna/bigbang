@@ -77,8 +77,6 @@ impl Entity {
         &'a self,
         node: &'a Node<T>,
     ) -> SimulationResult<'a, T> {
-        // If there was a collision and we were not already colliding, use that velocity.
-
         self.get_acceleration_and_collisions(node)
     }
 
@@ -178,7 +176,7 @@ impl Entity {
         node: &'a Node<T>,
     ) -> SimulationResult<T> {
         let mut collisions = Vec::new();
-        let mut acceleration = (0f64, 0f64, 0f64);
+        let mut acceleration = (0., 0., 0.);
         if let Some(node) = &node.left {
             if node.points.is_some() {
                 // if this node has some points, calculate their gravitational acceleration
