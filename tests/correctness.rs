@@ -50,6 +50,7 @@ impl AsEntity for MyEntity {
             mass: self.mass,
         };
     }
+
     fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
         let mut vx = self.vx;
         let mut vy = self.vy;
@@ -164,8 +165,6 @@ fn five_entities_accel() {
     let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3);
     let after_time_step = test_tree.time_step().time_step().as_vec();
 
-    // 1.0 isn't right but it should at least not be 0, what the current test is suggesting
-    // Uncomment the following line when you're ready to fix this
     assert_eq!(after_time_step[0].vx, 64.52507171923688);
     assert_eq!(after_time_step[0].vy, -96.11549776337884);
     assert_eq!(after_time_step[0].vz, 1.6789424561212587);
