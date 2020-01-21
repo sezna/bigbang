@@ -26,6 +26,8 @@ pub struct Entity {
     pub radius: f64,
     pub mass: f64,
 }
+// TODO this default implementation should be in some prelude or something, not in the entity file
+// itself.
 impl AsEntity for Entity {
     fn as_entity(&self) -> Entity {
         return self.clone();

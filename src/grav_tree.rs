@@ -2,7 +2,6 @@ use crate::as_entity::AsEntity;
 use crate::entity::Entity;
 use crate::Node;
 use rayon::prelude::*;
-use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -112,12 +111,12 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         let file_path = Path::new(&file_string);
         let display = file_path.display();
         let mut file = match File::open(&file_path) {
-            Err(why) => panic!("couldn't open {}: {}", display, Error::description(&why)),
+            Err(why) => panic!("couldn't open {}: {}", display, &why),
             Ok(file) => file,
         };
         let mut s = String::new();
         if let Err(why) = file.read_to_string(&mut s) {
-            panic!("couldn't read {}: {}", display, Error::description(&why))
+            panic!("couldn't read {}: {}", display, &why)
         }
         let mut tmp_str: String = String::new();
         let mut tmp: Vec<String> = Vec::new();
