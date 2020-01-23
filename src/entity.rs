@@ -78,7 +78,7 @@ impl PartialEq for Entity {
 impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
     /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
-    pub fn interact_with<'a, T: AsEntity + Clone>(
+    pub(crate) fn interact_with<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
     ) -> SimulationResult<'a, T> {
@@ -120,7 +120,7 @@ impl Entity {
         (x_dist, y_dist, z_dist)
     }
 
-    pub fn get_dim(&self, dim: &Dimension) -> &f64 {
+    pub(crate) fn get_dim(&self, dim: &Dimension) -> &f64 {
         match *dim {
             Dimension::X => &self.x,
             Dimension::Y => &self.y,
@@ -176,7 +176,7 @@ impl Entity {
     /// acceleration from every entity in that node, but if we reach a node that is not a leaf and
     /// exceeds_theta() is true, then we treat the node as one giant entity and get the
     /// acceleration from it.
-    pub fn get_acceleration_and_collisions<'a, T: AsEntity + Clone>(
+    pub(crate) fn get_acceleration_and_collisions<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
     ) -> SimulationResult<T> {

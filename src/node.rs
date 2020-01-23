@@ -14,14 +14,14 @@ const MAX_PTS: i32 = 3;
 ///
 /// If a [[Node]] is a leaf, then it contains up to `MAX_PTS` particles, as swell as the aggregate values of these particles.
 /// These aggregate values are the center of mass, the total mass, and max/min values for each dimension.
-pub struct Node<T: AsEntity + Clone> {
+pub(crate) struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
-    pub left: Option<Box<Node<T>>>,     // Left subtree.
-    pub right: Option<Box<Node<T>>>,    // Right subtree.
-    pub points: Option<Vec<T>>,         // Vector of the points if this node is a Leaf.
-    pub center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
-                                         * together. (x, y, z). */
+    pub(crate) left: Option<Box<Node<T>>>, // Left subtree.
+    pub(crate) right: Option<Box<Node<T>>>, // Right subtree.
+    pub(crate) points: Option<Vec<T>>,  // Vector of the points if this node is a Leaf.
+    pub(crate) center_of_mass: (f64, f64, f64), /* The center of mass for this node and it's children all
+                                                 * together. (x, y, z). */
     total_mass: f64, // Total mass of all entities under this node.
     r_max: f64,      // Maximum radius that is a child of this node.
     x_min: f64,
@@ -33,7 +33,7 @@ pub struct Node<T: AsEntity + Clone> {
 }
 
 impl<T: AsEntity + Clone> Node<T> {
-    pub fn new() -> Node<T> {
+    pub(crate) fn new() -> Node<T> {
         Node {
             split_dimension: None,
             split_value: 0.0,
@@ -53,7 +53,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
     /// Looks into its own children's maximum and minimum values, setting its own
     /// values accordingly.
-    pub fn set_max_mins(&mut self) {
+    pub(crate) fn set_max_mins(&mut self) {
         let xmin = f64::min(
             self.left.as_ref().unwrap().x_min,
             self.right.as_ref().unwrap().x_min,
@@ -91,7 +91,7 @@ impl<T: AsEntity + Clone> Node<T> {
     // Used when treating a node as the sum of its parts in gravity calculations.
     /// Converts a node into an entity with the x, y, z, and mass being derived from the center of
     /// mass and the total mass of the entities it contains.
-    pub fn as_entity(&self) -> Entity {
+    pub(crate) fn as_entity(&self) -> Entity {
         // Construct a "super radius" of the largest dimension / 2 + a radius.
         let (range_x, range_y, range_z) = (
             self.x_max - self.x_min,
@@ -113,7 +113,7 @@ impl<T: AsEntity + Clone> Node<T> {
         }
     }
 
-    pub fn max_distance(&self) -> f64 {
+    pub(crate) fn max_distance(&self) -> f64 {
         let x_distance = self.x_max - self.x_min;
         let y_distance = self.y_max - self.y_min;
         let z_distance = self.z_max - self.z_min;
@@ -121,7 +121,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Traverses tree and returns first child found with points.
-    pub fn traverse_tree_helper(&self) -> Vec<T> {
+    pub(crate) fn traverse_tree_helper(&self) -> Vec<T> {
         let mut to_return: Vec<T> = Vec::new();
         if let Some(node) = &self.left {
             to_return.append(&mut node.traverse_tree_helper());
@@ -141,7 +141,7 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub fn new_root_node(pts: &[T]) -> Node<T> {
+    pub(crate) fn new_root_node(pts: &[T]) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
