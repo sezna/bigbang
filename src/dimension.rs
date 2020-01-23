@@ -1,4 +1,5 @@
-#[derive(Clone, PartialEq)]
+use serde::{Deserialize, Serialize};
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 /// Used to represent which dimension the GravTree node has split on.
 pub enum Dimension {
     X,

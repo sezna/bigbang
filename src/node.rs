@@ -2,6 +2,7 @@ use crate::as_entity::AsEntity;
 use crate::dimension::Dimension;
 use crate::entity::Entity;
 use crate::utilities::{find_median, max_min_xyz, xyz_distances};
+use serde::{Deserialize, Serialize};
 const MAX_PTS: i32 = 3;
 #[derive(Clone)]
 
@@ -14,6 +15,7 @@ const MAX_PTS: i32 = 3;
 ///
 /// If a [[Node]] is a leaf, then it contains up to `MAX_PTS` particles, as swell as the aggregate values of these particles.
 /// These aggregate values are the center of mass, the total mass, and max/min values for each dimension.
+#[derive(Serialize, Deserialize)]
 pub(crate) struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
