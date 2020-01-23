@@ -61,8 +61,13 @@ impl AsEntity for Entity {
 }
 
 impl PartialEq for Entity {
+    /// This is a workaround to prevent every particle from reporting that it is colliding with
+    /// itself. If two particles truly become identical, they won't be reported as colliding. This
+    /// is a spot for future improvement. The cost of adding some sort of unique ID is too much for
+    /// the time being.
     fn eq(&self, other: &Self) -> bool {
         self.x == other.x
+            && self.x == other.x
             && self.y == other.y
             && self.z == other.z
             && self.radius == other.radius
@@ -83,8 +88,7 @@ impl Entity {
     /// Needs to be reworked to use min/max position values, but it naively checks
     /// if two things collide right now.
     fn did_collide_into(&self, other: &Entity) -> bool {
-        let x = self != other && self.distance(other) <= (self.radius + other.radius);
-        x
+        self != other && self.distance(other) <= (self.radius + other.radius)
     }
 
     /// Returns the entity as a string with space separated values.
