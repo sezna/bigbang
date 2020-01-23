@@ -83,7 +83,8 @@ impl Entity {
     /// Needs to be reworked to use min/max position values, but it naively checks
     /// if two things collide right now.
     fn did_collide_into(&self, other: &Entity) -> bool {
-        self != other && self.distance(other) <= (self.radius + other.radius)
+        let x = self != other && self.distance(other) <= (self.radius + other.radius);
+        x
     }
 
     /// Returns the entity as a string with space separated values.

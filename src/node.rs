@@ -287,15 +287,15 @@ fn test() {
         assert!(post_tree_vec.contains(i));
     }
 
-    // In this example, there should be exactly 7 nodes.
-    assert_eq!(7, nodes.len());
+    // In this example, there should be exactly 8 nodes.
+    assert_eq!(8, nodes.len());
 
-    // No node should have zero mass.
-    for node in nodes {
+    // No node should have zero mass, except for the first one which is the "phantom parent".
+    for node in nodes.iter().skip(1) {
         assert!(node.total_mass > 0.);
     }
 
     // The total mass of the root node should be the sum of all of their masses.
     let total_mass = check_vec.iter().fold(0., |acc, x| acc + x.mass);
-    assert_eq!(total_mass, tree.root.total_mass);
+    assert_eq!(total_mass, tree.root.left.unwrap().total_mass);
 }

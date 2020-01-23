@@ -35,9 +35,18 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                 time_step,
             };
         }
+        // Because of the tree's recursive gravity calculation, there needs to be a parent node
+        // that "contains" the _real_ root node. This "phantom_parent" serves no purpose other than
+        // to hold a pointer to the real root node. Perhaps not the most ideal situation for now,
+        // and can be made more elegant in the future, if need be.
+        // The real root of the tree is therefore tree.root.left
+
+        let mut phantom_parent = Node::new();
+        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..])));
+        phantom_parent.points = Some(Vec::new());
 
         GravTree {
-            root: Node::<T>::new_root_node(&pts[..]),
+            root: phantom_parent,
             number_of_entities: size_of_vec,
             time_step,
         }

@@ -115,7 +115,7 @@ fn test_tree() {
     let kdtree_test = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2);
     assert!(kdtree_test.get_number_of_entities() == 100_000);
     // kdtree_test.display_tree();
-    go_to_edges(kdtree_test, 14usize, 15usize);
+    go_to_edges(kdtree_test, 15usize, 16usize);
     let mut smaller_vec: Vec<MyEntity> = Vec::new();
     for _ in 0..50 {
         let entity = MyEntity::random_entity();
@@ -145,7 +145,7 @@ fn test_tree() {
         },
     ];
     let center_of_mass_test = GravTree::new(&vector, 0.2);
-    assert!(center_of_mass_test.root.center_of_mass == (1.5, 1.5, 3.0));
+    assert!(center_of_mass_test.root.left.unwrap().center_of_mass == (1.5, 1.5, 3.0));
 }
 /// This function is used for testing. It checks the number of nodes on each side, along the "edge" of the tree.
 /// left_nodes is how many nodes you expect to see along the left size, and right_nodes is how many you expect to

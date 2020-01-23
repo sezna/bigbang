@@ -165,19 +165,19 @@ fn five_entities_accel() {
     let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3);
     let after_time_step = test_tree.time_step().time_step().as_vec();
 
-    assert_eq!(after_time_step[0].vx, 64.52507171923688);
-    assert_eq!(after_time_step[0].vy, -96.11549776337884);
-    assert_eq!(after_time_step[0].vz, 1.6789424561212587);
+    assert_eq!(after_time_step[0].vx, 234.62426718543517);
+    assert_eq!(after_time_step[0].vy, -308.1666357163429);
+    assert_eq!(after_time_step[0].vz, 6.374453794316003);
 
-    assert_eq!(after_time_step[1].vx, -106.7806138562521);
-    assert_eq!(after_time_step[1].vy, 393.37781796898855);
-    assert_eq!(after_time_step[1].vz, -0.29738504309909763);
+    assert_eq!(after_time_step[1].vx, -728.0140671441542);
+    assert_eq!(after_time_step[1].vy, 961.0687440357227);
+    assert_eq!(after_time_step[1].vz, -22.318277419464977);
 
-    assert_eq!(after_time_step[2].vx, -14.325177356343197);
-    assert_eq!(after_time_step[2].vy, 221.82114058212386);
-    assert_eq!(after_time_step[2].vz, -0.5852398542642612);
+    assert_eq!(after_time_step[2].vx, 68.99261434517841);
+    assert_eq!(after_time_step[2].vy, 202.1872542350379);
+    assert_eq!(after_time_step[2].vz, 0.28488247914098197);
 
-    assert_eq!(after_time_step[3].vx, 193.46198364246234);
-    assert_eq!(after_time_step[3].vy, 287.0481523561927);
-    assert_eq!(after_time_step[3].vz, -4.198968630539598);
+    assert_eq!(after_time_step[3].vx, -232.853993009126);
+    assert_eq!(after_time_step[3].vy, 189.20383841899522);
+    assert_eq!(after_time_step[3].vz, -2.014092604958015);
 }
