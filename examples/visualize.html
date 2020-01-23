@@ -35,13 +35,13 @@
                     ticks: {
                         beginAtZero: true,
                         min: 0,
-                        max: 20
+                        max: 20 * 75
                     }
                 }],
                 xAxes: [{
                   ticks: { 
                     min: 0,
-                    max: 20
+                    max: 20 * 75
                   }
                 }]
             }
@@ -58,7 +58,7 @@
           let radii = [];
           let background_colors = [];
           for (let i = 0; i < data.length; i++) {
-            xy_data.push({x: data[i].x, y: data[i].y});
+            xy_data.push({x: data[i].x * 75, y: data[i].y * 75});
             radii.push(data[i].radius * 75);
             background_colors.push(data[i].color);
           }

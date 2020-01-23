@@ -92,7 +92,7 @@ impl AsEntity for MyEntity {
         // use soft body collision to calculate the post-collision velocity
 
         for other in &simulation_result.collisions {
-            let (collision_ax, collision_ay, _az) = soft_body(self, other, 20f64);
+            let (collision_ax, collision_ay, _az) = soft_body(self, other, 200000f64);
             ax += collision_ax;
             ay += collision_ay;
         }
@@ -120,7 +120,7 @@ impl AsEntity for MyEntity {
             x: x + vx,
             y: y + vy,
             radius: self.radius,
-            color: self.color.clone(),
+            color: if simulation_result.collisions.len() > 0 { "red" } else { "blue" }.to_string()
         }
     }
 }
@@ -143,7 +143,7 @@ impl MyEntity {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..20).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = Vec::new();//(0..20).map(|_| MyEntity::random_entity()).collect();
     let mut big_boi = MyEntity::random_entity();
     big_boi.x = 10f64;
     big_boi.y = 10f64;
