@@ -9,7 +9,7 @@ extern crate log;
 
 use std::error::Error;
 use std::net::SocketAddr;
-use std::sync::{Arc, Once, RwLock};
+use std::sync::{Arc, RwLock};
 use std::thread;
 
 use futures::{
@@ -26,12 +26,6 @@ use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 2000;
 const TIME_STEP: f64 = 0.0005;
-const MAX_X: f64 = 190.;
-const MAX_Y: f64 = 190.;
-const MAX_Z: f64 = 190.;
-const MIN_X: f64 = -190.;
-const MIN_Y: f64 = -190.;
-const MIN_Z: f64 = -190.;
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
 where
@@ -143,29 +137,6 @@ async fn server_logic(
         }
     }
 
-    Ok(())
-}
-
-static INIT: Once = Once::new();
-
-fn init_logging() -> Result<(), Box<dyn Error>> {
-    fern::Dispatch::new()
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "{}[{}][{}] {}",
-                chrono::Local::now().format("[%Y-%m-%d %H:%M:%S]"),
-                record.target(),
-                record.level(),
-                message
-            ))
-        })
-        .level(log::LevelFilter::Trace)
-        .level_for("hyper", log::LevelFilter::Info)
-        .level_for("mio", log::LevelFilter::Info)
-        .level_for("tokio_core", log::LevelFilter::Info)
-        .level_for("tokio_reactor", log::LevelFilter::Info)
-        .chain(std::io::stdout())
-        .apply()?;
     Ok(())
 }
 

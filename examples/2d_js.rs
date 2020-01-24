@@ -120,7 +120,12 @@ impl AsEntity for MyEntity {
             x: x + vx,
             y: y + vy,
             radius: self.radius,
-            color: if simulation_result.collisions.len() > 0 { "red" } else { "blue" }.to_string()
+            color: if simulation_result.collisions.len() > 0 {
+                "red"
+            } else {
+                "blue"
+            }
+            .to_string(),
         }
     }
 }
@@ -143,7 +148,7 @@ impl MyEntity {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = Vec::new();//(0..20).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = Vec::new(); //(0..20).map(|_| MyEntity::random_entity()).collect();
     let mut big_boi = MyEntity::random_entity();
     big_boi.x = 10f64;
     big_boi.y = 10f64;
