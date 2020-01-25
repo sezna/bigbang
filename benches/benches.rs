@@ -176,6 +176,7 @@ fn time_step_2000(c: &mut Criterion) {
     });
 }
 
+/*
 // Benching time stepping with a medium high number of entities - 20_000
 fn time_step_20000(c: &mut Criterion) {
     let mut group = c.benchmark_group("time step: n=20_000");
@@ -209,12 +210,13 @@ fn time_step_20000(c: &mut Criterion) {
         )
     });
 }
+*/
 
 criterion_group!(
     benches,
     tree_construction,
     time_step_0125,
     time_step_2000,
-    time_step_20000, 
+//    time_step_20000, -- this takes too long right now, pipeline fails
 );
 criterion_main!(benches);
