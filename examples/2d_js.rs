@@ -148,7 +148,7 @@ impl MyEntity {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = Vec::new(); //(0..20).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = (0..2000).map(|_| MyEntity::random_entity()).collect();
     let mut big_boi = MyEntity::random_entity();
     big_boi.x = 10f64;
     big_boi.y = 10f64;
