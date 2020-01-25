@@ -96,6 +96,7 @@ fn tree_construction(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+    group.measurement_time(time::Duration::new(217, 0));
     group.bench_function("tree construction n=20_000", |b| {
         b.iter_batched(
             || initialize_data(20_000),
@@ -175,7 +176,6 @@ fn time_step_2000(c: &mut Criterion) {
     });
 }
 
-/*
 // Benching time stepping with a medium high number of entities - 20_000
 fn time_step_20000(c: &mut Criterion) {
     let mut group = c.benchmark_group("time step: n=20_000");
@@ -209,13 +209,12 @@ fn time_step_20000(c: &mut Criterion) {
         )
     });
 }
-*/
 
 criterion_group!(
     benches,
     tree_construction,
     time_step_0125,
     time_step_2000,
-//    time_step_20000, -- this takes too long right now, pipeline fails
+    time_step_20000, 
 );
 criterion_main!(benches);
