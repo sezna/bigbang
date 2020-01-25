@@ -3,4 +3,4 @@ rust:
   - nightly
 script:
   - cargo test
-  - travis_wait 30 cargo bench
+  - cargo bench
