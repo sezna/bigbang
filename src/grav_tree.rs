@@ -91,7 +91,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         // entity has been calculated.
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
-                .iter()
+                .par_iter()
                 .map(|x| x.respond(x.as_entity().interact_with(&self.root), self.time_step))
                 .collect(),
             self.time_step,
