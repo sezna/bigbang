@@ -41,7 +41,7 @@ use iron::{status, Request, Response};
 use mount::Mount;
 use std::sync::RwLock;
 
-const TIME_STEP: f64 = 0.000002;
+const TIME_STEP: f64 = 0.0000002;
 
 struct State {
     state: SimulationState,
@@ -82,7 +82,7 @@ impl AsEntity for MyEntity {
             vy: self.vy,
             vz: 0.,
             radius: self.radius,
-            mass: if self.radius < 1. { 0.5 } else { 105. },
+            mass: self.radius,
         };
     }
 
@@ -148,7 +148,7 @@ impl MyEntity {
 }
 
 fn main() {
-    let mut starter_entities: Vec<MyEntity> = (0..2000).map(|_| MyEntity::random_entity()).collect();
+    let mut starter_entities: Vec<MyEntity> = (0..20).map(|_| MyEntity::random_entity()).collect();
     let mut big_boi = MyEntity::random_entity();
     big_boi.x = 10f64;
     big_boi.y = 10f64;

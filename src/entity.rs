@@ -194,7 +194,6 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            // Check if any of them collided
             } else if self.theta_exceeded(&node) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
                 let tmp_accel = self.get_gravitational_acceleration(Right(&node));
@@ -223,7 +222,6 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            // Check if any of them collided
             } else if self.theta_exceeded(&node) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
                 let tmp_accel = self.get_gravitational_acceleration(Right(&node));
