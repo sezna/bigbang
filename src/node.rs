@@ -265,7 +265,7 @@ fn test() {
     }
 
     let check_vec = test_vec.clone();
-    let tree = crate::GravTree::new(&test_vec, 0.2, 3);
+    let tree = crate::GravTree::new(&test_vec, 0.2, 3, 0.2);
     let root_node = tree.root.clone();
 
     let mut nodes: Vec<Node<Entity>> = Vec::new();

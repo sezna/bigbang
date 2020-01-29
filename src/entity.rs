@@ -6,15 +6,10 @@ use crate::collisions::soft_body;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
 
-/// The tolerance for the distance from an entity to the center of mass of an entity
-/// If the distance is beyond this threshold, we treat the entire node as one giant
-/// entity instead of recursing into it.
-
-const THETA: f64 = 0.2;
-#[derive(Clone, Default)]
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
+#[derive(Clone, Default)]
 #[repr(C)]
 pub struct Entity {
     pub vx: f64,
@@ -81,8 +76,9 @@ impl Entity {
     pub(crate) fn interact_with<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
+        theta: f64,
     ) -> SimulationResult<'a, T> {
-        self.get_acceleration_and_collisions(node)
+        self.get_acceleration_and_collisions(node, theta)
     }
 
     /// Needs to be reworked to use min/max position values, but it naively checks
@@ -130,14 +126,14 @@ impl Entity {
 
     /// Returns a boolean representing whether or node the node is within the theta range
     /// of the entity.
-    fn theta_exceeded<T: AsEntity + Clone>(&self, node: &Node<T>) -> bool {
+    fn theta_exceeded<T: AsEntity + Clone>(&self, node: &Node<T>, theta: f64) -> bool {
         // 1) distance from entity to COM of that node
         // 2) if 1) * theta > size (max diff) then
         // This frequently makes a node with NaN positions
         let node_as_entity = node.as_entity();
         let dist = self.distance_squared(&node_as_entity);
         let max_dist = node.max_distance();
-        (dist) * (THETA * THETA) > (max_dist * max_dist)
+        (dist) * (theta * theta) > (max_dist * max_dist)
     }
 
     /// Given two entities, self and other, returns the acceleration that other is exerting on
@@ -179,6 +175,7 @@ impl Entity {
     pub(crate) fn get_acceleration_and_collisions<'a, T: AsEntity + Clone>(
         &'a self,
         node: &'a Node<T>,
+        theta: f64,
     ) -> SimulationResult<T> {
         let mut collisions = Vec::new();
         let mut acceleration = (0., 0., 0.);
@@ -194,7 +191,7 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node) {
+            } else if self.theta_exceeded(&node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
                 let tmp_accel = self.get_gravitational_acceleration(Right(&node));
                 acceleration.0 += tmp_accel.0;
@@ -202,7 +199,7 @@ impl Entity {
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let mut res = self.get_acceleration_and_collisions(&node);
+                let mut res = self.get_acceleration_and_collisions(&node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 collisions.append(&mut res.collisions);
                 acceleration.0 += tmp_accel.0;
@@ -222,7 +219,7 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node) {
+            } else if self.theta_exceeded(&node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
                 let tmp_accel = self.get_gravitational_acceleration(Right(&node));
                 acceleration.0 += tmp_accel.0;
@@ -230,7 +227,7 @@ impl Entity {
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let mut res = self.get_acceleration_and_collisions(&node);
+                let mut res = self.get_acceleration_and_collisions(&node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 collisions.append(&mut res.collisions);
                 acceleration.0 += tmp_accel.0;

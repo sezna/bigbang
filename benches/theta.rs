@@ -75,32 +75,34 @@ fn initialize_data(number_of_particles: usize) -> Vec<MyEntity> {
 }
 
 fn initialize_tree(number_of_particles: usize, theta: f64) -> GravTree<MyEntity> {
+    let max_entities = 3;
+    let time_step = 0.2;
     let mut data = initialize_data(number_of_particles);
-    GravTree::new(&mut data, theta)
+    GravTree::new(&mut data, time_step, max_entities, theta)
 }
 
 // Theta isn't used in tree construction so it isn't varied in the benches
 fn tree_construction(c: &mut Criterion) {
     let mut group = c.benchmark_group("tree construction");
-    group.bench_function("tree construction n=125", |b| {
+    group.bench_function("n=125", |b| {
         b.iter_batched(
             || initialize_data(125),
-            |mut data| GravTree::new(&mut data, 0.2),
+            |mut data| GravTree::new(&mut data, 0.2, 3, 0.2),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("tree construction n=2000", |b| {
+    group.bench_function("n=2000", |b| {
         b.iter_batched(
             || initialize_data(2000),
-            |mut data| GravTree::new(&mut data, 0.2),
+            |mut data| GravTree::new(&mut data, 0.2, 3, 0.2),
             BatchSize::SmallInput,
         )
     });
     group.measurement_time(time::Duration::new(217, 0));
-    group.bench_function("tree construction n=20_000", |b| {
+    group.bench_function("n=20_000", |b| {
         b.iter_batched(
             || initialize_data(20_000),
-            |mut data| GravTree::new(&mut data, 0.2),
+            |mut data| GravTree::new(&mut data, 0.2, 3, 0.2),
             BatchSize::SmallInput,
         )
     });
@@ -110,28 +112,28 @@ fn tree_construction(c: &mut Criterion) {
 
 fn time_step_0125(c: &mut Criterion) {
     let mut group = c.benchmark_group("time step: n=125");
-    group.bench_function("time_step n=125 theta=0.2", |b| {
+    group.bench_function("theta=0.2", |b| {
         b.iter_batched(
             || initialize_tree(125, 0.2),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=125 theta=0.3", |b| {
+    group.bench_function("theta=0.3", |b| {
         b.iter_batched(
             || initialize_tree(125, 0.3),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=125 theta=0.4", |b| {
+    group.bench_function("theta=0.4", |b| {
         b.iter_batched(
             || initialize_tree(125, 0.4),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=125 theta=0.5", |b| {
+    group.bench_function("theta=0.5", |b| {
         b.iter_batched(
             || initialize_tree(125, 0.5),
             |data| data.time_step(),
@@ -145,28 +147,28 @@ fn time_step_0125(c: &mut Criterion) {
 fn time_step_2000(c: &mut Criterion) {
     let mut group = c.benchmark_group("time step: n=2000");
     group.measurement_time(time::Duration::new(35, 0));
-    group.bench_function("time_step n=2000 theta=0.2", |b| {
+    group.bench_function("theta=0.2", |b| {
         b.iter_batched(
             || initialize_tree(2000, 0.2),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=2000 theta=0.3", |b| {
+    group.bench_function("theta=0.3", |b| {
         b.iter_batched(
             || initialize_tree(2000, 0.3),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=2000 theta=0.4", |b| {
+    group.bench_function("theta=0.4", |b| {
         b.iter_batched(
             || initialize_tree(2000, 0.4),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=2000 theta=0.5", |b| {
+    group.bench_function("theta=0.5", |b| {
         b.iter_batched(
             || initialize_tree(2000, 0.5),
             |data| data.time_step(),
@@ -180,28 +182,28 @@ fn time_step_20000(c: &mut Criterion) {
     let mut group = c.benchmark_group("time step: n=20_000");
     group.measurement_time(time::Duration::new(35, 0));
     group.sample_size(20);
-    group.bench_function("time_step n=20_000 theta=0.2", |b| {
+    group.bench_function("theta=0.2", |b| {
         b.iter_batched(
             || initialize_tree(20_000, 0.2),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=20_000 theta=0.3", |b| {
+    group.bench_function("theta=0.3", |b| {
         b.iter_batched(
             || initialize_tree(20_000, 0.3),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=20_000 theta=0.4", |b| {
+    group.bench_function("theta=0.4", |b| {
         b.iter_batched(
             || initialize_tree(20_000, 0.4),
             |data| data.time_step(),
             BatchSize::SmallInput,
         )
     });
-    group.bench_function("time_step n=20_000 theta=0.5", |b| {
+    group.bench_function("theta=0.5", |b| {
         b.iter_batched(
             || initialize_tree(20_000, 0.5),
             |data| data.time_step(),

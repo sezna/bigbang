@@ -90,7 +90,7 @@ fn two_entities_collision() {
         MyEntity::new(0., 0., 1., 10., 5.),
     ];
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
     let after_time_step = test_tree.time_step().as_vec();
 
     // Each entity should have collided with exactly one other entity
@@ -106,7 +106,7 @@ fn two_entities_no_collision() {
         MyEntity::new(0., 0., 1., 10., 5.),
     ];
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
     let after_time_step = test_tree.time_step().as_vec();
 
     assert_eq!(after_time_step[0].collided_with.len(), 0);
@@ -121,7 +121,7 @@ fn two_entities_accel() {
         MyEntity::new(50., 0., 1., 10., 500.),
     ];
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3, 3, 0.2);
     let _after_time_step = test_tree.time_step().time_step().as_vec();
 
     // 1.0 isn't right but it should at least not be 0, what the current test is suggesting
@@ -168,7 +168,7 @@ fn five_entities_collision() {
         MyEntity::new(0., 1., 1., 10., 5.),
     ];
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
     let after_time_step = test_tree.time_step().as_vec();
 
     // Each entity should have collided with exactly all four other entities
@@ -190,7 +190,7 @@ fn five_entities_accel() {
         MyEntity::new(50., 100., 1., 10., 500.),
     ];
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.3, 3, 0.2);
     let after_time_step = test_tree.time_step().time_step().as_vec();
 
     assert_eq!(after_time_step[0].vx, 234.62426718543517);

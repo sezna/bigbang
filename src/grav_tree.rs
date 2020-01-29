@@ -21,10 +21,17 @@ pub struct GravTree<T: AsEntity + Clone> {
     /// configurable. This is _not_ the maximum number of entities in the simulation. A higher
     /// number here will result in lower simulation granularity.
     max_entities: i32,
+    /// `theta` is how far away a node has to be before the simulation starts approximating its
+    /// contained entities by treating them as one large node instead of individually addressing
+    /// them.
+    /// More specifically, this is the tolerance for the distance from an entity to the center of mass of an entity
+    /// If the distance is beyond this threshold, we treat the entire node as one giant
+    /// entity instead of recursing into it.
+    theta: f64,
 }
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
-    pub fn new(pts: &Vec<T>, time_step: f64, max_entities: i32) -> GravTree<T>
+    pub fn new(pts: &Vec<T>, time_step: f64, max_entities: i32, theta: f64) -> GravTree<T>
     where
         T: AsEntity,
     {
@@ -35,7 +42,8 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                 root: Node::new(),
                 number_of_entities: size_of_vec,
                 time_step,
-                max_entities: max_entities,
+                max_entities,
+                theta,
             };
         }
         // Because of the tree's recursive gravity calculation, there needs to be a parent node
@@ -53,8 +61,14 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
             number_of_entities: size_of_vec,
             time_step,
             max_entities,
+            theta,
         }
     }
+    /// Sets the `theta` value of the simulation.
+    pub fn set_theta(&mut self, theta: f64) {
+        self.theta = theta;
+    }
+
     /// Traverses the tree and returns a vector of all entities in the tree.
     pub fn as_vec(&self) -> Vec<T> {
         let node = self.root.clone();
@@ -98,10 +112,16 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         GravTree::<T>::new(
             &mut post_gravity_entity_vec
                 .par_iter()
-                .map(|x| x.respond(x.as_entity().interact_with(&self.root), self.time_step))
+                .map(|x| {
+                    x.respond(
+                        x.as_entity().interact_with(&self.root, self.theta),
+                        self.time_step,
+                    )
+                })
                 .collect(),
             self.time_step,
             self.max_entities,
+            self.theta,
         )
     }
 }

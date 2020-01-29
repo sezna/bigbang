@@ -21,7 +21,7 @@ typedef struct Entity {
  * in memory where the [[GravTree]] is located. Use this void pointer to tell Rust where to look for
  * the tree in the other FFI functions.
  */
-void *new(const Entity *array, int length, double time_step);
+void *new(const Entity *array, int length, double time_step, int max_entities, double theta);
 
 /**
  * The exported FFI version of [[GravTree]]'s `time_step()` method. Instead of being a method, it is a
