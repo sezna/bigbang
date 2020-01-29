@@ -76,7 +76,7 @@ fn test_traversal() {
         vec.push(entity);
     }
     let vec_clone = vec.clone();
-    let tree = GravTree::new(&vec, 0.2, 3);
+    let tree = GravTree::new(&vec, 0.2, 3, 0.2);
     let traversed_vec = tree.as_vec();
     let mut all_found = true;
     for i in vec_clone {
@@ -96,7 +96,7 @@ fn test_time_step() {
         vec_that_wants_to_be_a_kdtree.push(entity);
     }
 
-    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3);
+    let test_tree = GravTree::new(&vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
     let after_time_step = test_tree.time_step();
     assert_eq!(after_time_step.as_vec().len(), 1000);
 }

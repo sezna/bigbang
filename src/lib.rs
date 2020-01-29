@@ -33,6 +33,7 @@ pub unsafe extern "C" fn new(
     length: c_int,
     time_step: c_double,
     max_entities: c_int,
+    theta: c_double,
 ) -> *mut c_void {
     assert!(!array.is_null(), "Null pointer in new()");
     let array: &[Entity] = slice::from_raw_parts(array, length as usize);
@@ -41,6 +42,7 @@ pub unsafe extern "C" fn new(
         &mut rust_vec_of_entities,
         time_step as f64,
         max_entities as i32,
+        theta as f64,
     );
     Box::into_raw(Box::new(grav_tree)) as *mut c_void
 }

@@ -42,6 +42,7 @@ use mount::Mount;
 use std::sync::RwLock;
 
 const TIME_STEP: f64 = 0.0000002;
+const THETA: f64 = 0.2;
 const MAX_ENTITIES: i32 = 3;
 
 struct State {
@@ -57,7 +58,7 @@ struct SimulationState {
 lazy_static! {
     static ref STATE: RwLock<State> = RwLock::new(State {
         state: SimulationState {
-            grav_tree: GravTree::new(&Vec::new(), TIME_STEP, MAX_ENTITIES),
+            grav_tree: GravTree::new(&Vec::new(), TIME_STEP, MAX_ENTITIES, THETA),
             last_time_ran: Utc::now(),
             last_response: String::new(),
         }
@@ -161,7 +162,7 @@ fn main() {
     big_boi_2.radius = 1f64;
     big_boi_2.color = "green".to_string();
     starter_entities.push(big_boi_2);
-    let grav_tree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP, MAX_ENTITIES);
+    let grav_tree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP, MAX_ENTITIES, THETA);
 
     println!("initializing simulation...");
     {
