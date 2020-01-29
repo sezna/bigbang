@@ -3,8 +3,6 @@ use crate::dimension::Dimension;
 use crate::entity::Entity;
 use crate::utilities::{find_median, max_min_xyz, xyz_distances};
 use serde::{Deserialize, Serialize};
-const MAX_PTS: i32 = 3;
-#[derive(Clone)]
 
 /// This is internal to the tree and is not exposed to the consumer.
 ///
@@ -13,9 +11,9 @@ const MAX_PTS: i32 = 3;
 /// as an [[Entity]] of its own via `as_entity()` (not to be confused with the trait [[AsEntity]] -- this is just a method on
 /// [[Node]].
 ///
-/// If a [[Node]] is a leaf, then it contains up to `MAX_PTS` particles, as swell as the aggregate values of these particles.
+/// If a [[Node]] is a leaf, then it contains up to `max_entities` particles, as swell as the aggregate values of these particles.
 /// These aggregate values are the center of mass, the total mass, and max/min values for each dimension.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct Node<T: AsEntity + Clone> {
     split_dimension: Option<Dimension>, // Dimension that this node splits at.
     split_value: f64,                   // Value that this node splits at.
@@ -143,13 +141,14 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub(crate) fn new_root_node(pts: &[T]) -> Node<T> {
+    pub(crate) fn new_root_node(pts: &[T], max_entities: &i32) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
         let (xdistance, ydistance, zdistance) = xyz_distances(entities.as_slice());
-        // If our current collection is small enough to become a leaf (it has less than MAX_PTS points)
-        if length_of_points <= MAX_PTS {
+        // If our current collection is small enough to become a leaf (it has less than
+        // max_entities entities)
+        if length_of_points <= *max_entities {
             // then we convert it into a leaf node.
 
             // we calculate the center of mass and total mass for each axis and store it as a three-tuple.
@@ -221,8 +220,8 @@ impl<T: AsEntity + Clone> Node<T> {
             let (below_split, above_split) = pts.split_at(split_index);
 
             // Now we construct the left and right children based on this split into lower and upper halves.
-            let left = Node::new_root_node(&below_split);
-            let right = Node::new_root_node(&above_split);
+            let left = Node::new_root_node(&below_split, max_entities);
+            let right = Node::new_root_node(&above_split, max_entities);
             // The center of mass is a recursive definition. This finds the average COM for
             // each node.
             let left_mass = left.total_mass;
@@ -266,7 +265,7 @@ fn test() {
     }
 
     let check_vec = test_vec.clone();
-    let tree = crate::GravTree::new(&test_vec, 0.2);
+    let tree = crate::GravTree::new(&test_vec, 0.2, 3);
     let root_node = tree.root.clone();
 
     let mut nodes: Vec<Node<Entity>> = Vec::new();

@@ -17,10 +17,14 @@ pub struct GravTree<T: AsEntity + Clone> {
     /// This coefficient determines the granularity of the simulation, i.e. how much each frame of
     /// the simulation actually moves the individual entities.
     time_step: f64, // the time coefficient; how large each simulation frame is time-wise.
+    /// The maximum number of entities to be contained within any leaf node. Defaults to 3 but is
+    /// configurable. This is _not_ the maximum number of entities in the simulation. A higher
+    /// number here will result in lower simulation granularity.
+    max_entities: i32,
 }
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
-    pub fn new(pts: &Vec<T>, time_step: f64) -> GravTree<T>
+    pub fn new(pts: &Vec<T>, time_step: f64, max_entities: i32) -> GravTree<T>
     where
         T: AsEntity,
     {
@@ -31,6 +35,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                 root: Node::new(),
                 number_of_entities: size_of_vec,
                 time_step,
+                max_entities: max_entities,
             };
         }
         // Because of the tree's recursive gravity calculation, there needs to be a parent node
@@ -40,13 +45,14 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         // The real root of the tree is therefore tree.root.left
 
         let mut phantom_parent = Node::new();
-        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..])));
+        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..], &max_entities)));
         phantom_parent.points = Some(Vec::new());
 
         GravTree {
             root: phantom_parent,
             number_of_entities: size_of_vec,
             time_step,
+            max_entities,
         }
     }
     /// Traverses the tree and returns a vector of all entities in the tree.
@@ -95,6 +101,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                 .map(|x| x.respond(x.as_entity().interact_with(&self.root), self.time_step))
                 .collect(),
             self.time_step,
+            self.max_entities,
         )
     }
 }

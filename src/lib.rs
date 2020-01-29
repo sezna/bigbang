@@ -32,11 +32,16 @@ pub unsafe extern "C" fn new(
     array: *const Entity,
     length: c_int,
     time_step: c_double,
+    max_entities: c_int,
 ) -> *mut c_void {
     assert!(!array.is_null(), "Null pointer in new()");
     let array: &[Entity] = slice::from_raw_parts(array, length as usize);
     let mut rust_vec_of_entities = Vec::from(array);
-    let grav_tree = GravTree::new(&mut rust_vec_of_entities, time_step as f64);
+    let grav_tree = GravTree::new(
+        &mut rust_vec_of_entities,
+        time_step as f64,
+        max_entities as i32,
+    );
     Box::into_raw(Box::new(grav_tree)) as *mut c_void
 }
 

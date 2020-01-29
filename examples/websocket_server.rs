@@ -25,6 +25,7 @@ use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
 
 const ENTITY_COUNT: usize = 2000;
+const MAX_ENTITIES: i32 = 3;
 const TIME_STEP: f64 = 0.0005;
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
@@ -207,7 +208,7 @@ async fn run(executor: TaskExecutor) {
         mass: 25.,
     });
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, TIME_STEP);
+    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, TIME_STEP, MAX_ENTITIES);
 
     loop {
         test_tree = test_tree.time_step();
