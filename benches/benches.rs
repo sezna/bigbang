@@ -1,6 +1,6 @@
 use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
-use std::time;
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
+use std::time;
 #[derive(Clone)]
 struct MyEntity {
     x: f64,
@@ -215,6 +215,6 @@ criterion_group!(
     tree_construction,
     time_step_0125,
     time_step_2000,
-    time_step_20000, 
+    time_step_20000,
 );
 criterion_main!(benches);
