@@ -31,7 +31,7 @@ pub struct GravTree<T: AsEntity + Clone> {
 }
 
 impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
-    pub fn new(pts: &Vec<T>, time_step: f64, max_entities: i32, theta: f64) -> GravTree<T>
+    pub fn new(pts: &[T], time_step: f64, max_entities: i32, theta: f64) -> GravTree<T>
     where
         T: AsEntity,
     {
@@ -53,7 +53,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         // The real root of the tree is therefore tree.root.left
 
         let mut phantom_parent = Node::new();
-        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..], &max_entities)));
+        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..], max_entities)));
         phantom_parent.points = Some(Vec::new());
 
         GravTree {
@@ -110,7 +110,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
         // Then, we construct a new grav tree after the gravitational acceleration for each
         // entity has been calculated.
         GravTree::<T>::new(
-            &mut post_gravity_entity_vec
+            &post_gravity_entity_vec
                 .par_iter()
                 .map(|x| {
                     x.respond(
@@ -118,7 +118,7 @@ impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
                         self.time_step,
                     )
                 })
-                .collect(),
+                .collect::<Vec<_>>(),
             self.time_step,
             self.max_entities,
             self.theta,

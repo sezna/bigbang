@@ -141,14 +141,14 @@ impl<T: AsEntity + Clone> Node<T> {
     }
 
     /// Takes in a mutable slice of entities and creates a recursive 3d tree structure.
-    pub(crate) fn new_root_node(pts: &[T], max_entities: &i32) -> Node<T> {
+    pub(crate) fn new_root_node(pts: &[T], max_entities: i32) -> Node<T> {
         // Start and end are probably 0 and pts.len(), respectively.
         let length_of_points = pts.len() as i32;
         let mut entities = pts.iter().map(|x| x.as_entity()).collect::<Vec<Entity>>();
         let (xdistance, ydistance, zdistance) = xyz_distances(entities.as_slice());
         // If our current collection is small enough to become a leaf (it has less than
         // max_entities entities)
-        if length_of_points <= *max_entities {
+        if length_of_points <= max_entities {
             // then we convert it into a leaf node.
 
             // we calculate the center of mass and total mass for each axis and store it as a three-tuple.

@@ -5,11 +5,12 @@ use crate::as_entity::AsEntity;
 use crate::collisions::soft_body;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
+use bigbang_derive::AsEntity;
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, AsEntity)]
 #[repr(C)]
 pub struct Entity {
     pub vx: f64,
@@ -21,39 +22,6 @@ pub struct Entity {
     pub radius: f64,
     pub mass: f64,
 }
-// TODO this default implementation should be in some prelude or something, not in the entity file
-// itself.
-impl AsEntity for Entity {
-    fn as_entity(&self) -> Entity {
-        return self.clone();
-    }
-    fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
-        let mut vx = self.vx;
-        let mut vy = self.vy;
-        let mut vz = self.vz;
-        let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
-        for other in &simulation_result.collisions {
-            let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 50f64);
-            ax += collision_ax;
-            ay += collision_ay;
-            az += collision_az;
-        }
-        vx += ax * time_step;
-        vy += ay * time_step;
-        vz += az * time_step;
-
-        Entity {
-            vx,
-            vy,
-            vz,
-            x: self.x + (vx * time_step),
-            y: self.y + (vy * time_step),
-            z: self.z + (vz * time_step),
-            radius: self.radius,
-            mass: self.mass,
-        }
-    }
-}
 
 impl PartialEq for Entity {
     /// This is a workaround to prevent every particle from reporting that it is colliding with
@@ -62,7 +30,6 @@ impl PartialEq for Entity {
     /// the time being.
     fn eq(&self, other: &Self) -> bool {
         self.x == other.x
-            && self.x == other.x
             && self.y == other.y
             && self.z == other.z
             && self.radius == other.radius
