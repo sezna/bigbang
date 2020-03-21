@@ -6,9 +6,9 @@
 // The issue probably arises when the total number of entities is less than max_pts?
 
 extern crate bigbang;
-use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, Responsive, SimulationResult};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, AsEntity)]
 struct MyEntity {
     x: f64,
     y: f64,
@@ -37,20 +37,7 @@ impl MyEntity {
     }
 }
 
-impl AsEntity for MyEntity {
-    fn as_entity(&self) -> Entity {
-        return Entity {
-            x: self.x,
-            y: self.y,
-            z: self.z,
-            vx: self.vx,
-            vy: self.vy,
-            vz: self.vz,
-            radius: self.radius,
-            mass: self.mass,
-        };
-    }
-
+impl Responsive for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
         let mut vx = self.vx;
         let mut vy = self.vy;

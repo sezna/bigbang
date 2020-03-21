@@ -3,14 +3,15 @@ use either::{Either, Left, Right};
 use super::Dimension;
 use crate::as_entity::AsEntity;
 use crate::collisions::soft_body;
+use crate::responsive::Responsive;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
-use bigbang_derive::{AsEntity, Responsive};
+use bigbang_derive::AsEntity;
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
-#[derive(Clone, Default, AsEntity, Responsive)]
+#[derive(Clone, Default, AsEntity)]
 #[repr(C)]
 pub struct Entity {
     pub vx: f64,
@@ -34,6 +35,35 @@ impl PartialEq for Entity {
             && self.z == other.z
             && self.radius == other.radius
             && self.mass == other.mass
+    }
+}
+
+impl Responsive for Entity {
+    fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
+        let mut vx = self.vx;
+        let mut vy = self.vy;
+        let mut vz = self.vz;
+        let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
+        for other in simulation_result.collisions {
+            let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 50f64);
+            ax += collision_ax;
+            ay += collision_ay;
+            az += collision_az;
+        }
+        vx += ax * time_step;
+        vy += ay * time_step;
+        vz += az * time_step;
+
+        Entity {
+            vx,
+            vy,
+            vz,
+            x: self.x + (vx * time_step),
+            y: self.y + (vy * time_step),
+            z: self.z + (vz * time_step),
+            radius: self.radius,
+            mass: self.mass,
+        }
     }
 }
 
@@ -61,6 +91,7 @@ impl Entity {
             self.x, self.y, self.z, self.vx, self.vy, self.vz, self.mass, self.radius
         );
     }
+
     /// The returns the distance squared between two particles.
     /// Take the sqrt of this to get the distance.
     fn distance_squared(&self, other: &Entity) -> f64 {
@@ -70,11 +101,13 @@ impl Entity {
         let (x_dist, y_dist, z_dist) = self.distance_vector(other);
         x_dist * x_dist + y_dist * y_dist + z_dist * z_dist
     }
+
     /// Returns the distance between the two entities
     pub(crate) fn distance(&self, other: &Entity) -> f64 {
         // sqrt((x2 - x1) + (y2 - y1) + (z2 - z1))
         f64::sqrt(self.distance_squared(other))
     }
+
     /// Returns the distance between two entities as an (x:f64,y:f64,z:f64) tuple.
     pub(crate) fn distance_vector(&self, other: &Entity) -> (f64, f64, f64) {
         let x_dist = other.x - self.x;

@@ -1,5 +1,5 @@
 extern crate bigbang;
-use bigbang::{AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{AsEntity, Entity, GravTree, Responsive, SimulationResult};
 
 #[derive(Clone, PartialEq)]
 struct MyEntity {
@@ -25,7 +25,9 @@ impl AsEntity for MyEntity {
             mass: if self.radius < 1. { 0.5 } else { 105. },
         };
     }
+}
 
+impl Responsive for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (ax, ay, _az) = simulation_result.gravitational_acceleration;
         let (x, y, z) = (self.x, self.y, self.z);

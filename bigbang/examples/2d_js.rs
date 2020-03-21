@@ -28,7 +28,7 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, Responsive, SimulationResult};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -87,7 +87,9 @@ impl AsEntity for MyEntity {
             mass: self.radius,
         };
     }
+}
 
+impl Responsive for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (mut ax, mut ay, _az) = simulation_result.gravitational_acceleration;
         let (mut vx, mut vy) = (self.vx, self.vy);
