@@ -8,8 +8,8 @@ extern crate syn;
 use crate::proc_macro::TokenStream;
 use syn::DeriveInput;
 
-#[proc_macro_derive(AsEntity)]
-pub fn derive_as_entity(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(Responsive)]
+pub fn derive_responsive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     // type name
@@ -20,10 +20,7 @@ pub fn derive_as_entity(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let expanded = quote! {
-        impl #impl_generics crate::AsEntity for #name #ty_generics #where_clause {
-            fn as_entity(&self) -> Entity {
-                return self.clone();
-            }
+        impl #impl_generics crate::Responsive for #name #ty_generics #where_clause {
             fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
                 let mut vx = self.vx;
                 let mut vy = self.vy;
@@ -49,6 +46,27 @@ pub fn derive_as_entity(input: TokenStream) -> TokenStream {
                     radius: self.radius,
                     mass: self.mass,
                 }
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+#[proc_macro_derive(AsEntity)]
+pub fn derive_as_entity(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+
+    // type name
+    let name = &input.ident;
+
+    // generics
+    let generics = input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    let expanded = quote! {
+        impl #impl_generics crate::AsEntity for #name #ty_generics #where_clause {
+            fn as_entity(&self) -> Entity {
+                return self.clone();
             }
         }
     };
