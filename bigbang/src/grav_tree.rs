@@ -1,4 +1,5 @@
 use crate::as_entity::AsEntity;
+use crate::responsive::Responsive;
 use crate::Node;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -6,7 +7,7 @@ use serde::{Deserialize, Serialize};
 /// The main struct you will interact with. This is a k-d tree containing all of your gravitational
 /// entities.
 #[derive(Serialize, Deserialize)]
-pub struct GravTree<T: AsEntity + Clone> {
+pub struct GravTree<T: AsEntity + Responsive + Clone> {
     /// A GravTree consists of a root [[Node]]. A [[Node]] is a recursive binary tree data structure.
     /// Tragically must be public for now for testing reasons. Perhaps could be replaced by various
     /// getter methods later.
@@ -30,7 +31,7 @@ pub struct GravTree<T: AsEntity + Clone> {
     theta: f64,
 }
 
-impl<T: AsEntity + Clone + Send + Sync> GravTree<T> {
+impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
     pub fn new(pts: &[T], time_step: f64, max_entities: i32, theta: f64) -> GravTree<T>
     where
         T: AsEntity,

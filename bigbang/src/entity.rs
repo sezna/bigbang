@@ -5,12 +5,12 @@ use crate::as_entity::AsEntity;
 use crate::collisions::soft_body;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
-use bigbang_derive::AsEntity;
+use bigbang_derive::{AsEntity, Responsive};
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
-#[derive(Clone, Default, AsEntity)]
+#[derive(Clone, Default, AsEntity, Responsive)]
 #[repr(C)]
 pub struct Entity {
     pub vx: f64,
