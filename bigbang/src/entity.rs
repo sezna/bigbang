@@ -38,35 +38,6 @@ impl PartialEq for Entity {
     }
 }
 
-impl Responsive for Entity {
-    fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
-        let mut vx = self.vx;
-        let mut vy = self.vy;
-        let mut vz = self.vz;
-        let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
-        for other in simulation_result.collisions {
-            let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 50f64);
-            ax += collision_ax;
-            ay += collision_ay;
-            az += collision_az;
-        }
-        vx += ax * time_step;
-        vy += ay * time_step;
-        vz += az * time_step;
-
-        Entity {
-            vx,
-            vy,
-            vz,
-            x: self.x + (vx * time_step),
-            y: self.y + (vy * time_step),
-            z: self.z + (vz * time_step),
-            radius: self.radius,
-            mass: self.mass,
-        }
-    }
-}
-
 impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
     /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
