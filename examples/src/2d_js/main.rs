@@ -184,7 +184,8 @@ fn main() {
     // Find the path of the JS visualization file to serve.
     let project_directory = env!("CARGO_MANIFEST_DIR");
     println!("project dir is {}", project_directory);
-    let files_path = format!("{}{}", project_directory, "/examples/visualize.html");
+    let files_path = format!("{}{}", project_directory, "/src/2d_js/visualize.html");
+    println!("Serving {}", files_path);
     let mut mount = Mount::new();
     mount
         .mount("/api", chain)

@@ -3,7 +3,7 @@
 
 extern crate bigbang;
 extern crate rand;
-use bigbang::{collisions::soft_body, AsEntity, GravTree, Responsive, SimulationResult};
+use bigbang::{AsEntity, GravTree, Responsive, SimulationResult};
 #[macro_use]
 extern crate log;
 

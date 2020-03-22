@@ -1,5 +1,6 @@
 [workspace]
 members = [
 	"bigbang",
-	"bigbang_derive"
+	"bigbang_derive",
+	"examples"
 ]

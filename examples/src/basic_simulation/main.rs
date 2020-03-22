@@ -1,5 +1,5 @@
 extern crate bigbang;
-use bigbang::{collisions::soft_body, AsEntity, GravTree, Responsive, SimulationResult};
+use bigbang::{AsEntity, GravTree, Responsive, SimulationResult};
 
 #[derive(Clone, PartialEq)]
 struct Entity {
