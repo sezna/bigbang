@@ -47,10 +47,29 @@ name = "bigbang"
 version = "0.0.9"
 dependencies = [
  "bigbang_derive",
- "bincode",
- "chrono",
  "criterion",
  "either",
+ "rand 0.7.3",
+ "rayon",
+ "serde",
+]
+
+[[package]]
+name = "bigbang_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "bigbang_examples"
+version = "0.1.0"
+dependencies = [
+ "bigbang",
+ "bincode",
+ "chrono",
  "fern",
  "futures-preview",
  "futures-timer",
@@ -62,7 +81,6 @@ dependencies = [
  "mount",
  "multiqueue",
  "rand 0.7.3",
- "rayon",
  "router",
  "serde",
  "serde_derive",
@@ -71,15 +89,6 @@ dependencies = [
  "tokio",
  "tokio-reactor",
  "websocket",
-]
-
-[[package]]
-name = "bigbang_derive"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

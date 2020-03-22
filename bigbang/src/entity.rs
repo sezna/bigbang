@@ -2,7 +2,6 @@ use either::{Either, Left, Right};
 
 use super::Dimension;
 use crate::as_entity::AsEntity;
-
 use crate::simulation_result::SimulationResult;
 use crate::Node;
 use bigbang_derive::AsEntity;
@@ -36,6 +35,8 @@ impl PartialEq for Entity {
             && self.mass == other.mass
     }
 }
+
+
 
 impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted
