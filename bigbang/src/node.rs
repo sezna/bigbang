@@ -250,6 +250,35 @@ impl<T: AsEntity + Clone> Node<T> {
 /// fields so it is located within the same module as the node itself.
 #[test]
 fn test() {
+    use crate::{collisions::soft_body, Responsive, SimulationResult};
+    impl Responsive for Entity {
+        fn respond(&self, simulation_result: SimulationResult<Self>, time_step: f64) -> Self {
+            let mut vx = self.vx;
+            let mut vy = self.vy;
+            let mut vz = self.vz;
+            let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
+            for other in simulation_result.collisions {
+                let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 50f64);
+                ax += collision_ax;
+                ay += collision_ay;
+                az += collision_az;
+            }
+            vx += ax * time_step;
+            vy += ay * time_step;
+            vz += az * time_step;
+
+            Entity {
+                vx,
+                vy,
+                vz,
+                x: self.x + (vx * time_step),
+                y: self.y + (vy * time_step),
+                z: self.z + (vz * time_step),
+                radius: self.radius,
+                mass: self.mass,
+            }
+        }
+    }
     let mut test_vec: Vec<Entity> = Vec::new();
     for i in 0..10 {
         test_vec.push(Entity {
