@@ -1,4 +1,4 @@
-use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult, Responsive};
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use std::time;
 #[derive(Clone)]
@@ -24,7 +24,9 @@ impl AsEntity for MyEntity {
             mass: if self.radius < 1. { 0.5 } else { 105. },
         };
     }
+}
 
+impl Responsive for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
         let (mut ax, mut ay, mut az) = simulation_result.gravitational_acceleration;
         let (x, y, z) = (self.x, self.y, self.z);
