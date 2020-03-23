@@ -68,11 +68,8 @@ name = "bigbang_examples"
 version = "0.1.0"
 dependencies = [
  "bigbang",
- "bincode",
  "chrono",
- "fern",
  "futures-preview",
- "futures-timer",
  "futures-util",
  "iron",
  "iron-cors",
@@ -89,16 +86,6 @@ dependencies = [
  "tokio",
  "tokio-reactor",
  "websocket",
-]
-
-[[package]]
-name = "bincode"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5753e2a71534719bf3f4e57006c3a4f0d2c672a4b676eec84161f763eca87dbf"
-dependencies = [
- "byteorder",
- "serde",
 ]
 
 [[package]]
@@ -326,16 +313,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb1f6b1ce1c140482ea30ddd3335fc0024ac7ee112895426e0a629a6c20adfe3"
 
 [[package]]
-name = "fern"
-version = "0.5.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e69ab0d5aca163e388c3a49d284fed6c3d0810700e77c5ae2756a50ec1a4daaa"
-dependencies = [
- "chrono",
- "log 0.4.8",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -477,16 +454,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9b65a2481863d1b78e094a07e9c0eed458cc7dc6e72b22b7138b8a67d924859"
 dependencies = [
  "futures-core-preview",
-]
-
-[[package]]
-name = "futures-timer"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f9eb554aa23143abc64ec4d0016f038caf53bb7cbc3d91490835c54edc96550"
-dependencies = [
- "futures-preview",
- "pin-utils",
 ]
 
 [[package]]

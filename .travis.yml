@@ -2,5 +2,8 @@ language: rust
 rust:
   - nightly
 script:
+  - (cd examples && cargo build --bin 2d_js)
+  - (cd examples && cargo build --bin basic_simulation)
+  - (cd examples && cargo build --bin websocket_3d_server)
   - cargo test
   - travis_wait 60 cargo bench
