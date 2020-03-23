@@ -3,7 +3,7 @@
 
 extern crate bigbang;
 extern crate rand;
-use bigbang::{AsEntity, GravTree, Responsive, SimulationResult};
+use bigbang::{collisions::soft_body, AsEntity, GravTree, Responsive, SimulationResult};
 #[macro_use]
 extern crate log;
 
@@ -23,10 +23,10 @@ use tokio::runtime::TaskExecutor;
 use websocket::message::OwnedMessage;
 use websocket::r#async::{Server, TcpStream};
 use websocket::server::{r#async::Incoming, upgrade::r#async::Upgrade};
-const ENTITY_COUNT: usize = 2000;
+const ENTITY_COUNT: usize = 200;
 const MAX_ENTITIES: i32 = 3;
 const THETA: f64 = 0.2;
-const TIME_STEP: f64 = 0.0005;
+const TIME_STEP: f64 = 0.00001;
 
 fn spawn_future<F>(f: F, executor: &TaskExecutor)
 where
@@ -35,7 +35,7 @@ where
     executor.spawn(Compat::new(f.unit_error().map(move |_| Ok(()))));
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, AsEntity)]
 struct Entity {
     x: f64,
     y: f64,
@@ -47,45 +47,40 @@ struct Entity {
     mass: f64,
 }
 
-impl AsEntity for Entity {
-    fn as_entity(&self) -> bigbang::Entity {
-        bigbang::Entity {
-            x: self.x,
-            y: self.y,
-            z: self.z,
-            vx: self.vx,
-            vy: self.vy,
-            vz: self.vz,
-            radius: self.radius,
-            mass: self.mass,
-        }
-    }
-}
-
 impl Responsive for Entity {
     fn respond(&self, simulation_result: SimulationResult<Entity>, time_step: f64) -> Self {
-        let (ax, ay, _az) = simulation_result.gravitational_acceleration;
-        let (x, y, z) = (self.x, self.y, self.z);
+        let (ax, ay, az) = if !simulation_result.collisions.is_empty() {
+            // If there were some collisions, perform collision calculations instead of gravitational onees.
+            let mut ax = 0.;
+            let mut ay = 0.;
+            let mut az = 0.;
+            for other in &simulation_result.collisions {
+                let (collision_ax, collision_ay, collision_az) = soft_body(self, other, 200000f64);
+                ax += collision_ax;
+                ay += collision_ay;
+                az += collision_az
+            }
+            (ax, ay, az)
+        } else {
+            // Otherwise, use gravtiational acceleration.
+            let (ax, ay, az) = simulation_result.gravitational_acceleration;
+            (ax, ay, az)
+        };
+
         let (mut vx, mut vy, mut vz) = (self.vx, self.vy, self.vz);
-        let self_mass = if self.radius < 1. { 0.5 } else { 105. };
-        // calculate the collisions
-        for other in simulation_result.collisions.clone() {
-            let other_mass = if other.radius < 1. { 0.5 } else { 105. };
-            let mass_coefficient_v1 = (self_mass - other_mass) / (self_mass + other_mass);
-            let mass_coefficient_v2 = (2f64 * other_mass) / (self_mass + other_mass);
-            vx = (mass_coefficient_v1 * vx) + (mass_coefficient_v2 * other.vx);
-            vy = (mass_coefficient_v1 * vy) + (mass_coefficient_v2 * other.vy);
-            vz = (mass_coefficient_v1 * vz) + (mass_coefficient_v2 * other.vz);
-        }
+
+        // Add the acceleration to the velocity, scaled to the time step
         vx += ax * time_step;
         vy += ay * time_step;
+        vz += az * time_step;
+
         Entity {
             vx,
             vy,
             vz,
-            x: x + (vx * time_step),
-            y: y + (vy * time_step),
-            z: z + (vz * time_step),
+            x: self.x + vx,
+            y: self.y + vy,
+            z: self.z + vz,
             radius: self.radius,
             mass: self.mass,
         }
@@ -238,7 +233,7 @@ async fn run(executor: TaskExecutor) {
     let mut tx = Compat01As03Sink::new(tx);
 
     let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for _ in 0..ENTITY_COUNT {
+    for i in 0..ENTITY_COUNT {
         let mass = rand::thread_rng().gen_range(0.1, 2.5);
         let entity = Entity {
             vx: 0.0, //rand::thread_rng().gen_range(-190., 90.),
@@ -258,11 +253,11 @@ async fn run(executor: TaskExecutor) {
         vx: 0.,
         vy: 0.,
         vz: 0.,
-        x: 0.,
-        y: 0.,
-        z: 0.,
+        x: rand::thread_rng().gen_range(-190., 90.),
+        y: rand::thread_rng().gen_range(-190., 90.),
+        z: rand::thread_rng().gen_range(-190., 90.),
         radius: 25.,
-        mass: 25.,
+        mass: 250.,
     });
 
     let mut test_tree = GravTree::new(
