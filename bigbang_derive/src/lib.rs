@@ -1,4 +1,3 @@
-
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;
@@ -21,8 +20,8 @@ pub fn derive_as_entity(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl #impl_generics AsEntity for #name #ty_generics #where_clause {
-            fn as_entity(&self) -> Entity {
-                Entity {
+            fn as_entity(&self) -> bigbang::Entity {
+                bigbang::Entity {
                     vx: self.vx,
                     vy: self.vy,
                     vz: self.vz,

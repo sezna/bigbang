@@ -4,12 +4,11 @@ use super::Dimension;
 use crate::as_entity::AsEntity;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
-use bigbang_derive::AsEntity;
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
 /// them around according to the gravity they exert on each other.
-#[derive(Clone, Default, AsEntity)]
+#[derive(Clone, Default)]
 #[repr(C)]
 pub struct Entity {
     pub vx: f64,
@@ -20,6 +19,12 @@ pub struct Entity {
     pub z: f64,
     pub radius: f64,
     pub mass: f64,
+}
+
+impl AsEntity for Entity {
+    fn as_entity(&self) -> Entity {
+        self.clone()
+    }
 }
 
 impl PartialEq for Entity {
@@ -35,8 +40,6 @@ impl PartialEq for Entity {
             && self.mass == other.mass
     }
 }
-
-
 
 impl Entity {
     /// Returns a velocity vector which represents the velocity of the particle after it has interacted

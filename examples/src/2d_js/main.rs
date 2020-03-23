@@ -91,18 +91,30 @@ impl AsEntity for MyEntity {
 
 impl Responsive for MyEntity {
     fn respond(&self, simulation_result: SimulationResult<MyEntity>, time_step: f64) -> Self {
-        let (mut ax, mut ay, _az) = simulation_result.gravitational_acceleration;
-        let (mut vx, mut vy) = (self.vx, self.vy);
-        // use soft body collision to calculate the post-collision velocity
+        let (ax, ay) = if !simulation_result.collisions.is_empty() {
+            // If there were some collisions, perform collision calculations instead of gravitational onees.
+            let mut ax = 0.;
+            let mut ay = 0.;
+            for other in &simulation_result.collisions {
+                let (collision_ax, collision_ay, _az) = soft_body(self, other, 200000f64);
+                ax += collision_ax;
+                ay += collision_ay;
+            }
+            (ax, ay)
+        } else {
+            // Otherwise, use gravtiational acceleration.
+            let (ax, ay, _) = simulation_result.gravitational_acceleration;
+            (ax, ay)
+        };
 
-        for other in &simulation_result.collisions {
-            let (collision_ax, collision_ay, _az) = soft_body(self, other, 200000f64);
-            ax += collision_ax;
-            ay += collision_ay;
-        }
+        let (mut vx, mut vy) = (self.vx, self.vy);
+
+        // Add the acceleration to the velocity, scaled to the time step
         vx += ax * time_step;
         vy += ay * time_step;
         let (mut x, mut y) = (self.x, self.y);
+
+        // Perform bounds checking on the borders
         if x - self.radius <= 0.1f64 {
             vx = vx * -0.3;
             x = 0.1f64 + self.radius;

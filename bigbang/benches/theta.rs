@@ -1,4 +1,4 @@
-use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, SimulationResult, Responsive};
+use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, Responsive, SimulationResult};
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use std::time;
 #[derive(Clone)]
