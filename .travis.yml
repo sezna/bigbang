@@ -6,4 +6,4 @@ script:
   - (cd examples && cargo build --bin basic_simulation)
   - (cd examples && cargo build --bin websocket_3d_server)
   - cargo test
-  - travis_wait 60 cargo bench
+  - cargo bench
