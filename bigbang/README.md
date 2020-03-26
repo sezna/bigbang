@@ -11,7 +11,7 @@ This is a project in re-implementing a C++ particle simulation in Rust for speed
 _3d websocket-based simulation is available in the examples directory and was provided by [Casey Primozic](https://cprimozic.net/)._
 
 # What exactly does it do?
-It constructs a spatial k-d tree (3 dimensions) and optimally calculates gravitational acceleration forces and collisions.
+It constructs a spatial k-dimensional tree (3 dimensions) and optimally calculates gravitational acceleration forces and collisions.
 
 # Getting started with bigbang
 ## Implementing the `AsEntity` and `Responsive` traits
