@@ -233,7 +233,7 @@ async fn run(executor: TaskExecutor) {
     let mut tx = Compat01As03Sink::new(tx);
 
     let mut vec_that_wants_to_be_a_kdtree: Vec<Entity> = Vec::new();
-    for i in 0..ENTITY_COUNT {
+    for _ in 0..ENTITY_COUNT {
         let mass = rand::thread_rng().gen_range(0.1, 2.5);
         let entity = Entity {
             vx: 0.0, //rand::thread_rng().gen_range(-190., 90.),
