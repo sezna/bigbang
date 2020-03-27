@@ -17,11 +17,14 @@ either = "1.5"
 rayon = "1.3"
 serde = { version = "1.0", features = ["derive"] }
 bigbang_derive = { path = "../bigbang_derive" }
+em = { git = "https://github.com/sezna/emu", branch = "quote_fix", optional = true }
 
 [dev-dependencies]
 criterion = "0.3"
 rand = "0.7.0"
 
+[features]
+gpu = ["em"]
 
 [lib]
 crate-type = ["cdylib", "lib", "staticlib"]
@@ -29,4 +32,3 @@ crate-type = ["cdylib", "lib", "staticlib"]
 [[bench]]
 name = "theta"
 harness = false
-

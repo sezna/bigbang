@@ -2,7 +2,6 @@
 extern crate either;
 extern crate rayon;
 mod as_entity;
-pub mod collisions;
 mod dimension;
 mod entity;
 mod grav_tree;
@@ -10,6 +9,8 @@ mod node;
 mod responsive;
 mod simulation_result;
 mod utilities;
+#[cfg(feature = "gpu")]
+mod gpu_entity;
 
 use dimension::Dimension;
 use node::Node;
@@ -20,3 +21,4 @@ pub use entity::Entity;
 pub use grav_tree::GravTree;
 pub use responsive::Responsive;
 pub use simulation_result::SimulationResult;
+pub mod collisions;

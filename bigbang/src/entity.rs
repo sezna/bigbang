@@ -42,16 +42,6 @@ impl PartialEq for Entity {
 }
 
 impl Entity {
-    /// Returns a velocity vector which represents the velocity of the particle after it has interacted
-    /// with the rest of the tree. Also returns a boolean representing whether or not a collision happened.
-    pub(crate) fn interact_with<'a, T: AsEntity + Clone>(
-        &'a self,
-        node: &'a Node<T>,
-        theta: f64,
-    ) -> SimulationResult<'a, T> {
-        self.get_acceleration_and_collisions(node, theta)
-    }
-
     /// Needs to be reworked to use min/max position values, but it naively checks
     /// if two things collide right now.
     fn did_collide_into(&self, other: &Entity) -> bool {
