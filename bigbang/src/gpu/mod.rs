@@ -24,15 +24,10 @@ trait GpuEntity: AsEntity {
     /// Needs to be reworked to use min/max position values, but it naively checks
     /// if two things collide right now.
     fn did_collide_into(&self, other: &Entity) -> bool {
-        self != other && self.distance(other) <= (self.radius + other.radius)
-    }
-
-    fn get_dim(&self, dim: &Dimension) -> &f64 {
-        match *dim {
-            Dimension::X => &self.x,
-            Dimension::Y => &self.y,
-            Dimension::Z => &self.z,
-        }
+        let self_entity = self.as_entity();
+        let other_entity = other.as_entity();
+        
+        self_entity != other_entity && self_entity.distance(&other_entity) <= (self_entity.radius + other_entity.radius)
     }
 
     /// Returns a boolean representing whether or node the node is within the theta range
@@ -42,7 +37,7 @@ trait GpuEntity: AsEntity {
         // 2) if 1) * theta > size (max diff) then
         // This frequently makes a node with NaN positions
         let node_as_entity = node.as_entity();
-        let dist = self.distance_squared(&node_as_entity);
+        let dist = self.as_entity().distance_squared(&node_as_entity);
         let max_dist = node.max_distance();
         (dist) * (theta * theta) > (max_dist * max_dist)
     }
@@ -53,17 +48,18 @@ trait GpuEntity: AsEntity {
         &self,
         oth: Either<&Entity, &Node<T>>,
     ) -> (f64, f64, f64) {
+        let self_entity = self.as_entity();
         // TODO get rid of this clone
         let other = match oth {
             Left(entity) => entity.clone(),
             Right(node) => node.as_entity(),
         };
-        let d_magnitude = self.distance(&other);
+        let d_magnitude = self_entity.distance(&other);
         if d_magnitude == 0. {
             // sort of other use of THETA here
             return (0., 0., 0.);
         }
-        let d_vector = self.distance_vector(&other);
+        let d_vector = self_entity.distance_vector(&other);
         let d_mag_cubed = d_magnitude * d_magnitude; // TODO cube this
         let d_over_d_cubed = (
             d_vector.0 / d_mag_cubed,
@@ -87,11 +83,11 @@ trait GpuEntity: AsEntity {
         &'a self,
         node: &'a Node<T>,
         theta: f64,
-    ) -> Vec<(f64, f64, f64, f64)> {
+    ) -> Vec<AccelEntity> {
         // First,  build a vector of all the positions and their masses that are going to get gravitational
         // acceleration calculated.
         // (x, y, z, mass)
-        let mut accel_points: Vec<(f64, f64, f64, f64)> = Vec::new();
+        let mut accel_points: Vec<AccelEntity> = Vec::new();
         for opt_node in [&node.left, &node.right].iter() {
             if let Some(node) = opt_node {
                 if node.points.is_some() {
@@ -101,11 +97,11 @@ trait GpuEntity: AsEntity {
                         .expect("Broken tree structure: unexpected null node")
                     {
                         let point = point.as_entity();
-                        accel_points.push((point.x, point.y, point.z, point.mass));
+                        accel_points.push(AccelEntity::new(point.x, point.y, point.z, point.mass));
                     }
                 } else if self.theta_exceeded(&node, theta) {
                     let point = node.as_entity();
-                    accel_points.push((point.x, point.y, point.z, point.mass));
+                    accel_points.push(AccelEntity::new(point.x, point.y, point.z, point.mass));
                 } else {
                     let mut recursed_accel_points = self.get_acceleration_points(&node, theta);
                     accel_points.append(&mut recursed_accel_points);
@@ -115,7 +111,11 @@ trait GpuEntity: AsEntity {
         return accel_points;
     }
 
-    #[gpu_use]
+    fn calculate_acceleration<'a, T: AsEntity + Clone> (&self, node: &'a Node<T>, theta: f64) {
+        let mut entities = self.get_acceleration_points(node, theta);
+        gpu::calculate_acceleration(entities);
+    }
+    /*
     fn calculate_acceleration(&self, &mut points: Vec<(f64, f64, f64, f64)>) -> (f64, f64, f64) {
         let mut self_coords = vec![self.x, self.y, self.z];
         let mut final_accel = vec![0f64, 0f64, 0f64];
@@ -151,6 +151,7 @@ trait GpuEntity: AsEntity {
         gpu_do!(read(final_accel));
         (final_accel[0], final_accel[1], final_accel[2])
     }
+    */
 }
 
 mod gpu {
@@ -181,7 +182,7 @@ mod gpu {
 
     use std::sync::Arc;
 
-    fn main() {
+    pub(super) fn calculate_acceleration(accel_entities: Vec<super::AccelEntity>) {
         // As with other examples, the first step is to create an instance.
         let instance = Instance::new(None, &InstanceExtensions::none(), None).unwrap();
 
@@ -241,13 +242,22 @@ mod gpu {
                     src: "
                     #version 450
                     layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
-                    layout(set = 0, binding = 0) buffer Data {
-                        uint data[];
-                    } data;
+                    struct AccelEntity {
+                        double x;
+                        double y;
+                        double z;
+                        double mass;
+                    };
+
+                    layout(set = 0, binding = 0) buffer Entities {
+                        AccelEntity[] entities;
+                    };
                     void main() {
                         uint idx = gl_GlobalInvocationID.x;
-                        data.data[idx] *= 12;
+                        calculate_accel(entities[idx]);
                     }
+
+                    
                 "
                 }
             }
@@ -258,9 +268,8 @@ mod gpu {
         // We start by creating the buffer that will store the data.
         let data_buffer = {
             // Iterator that produces the data.
-            let data_iter = (0..65536u32).map(|n| n);
             // Builds the buffer and fills it with this iterator.
-            CpuAccessibleBuffer::from_iter(device.clone(), BufferUsage::all(), false, data_iter)
+            CpuAccessibleBuffer::from_iter(device.clone(), BufferUsage::all(), false, accel_entities.into_iter())
                 .unwrap()
         };
 
@@ -328,8 +337,5 @@ mod gpu {
         // check it out.
         // The call to `read()` would return an error if the buffer was still in use by the GPU.
         let data_buffer_content = data_buffer.read().unwrap();
-        for n in 0..65536u32 {
-            assert_eq!(data_buffer_content[n as usize], n * 12);
-        }
     }
 }
