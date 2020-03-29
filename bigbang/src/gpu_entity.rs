@@ -6,7 +6,8 @@ use crate::{as_entity::AsEntity, Entity, simulation_result::SimulationResult, No
 use em::{gpu_use, gpu_do, ocl, Gpu};
 
 // TODO: 
-// - collisions
+// - collisions 
+// - Rewrite with new version of Emu
 
 trait GpuEntity: AsEntity {
     /// Needs to be reworked to use min/max position values, but it naively checks
