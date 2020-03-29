@@ -115,7 +115,8 @@ impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
                 .par_iter()
                 .map(|x| {
                     x.respond(
-                        x.as_entity().get_acceleration_and_collisions(&self.root, self.theta),
+                        x.as_entity()
+                            .get_acceleration_and_collisions(&self.root, self.theta),
                         self.time_step,
                     )
                 })

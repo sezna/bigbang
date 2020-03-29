@@ -4,13 +4,13 @@ extern crate rayon;
 mod as_entity;
 mod dimension;
 mod entity;
+#[cfg(feature = "gpu")]
+mod gpu;
 mod grav_tree;
 mod node;
 mod responsive;
 mod simulation_result;
 mod utilities;
-#[cfg(feature = "gpu")]
-mod gpu_entity;
 
 use dimension::Dimension;
 use node::Node;
