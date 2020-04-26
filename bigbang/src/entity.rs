@@ -58,7 +58,7 @@ impl Entity {
 
     /// The returns the distance squared between two particles.
     /// Take the sqrt of this to get the distance.
-    fn distance_squared(&self, other: &Entity) -> f64 {
+    pub(crate) fn distance_squared(&self, other: &Entity) -> f64 {
         // (x2 - x1) + (y2 - y1) + (z2 - z1)
         // all dist variables  are squared
         // This is being called from somewhere where `other` has NaN values
