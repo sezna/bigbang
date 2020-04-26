@@ -17,15 +17,14 @@ either = "1.5"
 rayon = "1.3"
 serde = { version = "1.0", features = ["derive"] }
 bigbang_derive = { path = "../bigbang_derive" }
-vulkano = { version = "0.18", optional = true }
-vulkano-shaders = { version = "0.18", optional = true }
+emu_core = { version = "0.1", optional=true }
 
 [dev-dependencies]
 criterion = "0.3"
 rand = "0.7.0"
 
 [features]
-gpu = ["vulkano", "vulkano-shaders"]
+gpu = ["emu_core"]
 
 [lib]
 crate-type = ["cdylib", "lib", "staticlib"]
