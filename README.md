@@ -7,7 +7,7 @@ _Have you used this project in your work? I'd love to hear about it and work wit
 This is a project in re-implementing a C++ particle simulation in Rust for speed comparison purposes. I originally created this tree at Trinity University with Dr. Mark Lewis around 2015. Rust changed a lot in the following years, and so I re-wrote it in 2019. 
 
 
-![example in 3d](./3d_example.gif)
+![example in 3d](./bigbang/3d_example.gif)
 _3d websocket-based simulation is available in the examples directory and was provided by [Casey Primozic](https://cprimozic.net/)._
 
 # What exactly does it do?
