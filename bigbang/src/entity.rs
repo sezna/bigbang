@@ -4,6 +4,13 @@ use super::Dimension;
 use crate::as_entity::AsEntity;
 use crate::simulation_result::SimulationResult;
 use crate::Node;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub enum CalculateCollisions {
+    Yes,
+    No,
+}
 
 /// An Entity is an object (generalized to be spherical, having only a radius dimension) which has
 /// velocity, position, radius, and mass. This gravitational tree contains many entities and it moves
@@ -150,7 +157,8 @@ impl Entity {
                     if self.did_collide_into(&i.as_entity()) {
                         collisions.push(i);
                     }
-                    let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                    let tmp_accel =
+                        self.get_gravitational_acceleration::<Entity>(Left(&(i.as_entity())));
                     acceleration.0 += tmp_accel.0;
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
@@ -178,7 +186,8 @@ impl Entity {
                     if self.did_collide_into(&i.as_entity()) {
                         collisions.push(i);
                     }
-                    let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                    let tmp_accel =
+                        self.get_gravitational_acceleration::<Entity>(Left(&(i.as_entity())));
                     acceleration.0 += tmp_accel.0;
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
@@ -201,6 +210,71 @@ impl Entity {
         };
         SimulationResult {
             collisions,
+            gravitational_acceleration: (
+                acceleration.0 + acceleration.0,
+                acceleration.1 + acceleration.1,
+                acceleration.2 + acceleration.2,
+            ),
+        }
+    }
+    pub(crate) fn get_acceleration_without_collisions<'a, T: AsEntity + Clone>(
+        &'a self,
+        node: &'a Node<T>,
+        theta: f64,
+    ) -> SimulationResult<T> {
+        let mut acceleration = (0., 0., 0.);
+        if let Some(node) = &node.left {
+            if node.points.is_some() {
+                // if this node has some points, calculate their gravitational acceleration
+                for i in node.points.as_ref().expect("unexpected null node 2") {
+                    let tmp_accel =
+                        self.get_gravitational_acceleration::<Entity>(Left(&(i.as_entity())));
+                    acceleration.0 += tmp_accel.0;
+                    acceleration.1 += tmp_accel.1;
+                    acceleration.2 += tmp_accel.2;
+                }
+            } else if self.theta_exceeded(&node, theta) {
+                // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
+                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                acceleration.0 += tmp_accel.0;
+                acceleration.1 += tmp_accel.1;
+                acceleration.2 += tmp_accel.2;
+            } else {
+                // otherwise, theta has not been exceeded and this is not a leaf. recurse
+                let res = self.get_acceleration_without_collisions(&node, theta);
+                let tmp_accel = res.gravitational_acceleration;
+                acceleration.0 += tmp_accel.0;
+                acceleration.1 += tmp_accel.1;
+                acceleration.2 += tmp_accel.2;
+            }
+        };
+        if let Some(node) = &node.right {
+            if node.points.is_some() {
+                // same logic as above
+                for i in node.points.as_ref().expect("unexpected null node 2") {
+                    let tmp_accel =
+                        self.get_gravitational_acceleration::<Entity>(Left(&(i.as_entity())));
+                    acceleration.0 += tmp_accel.0;
+                    acceleration.1 += tmp_accel.1;
+                    acceleration.2 += tmp_accel.2;
+                }
+            } else if self.theta_exceeded(&node, theta) {
+                // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
+                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                acceleration.0 += tmp_accel.0;
+                acceleration.1 += tmp_accel.1;
+                acceleration.2 += tmp_accel.2;
+            } else {
+                // otherwise, theta has not been exceeded and this is not a leaf. recurse
+                let res = self.get_acceleration_without_collisions(&node, theta);
+                let tmp_accel = res.gravitational_acceleration;
+                acceleration.0 += tmp_accel.0;
+                acceleration.1 += tmp_accel.1;
+                acceleration.2 += tmp_accel.2;
+            }
+        };
+        SimulationResult {
+            collisions: vec![],
             gravitational_acceleration: (
                 acceleration.0 + acceleration.0,
                 acceleration.1 + acceleration.1,

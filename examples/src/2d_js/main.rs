@@ -28,7 +28,10 @@ extern crate iron_cors;
 extern crate serde_json;
 extern crate staticfile;
 
-use bigbang::{collisions::soft_body, AsEntity, Entity, GravTree, Responsive, SimulationResult};
+use bigbang::{
+    collisions::soft_body, AsEntity, CalculateCollisions, Entity, GravTree, Responsive,
+    SimulationResult,
+};
 use iron::prelude::*;
 use iron_cors::CorsMiddleware;
 use router::Router;
@@ -58,7 +61,13 @@ struct SimulationState {
 lazy_static! {
     static ref STATE: RwLock<State> = RwLock::new(State {
         state: SimulationState {
-            grav_tree: GravTree::new(&Vec::new(), TIME_STEP, MAX_ENTITIES, THETA),
+            grav_tree: GravTree::new(
+                &Vec::new(),
+                TIME_STEP,
+                MAX_ENTITIES,
+                THETA,
+                CalculateCollisions::Yes
+            ),
             last_time_ran: Utc::now(),
             last_response: String::new(),
         }
@@ -176,7 +185,13 @@ fn main() {
     big_boi_2.radius = 1f64;
     big_boi_2.color = "green".to_string();
     starter_entities.push(big_boi_2);
-    let grav_tree = bigbang::GravTree::new(&mut starter_entities, TIME_STEP, MAX_ENTITIES, THETA);
+    let grav_tree = bigbang::GravTree::new(
+        &mut starter_entities,
+        TIME_STEP,
+        MAX_ENTITIES,
+        THETA,
+        CalculateCollisions::No,
+    );
 
     println!("initializing simulation...");
     {

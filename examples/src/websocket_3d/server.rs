@@ -265,6 +265,7 @@ async fn run(executor: TaskExecutor) {
         TIME_STEP,
         MAX_ENTITIES,
         THETA,
+        bigbang::CalculateCollisions::Yes,
     );
 
     loop {

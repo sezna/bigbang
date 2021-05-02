@@ -15,7 +15,7 @@ use node::Node;
 /*  public-facing entry points */
 pub use as_entity::AsEntity;
 pub use bigbang_derive::AsEntity;
-pub use entity::Entity;
+pub use entity::{CalculateCollisions, Entity};
 pub use grav_tree::GravTree;
 pub use responsive::Responsive;
 pub use simulation_result::SimulationResult;

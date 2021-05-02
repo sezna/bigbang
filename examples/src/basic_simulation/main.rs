@@ -73,7 +73,13 @@ fn main() {
         });
     }
 
-    let mut test_tree = GravTree::new(&mut vec_that_wants_to_be_a_kdtree, 0.2, 3, 0.2);
+    let mut test_tree = GravTree::new(
+        &mut vec_that_wants_to_be_a_kdtree,
+        0.2,
+        3,
+        0.2,
+        bigbang::CalculateCollisions::Yes,
+    );
 
     for i in 0..20 {
         println!("time step: {}", i);

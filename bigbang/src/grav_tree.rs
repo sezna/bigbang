@@ -1,6 +1,6 @@
-use crate::as_entity::AsEntity;
 use crate::responsive::Responsive;
 use crate::Node;
+use crate::{as_entity::AsEntity, entity::CalculateCollisions};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -29,10 +29,18 @@ pub struct GravTree<T: AsEntity + Responsive + Clone> {
     /// If the distance is beyond this threshold, we treat the entire node as one giant
     /// entity instead of recursing into it.
     theta: f64,
+    /// Whether or not to calculate collisions when time stepping
+    calculate_collisions: CalculateCollisions,
 }
 
 impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
-    pub fn new(pts: &[T], time_step: f64, max_entities: i32, theta: f64) -> GravTree<T>
+    pub fn new(
+        pts: &[T],
+        time_step: f64,
+        max_entities: i32,
+        theta: f64,
+        calculate_collisions: CalculateCollisions,
+    ) -> GravTree<T>
     where
         T: AsEntity,
     {
@@ -45,6 +53,7 @@ impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
                 time_step,
                 max_entities,
                 theta,
+                calculate_collisions,
             };
         }
 
@@ -63,6 +72,7 @@ impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
             time_step,
             max_entities,
             theta,
+            calculate_collisions,
         }
     }
     /// Sets the `theta` value of the simulation.
@@ -114,15 +124,22 @@ impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
             &post_gravity_entity_vec
                 .par_iter()
                 .map(|x| {
-                    x.respond(
-                        x.as_entity().get_acceleration_and_collisions(&self.root, self.theta),
-                        self.time_step,
-                    )
+                    let x_entity = x.as_entity();
+                    let accel = match self.calculate_collisions {
+                        CalculateCollisions::Yes => {
+                            x_entity.get_acceleration_and_collisions(&self.root, self.theta)
+                        }
+                        CalculateCollisions::No => {
+                            x_entity.get_acceleration_without_collisions(&self.root, self.theta)
+                        }
+                    };
+                    x.respond(accel, self.time_step)
                 })
                 .collect::<Vec<_>>(),
             self.time_step,
             self.max_entities,
             self.theta,
+            self.calculate_collisions,
         )
     }
 }
