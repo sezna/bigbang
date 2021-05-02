@@ -9,8 +9,6 @@ mod node;
 mod responsive;
 mod simulation_result;
 mod utilities;
-#[cfg(feature = "gpu")]
-mod gpu_entity;
 
 use dimension::Dimension;
 use node::Node;
