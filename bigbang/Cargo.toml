@@ -1,7 +1,7 @@
 [package]
 edition = "2018"
 name = "bigbang"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["Alex <alex@alex-hansen.com>"]
 license-file = "LICENSE.md"
 description = "An optimized framework for n-(hard)-body gravitational simulation"
