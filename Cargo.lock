@@ -44,7 +44,7 @@ dependencies = [
 
 [[package]]
 name = "bigbang"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "bigbang_derive",
  "criterion",
