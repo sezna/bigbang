@@ -3,6 +3,8 @@ name = "bigbang_derive"
 version = "0.1.0"
 authors = ["Alex Hansen <alex@alex-hansen.com>"]
 edition = "2018"
+description = "Convenience macro for crates.io/crates/bigbang"
+license = "MIT"
 
 [dependencies]
 quote = "1.0.2"
