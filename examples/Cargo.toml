@@ -30,7 +30,7 @@ lazy_static = "1.4.0"
 iron-cors = "0.8.0"
 websocket = "0.23.0"
 multiqueue = "0.3.2"
-tokio = "0.1.22"
+tokio = "1.8.4"
 tokio-reactor = "0.1.9"
 futures-preview = { version = "=0.3.0-alpha.18", features = ["compat"] }
 futures-util = "0.2.1"
