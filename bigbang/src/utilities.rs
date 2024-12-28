@@ -29,7 +29,7 @@ pub(crate) fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
             .max_by(|a, b| {
                 a.get_dim(&dim)
                     .partial_cmp(b.get_dim(&dim))
-                    .unwrap_or_else(|| Ordering::Equal)
+                    .unwrap_or(Ordering::Equal)
             })
             .unwrap_or_else(|| panic!("no max {} found", dim.as_string()))
             .get_dim(&dim),
@@ -38,7 +38,7 @@ pub(crate) fn max_min(dim: Dimension, entities: &[Entity]) -> (&f64, &f64) {
             .min_by(|a, b| {
                 a.get_dim(&dim)
                     .partial_cmp(b.get_dim(&dim))
-                    .unwrap_or_else(|| Ordering::Equal)
+                    .unwrap_or(Ordering::Equal)
             })
             .unwrap_or_else(|| panic!("no min {} found", dim.as_string()))
             .get_dim(&dim),
@@ -58,8 +58,8 @@ fn find_median_helper(
     end: usize,
     mid: usize,
 ) -> (&f64, usize) {
-    let mut low = (start + 1) as usize;
-    let mut high = (end - 1) as usize; //exclusive end
+    let mut low = (start + 1);
+    let mut high = (end - 1); //exclusive end
     while low <= high {
         if pts[low].get_dim(&dim) < pts[start].get_dim(&dim) {
             low += 1;

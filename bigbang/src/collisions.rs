@@ -2,7 +2,7 @@
 //! You do not need to use these, they are provided merely for convenience.
 //! All of the functions follow the format of:
 //!  > Given two `T: AsEntity` `p1` and `p2` and some parameters, return the acceleration vector being
-//!  exerted from the collision
+//! > exerted from the collision
 
 use crate::as_entity::AsEntity;
 

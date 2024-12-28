@@ -171,9 +171,9 @@ impl<T: AsEntity + Clone> Node<T> {
             let (x_max, x_min, y_max, y_min, z_max, z_min) = max_min_xyz(&entities);
             Node {
                 center_of_mass: (
-                    x_total / total_mass as f64,
-                    y_total / total_mass as f64,
-                    z_total / total_mass as f64,
+                    x_total / total_mass,
+                    y_total / total_mass,
+                    z_total / total_mass,
                 ),
                 total_mass,
                 r_max: max_radius,
@@ -220,8 +220,8 @@ impl<T: AsEntity + Clone> Node<T> {
             let (below_split, above_split) = pts.split_at(split_index);
 
             // Now we construct the left and right children based on this split into lower and upper halves.
-            let left = Node::new_root_node(&below_split, max_entities);
-            let right = Node::new_root_node(&above_split, max_entities);
+            let left = Node::new_root_node(below_split, max_entities);
+            let right = Node::new_root_node(above_split, max_entities);
             // The center of mass is a recursive definition. This finds the average COM for
             // each node.
             let left_mass = left.total_mass;

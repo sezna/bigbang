@@ -57,10 +57,10 @@ impl Entity {
 
     /// Returns the entity as a string with space separated values.
     pub fn as_string(&self) -> String {
-        return format!(
+        format!(
             "{} {} {} {} {} {} {} {}",
             self.x, self.y, self.z, self.vx, self.vy, self.vz, self.mass, self.radius
-        );
+        )
     }
 
     /// The returns the distance squared between two particles.
@@ -163,15 +163,15 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node, theta) {
+            } else if self.theta_exceeded(node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
-                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                let tmp_accel = self.get_gravitational_acceleration(Right(node));
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let mut res = self.get_acceleration_and_collisions(&node, theta);
+                let mut res = self.get_acceleration_and_collisions(node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 collisions.append(&mut res.collisions);
                 acceleration.0 += tmp_accel.0;
@@ -192,15 +192,15 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node, theta) {
+            } else if self.theta_exceeded(node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
-                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                let tmp_accel = self.get_gravitational_acceleration(Right(node));
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let mut res = self.get_acceleration_and_collisions(&node, theta);
+                let mut res = self.get_acceleration_and_collisions(node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 collisions.append(&mut res.collisions);
                 acceleration.0 += tmp_accel.0;
@@ -233,15 +233,15 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node, theta) {
+            } else if self.theta_exceeded(node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
-                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                let tmp_accel = self.get_gravitational_acceleration(Right(node));
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let res = self.get_acceleration_without_collisions(&node, theta);
+                let res = self.get_acceleration_without_collisions(node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
@@ -258,15 +258,15 @@ impl Entity {
                     acceleration.1 += tmp_accel.1;
                     acceleration.2 += tmp_accel.2;
                 }
-            } else if self.theta_exceeded(&node, theta) {
+            } else if self.theta_exceeded(node, theta) {
                 // otherwise, if theta is exceeded, calculate the entire node as a big boi particle
-                let tmp_accel = self.get_gravitational_acceleration(Right(&node));
+                let tmp_accel = self.get_gravitational_acceleration(Right(node));
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;
                 acceleration.2 += tmp_accel.2;
             } else {
                 // otherwise, theta has not been exceeded and this is not a leaf. recurse
-                let res = self.get_acceleration_without_collisions(&node, theta);
+                let res = self.get_acceleration_without_collisions(node, theta);
                 let tmp_accel = res.gravitational_acceleration;
                 acceleration.0 += tmp_accel.0;
                 acceleration.1 += tmp_accel.1;

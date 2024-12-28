@@ -85,7 +85,7 @@ struct MyEntity {
 }
 impl AsEntity for MyEntity {
     fn as_entity(&self) -> Entity {
-        return Entity {
+        Entity {
             x: self.x,
             y: self.y,
             z: 0.,
@@ -94,7 +94,7 @@ impl AsEntity for MyEntity {
             vz: 0.,
             radius: self.radius,
             mass: self.radius,
-        };
+        }
     }
 }
 
@@ -125,17 +125,17 @@ impl Responsive for MyEntity {
 
         // Perform bounds checking on the borders
         if x - self.radius <= 0.1f64 {
-            vx = vx * -0.3;
+            vx *= -0.3;
             x = 0.1f64 + self.radius;
         } else if x + self.radius >= 19.9f64 {
-            vx = vx * -0.3;
+            vx *= -0.3;
             x = 19.9f64 - self.radius;
         }
         if y - self.radius < 0.01f64 {
-            vy = vy * -0.3;
+            vy *= -0.3;
             y = 0.01f64 + self.radius;
         } else if y + self.radius > 19.9f64 {
-            vy = vy * -0.3;
+            vy *= -0.3;
             y = 19.9f64 - self.radius;
         }
 
@@ -145,7 +145,7 @@ impl Responsive for MyEntity {
             x: x + vx,
             y: y + vy,
             radius: self.radius,
-            color: if simulation_result.collisions.len() > 0 {
+            color: if !simulation_result.collisions.is_empty() {
                 "red"
             } else {
                 "blue"
@@ -246,5 +246,5 @@ fn simulation() -> IronResult<Response> {
         last_time_ran: Utc::now(),
         last_response: resp_data.clone(),
     };
-    return Ok(Response::with((status::Ok, resp_data)));
+    Ok(Response::with((status::Ok, resp_data)))
 }

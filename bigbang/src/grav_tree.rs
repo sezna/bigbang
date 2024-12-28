@@ -63,7 +63,7 @@ impl<T: AsEntity + Responsive + Clone + Send + Sync> GravTree<T> {
         // and can be made more elegant in the future, if need be.
         // The real root of the tree is therefore tree.root.left
         let mut phantom_parent = Node::new();
-        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(&pts[..], max_entities)));
+        phantom_parent.left = Some(Box::new(Node::<T>::new_root_node(pts, max_entities)));
         phantom_parent.points = Some(Vec::new());
 
         GravTree {

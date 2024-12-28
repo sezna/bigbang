@@ -135,7 +135,7 @@ async fn handle_connection(
 
     // Listen for notification events and trigger each client to send the current simulation state
     let mut rx = rx.compat();
-    while let Some(_) = rx.next().await {
+    while (rx.next().await).is_some() {
         debug!(
             "New server tick!  Sending update to connected client on address {}...",
             socket_addr
